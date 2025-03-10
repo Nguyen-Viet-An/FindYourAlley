@@ -8,10 +8,17 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 const Search = ({ placeholder = 'Search title...' }: { placeholder?: string }) => {
   const [query, setQuery] = useState('');
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const delayDebounceFn = setTimeout(() => {
       let newUrl = '';
 
@@ -29,10 +36,14 @@ const Search = ({ placeholder = 'Search title...' }: { placeholder?: string }) =
       }
 
       router.push(newUrl, { scroll: false });
-    }, 100)
+    }, 300)
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, searchParams, router])
+  }, [query, searchParams, router, isClient])
+
+  if (!isClient) {
+    return null; // or a placeholder
+  }
 
   return (
     <div className="flex-center min-h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">

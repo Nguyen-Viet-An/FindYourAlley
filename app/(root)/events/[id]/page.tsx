@@ -1,16 +1,24 @@
 import CheckoutButton from '@/components/shared/CheckoutButton';
 import Collection from '@/components/shared/Collection';
-import { getEventById, getRelatedEventsByCategory } from '@/lib/actions/event.actions'
+import { getEventById, getRelatedEventsByCategories } from '@/lib/actions/event.actions'
+import { ICategory } from '@/lib/database/models/category.model';
 import { formatDateTime } from '@/lib/utils';
 import { SearchParamProps } from '@/types'
 import Image from 'next/image';
 
-const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) => {
+const EventDetails = async (props: SearchParamProps) => {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+
+  const {
+    id
+  } = params;
+
   const event = await getEventById(id);
 
-  const relatedEvents = await getRelatedEventsByCategory({
-    categoryId: event.category._id,
-    eventId: event._id,
+  const relatedEvents = await getRelatedEventsByCategories({
+    categoryIds: event.category.map((cat: { _id: string }) => cat._id), // Extract category IDs from the array
+    eventId: event._id,                                                // Current event ID
     page: searchParams.page as string,
   })
 
@@ -34,9 +42,6 @@ const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) 
               <div className="flex gap-3">
                 <p className="p-bold-20 rounded-full bg-green-500/10 px-5 py-2 text-green-700">
                   {event.isFree ? 'FREE' : `$${event.price}`}
-                </p>
-                <p className="p-medium-16 rounded-full bg-grey-500/10 px-4 py-2.5 text-grey-500">
-                  {event.category.name}
                 </p>
               </div>
 
@@ -75,6 +80,18 @@ const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) 
             <p className="p-medium-16 lg:p-regular-18">{event.description}</p>
             <p className="p-medium-16 lg:p-regular-18 truncate text-primary-500 underline">{event.url}</p>
           </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex gap-3">
+                {event.category.map((cat: ICategory) => (
+                <p
+                  key={cat._id} // Use a unique key for each element
+                  className="p-medium-16 rounded-full bg-grey-500/10 px-4 py-2.5 text-grey-500"
+                >
+                  {cat.name}
+                </p>
+              ))}
+              </div>
+            </div>
         </div>
       </div>
     </section>

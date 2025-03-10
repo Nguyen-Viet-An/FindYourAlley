@@ -4,12 +4,18 @@ import { getEventById } from "@/lib/actions/event.actions"
 
 
 type UpdateEventProps = {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-const UpdateEvent = async ({ params: { id } }: UpdateEventProps) => {
+const UpdateEvent = async (props: UpdateEventProps) => {
+  const params = await props.params;
+
+  const {
+    id
+  } = params;
+
   const { sessionClaims } = await auth();
 
   const userId = sessionClaims?.userId as string;

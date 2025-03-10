@@ -12,8 +12,9 @@ export interface IEvent extends Document {
   price: string;
   isFree: boolean;
   url?: string;
-  category: { _id: string, name: string }
-  organizer: { _id: string, firstName: string, lastName: string }
+  hasPreorder: "Yes" | "No" | undefined;
+  category: { _id: string, name: string, type: string }[]
+  organizer: { _id: string, firstName: string, lastName: string };
 }
 
 const EventSchema = new Schema({
@@ -27,9 +28,10 @@ const EventSchema = new Schema({
   price: { type: String },
   isFree: { type: Boolean, default: false },
   url: { type: String },
-  category: { type: Schema.Types.ObjectId, ref: 'Category' },
+  hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
+  category: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
   organizer: { type: Schema.Types.ObjectId, ref: 'User' },
-})
+}, { strict: false })
 
 const Event = models.Event || model('Event', EventSchema);
 

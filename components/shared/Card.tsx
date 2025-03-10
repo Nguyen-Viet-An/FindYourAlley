@@ -5,17 +5,22 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import { DeleteConfirmation } from './DeleteConfirmation'
+import CheckoutButton from './CheckoutButton';
 
 type CardProps = {
   event: IEvent,
   hasOrderLink?: boolean,
-  hidePrice?: boolean
+  hidePrice?: boolean,
+  hideBookmark?: boolean,
+  hasOrdered?: boolean
 }
 
 export default async function Card({
     event,
     hasOrderLink,
     hidePrice,
+    hideBookmark,
+    hasOrdered
   }: CardProps) {
     const { sessionClaims } = await auth()
     const userId = sessionClaims?.userId as string;
@@ -26,9 +31,16 @@ export default async function Card({
     <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg md:min-h-[438px]">
       <Link 
         href={`/events/${event._id}`}
-        style={{backgroundImage: `url(${event.imageUrl})`}}
+        // style={{backgroundImage: `url(${event.imageUrl})`}}
         className="flex-center flex-grow bg-gray-50 bg-cover bg-center text-grey-500"
       />
+
+      <img 
+        src={event.imageUrl} 
+        alt={event.title} 
+        className="w-full h-full object-contain bg-gray-50"
+      />
+      {!hideBookmark && !isEventCreator && <CheckoutButton event={event} hasOrdered={hasOrdered} />}
       {/* IS EVENT CREATOR ... */}
 
       {isEventCreator && !hidePrice && (
@@ -48,9 +60,9 @@ export default async function Card({
           <span className="p-semibold-14 w-min rounded-full bg-green-100 px-4 py-1 text-green-60">
             {event.isFree ? 'FREE' : `$${event.price}`}
           </span>
-          <p className="p-semibold-14 w-min rounded-full bg-grey-500/10 px-4 py-1 text-grey-500 line-clamp-1">
+          {/* <p className="p-semibold-14 w-min rounded-full bg-grey-500/10 px-4 py-1 text-grey-500 line-clamp-1">
             {event.category.name}
-          </p>
+          </p> */}
         </div>}
 
         <p className="p-medium-16 p-medium-18 text-grey-500">

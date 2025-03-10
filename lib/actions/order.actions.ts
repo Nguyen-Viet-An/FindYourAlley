@@ -1,7 +1,7 @@
 "use server"
 
 // import Stripe from 'stripe';
-import { CheckoutOrderParams, CreateOrderParams, GetOrdersByEventParams, GetOrdersByUserParams } from "@/types"
+import { CheckoutOrderParams, CreateOrderParams, GetOrdersByEventParams, GetOrdersByUserParams, GetEventIdsOrderedByUserParams, FindOrderParams, DeleteOrderParams } from "@/types"
 import { redirect } from 'next/navigation';
 import { handleError } from '../utils';
 import { connectToDatabase } from '../database';
@@ -59,6 +59,25 @@ export const createOrder = async (order: CreateOrderParams) => {
     handleError(error);
   }
 }
+
+// DELETE
+export async function deleteOrder({ orderId }: DeleteOrderParams) {
+  try {
+    await connectToDatabase()
+
+    // const deletedEvent = await Order.findByIdAndDelete(orderId)
+    // console.log(deletedEvent)
+    const result = await Order.deleteOne({ _id: orderId });
+    if (result.deletedCount === 0) {
+      console.error(`No order found with ID: ${orderId}`);
+      // throw new Error(`Order with ID ${orderId} not found`);
+    }
+    console.log(`Order with ID ${orderId} successfully deleted`);
+  } catch (error) {
+    handleError(error)
+  }
+}
+
 
 // GET ORDERS BY EVENT
 export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEventParams) {
@@ -126,7 +145,7 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
 
     const orders = await Order.distinct('event._id')
       .find(conditions)
-      .sort({ createdAt: 'desc' })
+      // .sort({ createdAt: 'desc' })
       .skip(skipAmount)
       .limit(limit)
       .populate({
@@ -144,5 +163,46 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
     return { data: JSON.parse(JSON.stringify(orders)), totalPages: Math.ceil(ordersCount / limit) }
   } catch (error) {
     handleError(error)
+  }
+}
+
+export async function getEventIdsOrderedByUser({ userId }: GetEventIdsOrderedByUserParams) {
+  try {
+    await connectToDatabase()
+
+    // const conditions = { buyer: userId }
+
+    // const eventIds = await Order.distinct('event._id').find(conditions)
+    
+    const eventIds = await Order.distinct("event", { buyer: userId });
+    // const ordersCount = await Order.distinct('event._id').countDocuments(conditions)
+
+    return JSON.parse(JSON.stringify(eventIds)) 
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+export async function findOrder({ eventId, userId }: FindOrderParams) {
+  try {
+    await connectToDatabase();
+
+    // Query the database to find the order
+    const order = await Order.findOne({
+      event: eventId,
+      buyer: userId,
+    }); // Select only the _id field
+    const result = await Order.deleteOne({ _id: order._id });
+    if (result.deletedCount === 0) {
+      console.error(`No order found with ID: ${order._id}`);
+      // throw new Error(`Order with ID ${orderId} not found`);
+    }
+    console.log(`Order with ID ${order._id} successfully deleted`);
+    // Return the orderId or null if no order is found
+    return order ? JSON.parse(JSON.stringify(order._id)) : null;
+
+  } catch (error) {
+    console.error('Error finding order:', error);
+    throw new Error('Failed to find order');
   }
 }

@@ -21,6 +21,7 @@ export const headerLinks = [
     startDateTime: new Date(),
     endDateTime: new Date(),
     categoryId: '',
+    hasPreorder: "No",
     price: '',
     isFree: false,
     url: '',

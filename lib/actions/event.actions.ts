@@ -7,6 +7,7 @@ import Event from '@/lib/database/models/event.model'
 import User from '@/lib/database/models/user.model'
 import Category from '@/lib/database/models/category.model'
 import { handleError } from '@/lib/utils'
+import mongoose from 'mongoose';
 
 import {
   CreateEventParams,
@@ -21,27 +22,71 @@ const getCategoryByName = async (name: string) => {
   return Category.findOne({ name: { $regex: name, $options: 'i' } })
 }
 
+const getCategoriesByNames = async (names: string | string[]) => {
+  const nameArray = Array.isArray(names) ? names : [names]; // Ensure names is an array
+  // console.log("Searching for categories:", nameArray);
+  const categories = await Category.find({ name: { $in: nameArray.map(name => new RegExp(`^${name}$`, 'i')) } });
+  // console.log("Found categories:", categories);
+
+  return categories;
+};
+
 const populateEvent = (query: any) => {
   return query
     .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
-    .populate({ path: 'category', model: Category, select: '_id name' })
+    .populate({ path: 'category', model: Category, select: '_id name type' })
+}
+
+export const convertToObjectIdArray = async (stringIds: string[]): Promise<mongoose.Types.ObjectId[]> => {
+  return stringIds.map(id => new mongoose.Types.ObjectId(id));
 }
 
 // CREATE
 export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
-    await connectToDatabase()
-
-    const organizer = await User.findById(userId)
-    console.log("Organizer:", organizer)
-    if (!organizer) throw new Error('Organizer not found')
-
-    const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId })
-    revalidatePath(path)
-
-    return JSON.parse(JSON.stringify(newEvent))
+    await connectToDatabase();
+    
+    // Extract fields from the event
+    const {
+      title,
+      description,
+      location,
+      imageUrl,
+      startDateTime,
+      endDateTime,
+      categoryIds,
+      itemTypeIds,
+      hasPreorder,
+      price,
+      isFree,
+      url
+    } = event;
+    
+    // Create a new object with exactly what we want to save
+    const eventData = {
+      title,
+      description,
+      location,
+      imageUrl,
+      startDateTime,
+      endDateTime,
+      price,
+      isFree,
+      url,
+      hasPreorder: hasPreorder || "No",
+      category: await convertToObjectIdArray([...(categoryIds || []), ...(itemTypeIds || [])]),
+      organizer: userId
+    };
+    
+    // console.log("Creating with explicit fields:", JSON.stringify(eventData, null, 2));
+    
+    const newEvent = await Event.create(eventData);
+    
+    // console.log("newEvents:", JSON.stringify(newEvent, null, 2));
+    revalidatePath(path);
+    return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
@@ -72,7 +117,7 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
 
     const updatedEvent = await Event.findByIdAndUpdate(
       event._id,
-      { ...event, category: event.categoryId },
+      { ...event, category: [...(event.categoryIds || []), ...(event.itemTypeIds || [])]},
       { new: true }
     )
     revalidatePath(path)
@@ -96,31 +141,57 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 }
 
 // GET ALL EVENTS
-export async function getAllEvents({ query, limit = 6, page, category }: GetAllEventsParams) {
+export async function getAllEvents({ query, limit = 6, page, fandom, itemType, hasPreorder }: GetAllEventsParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const titleCondition = query ? { title: { $regex: query, $options: 'i' } } : {}
-    const categoryCondition = category ? await getCategoryByName(category) : null
+    const titleCondition = query ? { title: { $regex: query, $options: "i" } } : {};
+
+    // Fetch categories by type
+    const categories = await getCategoriesByNames([...fandom || [], ...itemType || []]);
+
+    // Create category filtering conditions based on type
+    const fandomIds = categories.filter(cat => cat.type === "fandom").map(cat => cat._id);
+    const itemTypeIds = categories.filter(cat => cat.type === "itemType").map(cat => cat._id);
+
+    // Combine all category IDs into a single array
+    const categoryCondition = fandomIds.length && itemTypeIds.length 
+      ? { category: { $all: [...fandomIds, ...itemTypeIds] } } 
+      : fandomIds.length 
+      ? { category: { $all: fandomIds } } 
+      : itemTypeIds.length 
+      ? { category: { $all: itemTypeIds } } 
+      : {};
+
+        
+    // Create hasPreorder condition
+    const hasPreorderCondition = hasPreorder ? { hasPreorder } : {};
+    
+    // Combine all conditions
     const conditions = {
-      $and: [titleCondition, categoryCondition ? { category: categoryCondition._id } : {}],
-    }
+      $and: [
+        titleCondition,
+        categoryCondition,
+        hasPreorderCondition, // Include preorder filtering
+      ],
+    };
 
-    const skipAmount = (Number(page) - 1) * limit
+    console.log("Final Query Conditions:", JSON.stringify(conditions, null, 2));
+    const skipAmount = (Number(page) - 1) * limit;
     const eventsQuery = Event.find(conditions)
-      .sort({ createdAt: 'desc' })
+      .sort({ createdAt: "desc" })
       .skip(skipAmount)
-      .limit(limit)
+      .limit(limit);
 
-    const events = await populateEvent(eventsQuery)
-    const eventsCount = await Event.countDocuments(conditions)
+    const events = await populateEvent(eventsQuery);
+    const eventsCount = await Event.countDocuments(conditions);
 
     return {
       data: JSON.parse(JSON.stringify(events)),
       totalPages: Math.ceil(eventsCount / limit),
-    }
+    };
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
@@ -147,8 +218,8 @@ export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUs
 }
 
 // GET RELATED EVENTS: EVENTS WITH SAME CATEGORY
-export async function getRelatedEventsByCategory({
-  categoryId,
+export async function getRelatedEventsByCategories({
+  categoryIds,
   eventId,
   limit = 3,
   page = 1,
@@ -157,7 +228,13 @@ export async function getRelatedEventsByCategory({
     await connectToDatabase()
 
     const skipAmount = (Number(page) - 1) * limit
-    const conditions = { $and: [{ category: categoryId }, { _id: { $ne: eventId } }] }
+
+    // Updated condition to match at least one category
+    const conditions = { $and: [
+        { category: { $in: categoryIds } }, // Match events where at least one category matches
+        { _id: { $ne: eventId } },          // Exclude the current event
+      ],
+    };
 
     const eventsQuery = Event.find(conditions)
       .sort({ createdAt: 'desc' })

@@ -5,9 +5,14 @@ import { SignedIn, SignedOut, useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import React from 'react'
 import { Button } from '../ui/button'
-// import Checkout from './Checkout'
+import Checkout from './Checkout'
 
-const CheckoutButton = ({ event }: { event: IEvent }) => {
+type CheckoutButtonProps = {
+  event: IEvent;
+  hasOrdered?: boolean; // New prop for checking order status
+};
+
+const CheckoutButton = ({ event, hasOrdered }: CheckoutButtonProps) => {
   const { user } = useUser();
   const userId = user?.publicMetadata.userId as string;
   const hasEventFinished = new Date(event.endDateTime) < new Date();
@@ -27,7 +32,7 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
           </SignedOut>
 
           <SignedIn>
-            {/* <Checkout event={event} userId={userId} /> */}
+            <Checkout event={event} userId={userId} hasOrdered={hasOrdered}/>
           </SignedIn>
         </>
       )}

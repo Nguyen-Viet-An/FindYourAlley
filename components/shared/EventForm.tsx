@@ -9,6 +9,7 @@ import { eventFormSchema } from "@/lib/validator"
 import * as z from 'zod'
 import { eventDefaultValues } from "@/constants"
 import Dropdown from "./Dropdown"
+import MultiSelect from "./MultiSelect"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUploader } from "./FileUploader"
 import { useState } from "react"
@@ -29,23 +30,38 @@ type EventFormProps = {
   event?: IEvent,
   eventId?: string
 }
+const mapCategoriesToOptions = (categories: { _id: string; name: string, type: string }[]) =>
+  categories.map(category => ({ value: category._id, label: category.name }));
+
+const mapOptionsToCategories = (options: { value: string; label: string }[]) =>
+  options.map(option => option.value);
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([])
-  const initialValues = event && type === 'Update' 
-    ? { 
-      ...event, 
-      startDateTime: new Date(event.startDateTime), 
-      endDateTime: new Date(event.endDateTime) 
+  const initialValues = event && type === "Update"
+  ? {
+      ...event,
+      startDateTime: new Date(event.startDateTime),
+      endDateTime: new Date(event.endDateTime),
+      hasPreorder: event.hasPreorder === "Yes" ? "Yes" : event.hasPreorder === "No" ? "No" : undefined,
+      categoryIds: mapCategoriesToOptions(
+        (event.category || []).filter((cat) => cat.type === "fandom")
+      ),
+      itemTypeIds: mapCategoriesToOptions(
+        (event.category || []).filter((cat) => cat.type === "itemType")
+      ),
     }
-    : eventDefaultValues;
+  : {
+      ...eventDefaultValues,
+      hasPreorder: eventDefaultValues.hasPreorder ?? "No", // Ensure correct type
+    };
   const router = useRouter();
 
   const { startUpload } = useUploadThing('imageUploader')
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: initialValues
+    defaultValues: initialValues as z.infer<typeof eventFormSchema>,
   })
  
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
@@ -61,42 +77,56 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
       uploadedImageUrl = uploadedImages[0].url
     }
 
-    if(type === 'Create') {
+    const formattedCategories = mapOptionsToCategories(values.categoryIds || []);
+    const formattedItemTypes = mapOptionsToCategories(values.itemTypeIds || []);
+
+    if (type === "Create") {
       try {
         const newEvent = await createEvent({
-          event: { ...values, imageUrl: uploadedImageUrl },
+          event: { 
+            ...values, 
+            imageUrl: uploadedImageUrl, 
+            categoryIds: formattedCategories, 
+            itemTypeIds: formattedItemTypes,
+            hasPreorder: values.hasPreorder || "No"  // Ensure hasPreorder is set explicitly // Ensure it has a default value
+          },
           userId,
-          path: '/profile'
-        })
-
-        if(newEvent) {
+          path: "/profile",
+        });
+        console.log("Submitting with hasPreorder:", values.hasPreorder);
+        if (newEvent) {
           form.reset();
-          router.push(`/events/${newEvent._id}`)
+          router.push(`/events/${newEvent._id}`);
         }
       } catch (error) {
         console.log(error);
       }
     }
 
-    if(type === 'Update') {
-      if(!eventId) {
-        router.back()
-        return;
+    if (type === 'Update') {
+      if (!eventId) {
+        return router.back(); // Ensure function exits
       }
-
+    
       try {
         const updatedEvent = await updateEvent({
           userId,
-          event: { ...values, imageUrl: uploadedImageUrl, _id: eventId },
+          event: {
+            ...values,
+            imageUrl: uploadedImageUrl,
+            categoryIds: formattedCategories,
+            itemTypeIds: formattedItemTypes,
+            _id: eventId
+          },
           path: `/events/${eventId}`
-        })
-
-        if(updatedEvent) {
+        });
+    
+        if (updatedEvent) {
           form.reset();
-          router.push(`/events/${updatedEvent._id}`)
+          router.push(`/events/${updatedEvent?._id}`); // Safe navigation
         }
       } catch (error) {
-        console.log(error);
+        console.error("Error updating event:", error);
       }
     }
   }
@@ -117,13 +147,32 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
-            name="categoryId"
+            name="categoryIds"
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <Dropdown onChangeHandler={field.onChange} value={field.value} />
+                  {/* <Dropdown onChangeHandler={field.onChange} value={field.value} /> */}
+                  <MultiSelect onChange={field.onChange} value={field.value} promptText="Chọn fandom" categoryType="fandom"/>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-5 md:flex-row">
+          <FormField
+            control={form.control}
+            name="itemTypeIds"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormControl>
+                  {/* <Dropdown onChangeHandler={field.onChange} value={field.value} /> */}
+                  <MultiSelect onChange={field.onChange} value={field.value} promptText="Chọn loại mặt hàng" categoryType="itemType"/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -186,7 +235,46 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               )}
             />
         </div>
-
+        <div className="flex flex-col gap-5 md:flex-row">
+          <FormField
+            control={form.control}
+            name="hasPreorder"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Has preorder?</FormLabel>
+                <FormControl>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        value="Yes"
+                        checked={field.value === "Yes"}
+                        onChange={() => field.onChange("Yes")}
+                        className="peer hidden"
+                      />
+                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "Yes" ? "bg-primary-500 text-white" : "bg-gray-200"}`}>
+                        Yes
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        value="No"
+                        checked={field.value === "No"}
+                        onChange={() => field.onChange("No")}
+                        className="peer hidden"
+                      />
+                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "No" ? "bg-primary-500 text-white" : "bg-gray-200"}`}>
+                        No
+                      </div>
+                    </label>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
               control={form.control}

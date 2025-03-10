@@ -14,7 +14,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: 'FindYourAlley',
-  description: 'Evently is a platform for event management.',
+  description: 'FindYourAlley is a platform for event management.',
   icons: {
     icon: '/assets/images/logo.svg'
   }

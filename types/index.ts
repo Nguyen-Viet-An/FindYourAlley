@@ -25,7 +25,9 @@ export type CreateUserParams = {
       imageUrl: string
       startDateTime: Date
       endDateTime: Date
-      categoryId: string
+      categoryIds: string[]
+      itemTypeIds: string[]
+      hasPreorder: string | undefined
       price: string
       isFree: boolean
       url: string
@@ -43,7 +45,9 @@ export type CreateUserParams = {
       location: string
       startDateTime: Date
       endDateTime: Date
-      categoryId: string
+      categoryIds: string[]
+      itemTypeIds: string[]
+      hasPreorder: string | undefined
       price: string
       isFree: boolean
       url: string
@@ -58,7 +62,9 @@ export type CreateUserParams = {
   
   export type GetAllEventsParams = {
     query: string
-    category: string
+    fandom: string[]
+    itemType: string[]
+    hasPreorder?: "Yes" | "No";
     limit: number
     page: number
   }
@@ -70,7 +76,7 @@ export type CreateUserParams = {
   }
   
   export type GetRelatedEventsByCategoryParams = {
-    categoryId: string
+    categoryIds: string[]
     eventId: string
     limit?: number
     page: number | string
@@ -95,12 +101,14 @@ export type CreateUserParams = {
     category: {
       _id: string
       name: string
-    }
+      type: string
+    }[]
   }
   
   // ====== CATEGORY PARAMS
   export type CreateCategoryParams = {
     categoryName: string
+    categoryType: string
   }
   
   // ====== ORDER PARAMS
@@ -113,11 +121,11 @@ export type CreateUserParams = {
   }
   
   export type CreateOrderParams = {
-    stripeId: string
+    // stripeId: string
     eventId: string
     buyerId: string
-    totalAmount: string
-    createdAt: Date
+    // totalAmount: string
+    // createdAt: Date
   }
   
   export type GetOrdersByEventParams = {
@@ -129,6 +137,19 @@ export type CreateUserParams = {
     userId: string | null
     limit?: number
     page: string | number | null
+  }
+
+  export type GetEventIdsOrderedByUserParams = {
+    userId: string | null
+  }
+
+  export type FindOrderParams = {
+    eventId: string;
+    userId: string;
+  }
+
+  export type DeleteOrderParams = {
+    orderId: string
   }
   
   // ====== URL QUERY PARAMS
