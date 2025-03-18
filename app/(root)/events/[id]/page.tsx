@@ -8,11 +8,11 @@ import { SearchParamProps } from '@/types'
 import Image from 'next/image';
 import mongoose from 'mongoose';
 
-const EventDetails = async ({ params, searchParams }: SearchParamProps) => {
+const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) =>  {
   // const searchParams = await props.searchParams;
   // const params = await props.params;
 
-  const { id } = params;
+  // const { id } = params;
   const event = await getEventById(id);
 
   // Fetch the category IDs from the images
