@@ -11,7 +11,6 @@ import { getEventIdsOrderedByUser } from '@/lib/actions/order.actions';
 import { auth } from '@clerk/nextjs/server'
 
 export default async function Home({ searchParams }: SearchParamProps) {
-  console.log("Rendering Home page")
   const params = await searchParams;
 
   const { sessionClaims } = await auth();
@@ -57,17 +56,16 @@ export default async function Home({ searchParams }: SearchParamProps) {
         <div className="wrapper grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-0">
           <div className="flex flex-col justify-center gap-8">
             <h1 className="h1-bold">Tìm, bookmark sample của artists nhanh và dễ dàng!</h1>
-            <p className="p-regular-20 md:p-regular-24">Book and learn helpful tips from 3,168+ mentors in world-class companies with our global community.</p>
             <Button size="lg" asChild className="button w-full sm:w-fit">
               <Link href="#events">
-                Explore Now
+                Tìm kiếm sample
               </Link>
             </Button>
           </div>
 
           <Image 
-            src="/assets/images/hero.png"
-            alt="hero"
+            src="/assets/images/gen.png"
+            alt="kimitowatshi"
             width={1000}
             height={1000}
             className="max-h-[70vh] object-contain object-center 2xl:max-h-[50vh]"
@@ -76,32 +74,45 @@ export default async function Home({ searchParams }: SearchParamProps) {
       </section> 
 
       <section id="events" className="wrapper my-8 flex flex-col gap-8 md:gap-12">
-        <h2 className="h2-bold"> <br /> Rất nhiều sample </h2>
+        <h2 className="h2-bold"> <br /> Sample COFI#14 </h2>
 
-        <div className="flex w-full flex-col gap-5 md:flex-row">
-          <div className="w-full md:flex-1">
-            <Search />
+        <div className="flex w-full flex-col gap-2">
+          {/* Line 1: Titles (except search) */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div /> {/* Empty for search box placeholder */}
+            <div className="font-semibold">Fandom</div>
+            <div className="font-semibold">Loại mặt hàng</div>
+            <div className="font-semibold">Mở preorder</div>
           </div>
-          <div className="w-full md:flex-1">
-            <CategoryFilter key="itemType-filter" categoryFilterType="itemType" />
-          </div>
-          <div className="w-full md:flex-1">
-            <CategoryFilter key="fandom-filter" categoryFilterType="fandom" />
-          </div>
-          <div className="w-full md:flex-1">
-            <HasPreorderFilter />
+
+          {/* Line 2: search + dropdowns */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <Search />
+            </div>
+            <div>
+              <CategoryFilter key="fandom-filter" categoryFilterType="fandom" />
+            </div>
+            <div>
+              <CategoryFilter key={`filter-${Math.random()}`} categoryFilterType="itemType" />
+            </div>
+            <div>
+              <HasPreorderFilter />
+            </div>
           </div>
         </div>
 
         <Collection 
           data={events?.data}
           ordered={eventIdsOrdered}
-          emptyTitle="No Events Found"
-          emptyStateSubtext="Come back later"
+          emptyTitle="Không tìm thấy sample nào"
+          emptyStateSubtext="Hãy trở lại sau"
           collectionType="All_Events"
-          limit={6}
+          limit={20}
           page={page}
           totalPages={events?.totalPages}
+          urlParamName="page"
+          requestedCategoryIds={events?.requestedCategoryIds}
         />
       </section>
     </>

@@ -11,72 +11,69 @@ import {
 } from "@/components/ui/select";
 import { getAllCategories } from "@/lib/actions/category.actions";
 import { ICategory } from "@/lib/database/models/category.model";
-import { startTransition } from "react";
 
 type CategoryFilterProps = {
   categoryFilterType: string;
 };
 
 const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
-  const [categories, setCategories] = useState<ICategory[]>([]); // Categories state
-  const [selectedCategory, setSelectedCategory] = useState<string>("All"); // Selected category state
-  const [isLoaded, setIsLoaded] = useState(false); // Data loading state
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // Fetch categories when the component mounts
   useEffect(() => {
-    console.log(`Fetching categories for: ${categoryFilterType}`);
     const fetchCategories = async () => {
+      console.log(`Fetching categories for: ${categoryFilterType}`);
       const categoryList = await getAllCategories(categoryFilterType);
       setCategories(categoryList || []);
-      setIsLoaded(true);
+      setIsLoading(false);
     };
     fetchCategories();
   }, [categoryFilterType]);
 
   // Handle category selection change
   const onSelectCategory = (category: string) => {
-    setSelectedCategory(category); // Update selected category state
+    setSelectedCategory(category);
 
     const currentParams = new URLSearchParams(searchParams.toString());
     if (category === "All") {
-      currentParams.delete(categoryFilterType); // Remove filter if "All" is selected
+      currentParams.delete(categoryFilterType);
     } else {
-      currentParams.set(categoryFilterType, category); // Set the selected category as a URL parameter
+      currentParams.set(categoryFilterType, category);
     }
 
-    // Navigate to the updated URL
     router.push(`?${currentParams.toString()}`, { scroll: false });
   };
 
   // Sync selected category with URL params
   useEffect(() => {
     const currentCategory = searchParams.get(categoryFilterType) || "All";
-    setSelectedCategory(currentCategory); // Set the selected category based on URL params
+    if (currentCategory !== selectedCategory) {
+      setSelectedCategory(currentCategory);
+    }
   }, [searchParams, categoryFilterType]);
 
-  // Render the component once the data is loaded
   return (
-    <>
-      {isLoaded ? (
-        <Select value={selectedCategory} onValueChange={onSelectCategory}>
-          <SelectTrigger className="select-field">
-            <SelectValue placeholder="Select Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category._id} value={category.name}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <p>Loading categories...</p>
-      )}
-    </>
+    <Select 
+      value={selectedCategory} 
+      onValueChange={onSelectCategory}
+      disabled={isLoading}
+    >
+      <SelectTrigger className={`select-field ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+        <SelectValue placeholder={isLoading ? "Tải tag..." : "Chọn tag"} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="All">Bất kì</SelectItem>
+        {categories.map((category) => (
+          <SelectItem key={category._id} value={category.name}>
+            {category.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 

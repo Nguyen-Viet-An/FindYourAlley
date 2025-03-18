@@ -1,37 +1,50 @@
 import { Document, Schema, model, models } from "mongoose";
 
+export interface IImage {
+  imageUrl: string;
+  categoryIds: string[]; // fandom categories
+  itemTypeIds: string[]; // item type categories 
+}
+
 export interface IEvent extends Document {
   _id: string;
   title: string;
   description?: string;
-  location?: string;
+  artistLink?: string;
   createdAt: Date;
-  imageUrl: string;
+  images: {
+    imageUrl: string;
+    category: { _id: string; name: string; type: string }[];
+  }[];
   startDateTime: Date;
   endDateTime: Date;
-  price: string;
-  isFree: boolean;
+  extraTag?: string;
   url?: string;
   hasPreorder: "Yes" | "No" | undefined;
-  category: { _id: string, name: string, type: string }[]
   organizer: { _id: string, firstName: string, lastName: string };
 }
 
-const EventSchema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String },
-  location: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  imageUrl: { type: String, required: true },
-  startDateTime: { type: Date, default: Date.now },
-  endDateTime: { type: Date, default: Date.now },
-  price: { type: String },
-  isFree: { type: Boolean, default: false },
-  url: { type: String },
-  hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
-  category: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
-  organizer: { type: Schema.Types.ObjectId, ref: 'User' },
-}, { strict: false })
+const EventSchema = new Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String },
+    artistLink: { type: String },
+    createdAt: { type: Date, default: Date.now },
+    images: [
+      {
+        imageUrl: { type: String, required: true },
+        category: [{ type: Schema.Types.ObjectId, ref: "Category" }],
+      },
+    ],
+    startDateTime: { type: Date, default: Date.now },
+    endDateTime: { type: Date, default: Date.now },
+    extraTag: { type: String },
+    url: { type: String },
+    hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
+    organizer: { type: Schema.Types.ObjectId, ref: "User" },
+  },
+  { strict: false }
+);
 
 const Event = models.Event || model('Event', EventSchema);
 

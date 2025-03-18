@@ -30,14 +30,14 @@ export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
 
       <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure you want to delete?</AlertDialogTitle>
+          <AlertDialogTitle>Bạn có chắc muốn xóa sample?</AlertDialogTitle>
           <AlertDialogDescription className="p-regular-16 text-grey-600">
-            This will permanently delete this event
+            Hành động này sẽ xóa sample vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Quay lại</AlertDialogCancel>
 
           <AlertDialogAction
             onClick={() =>

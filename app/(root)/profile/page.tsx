@@ -16,7 +16,7 @@ const ProfilePage = async (props: SearchParamProps) => {
   const ordersPage = Number(searchParams?.ordersPage) || 1;
   const eventsPage = Number(searchParams?.eventsPage) || 1;
 
-  const orders = await getOrdersByUser({ userId, page: ordersPage})
+  const orders = await getOrdersByUser({ userId, page: ordersPage })
 
   const orderedEvents = orders?.data.map((order: IOrder) => order.event) || [];
   const organizedEvents = await getEventsByUser({ userId, page: eventsPage })
@@ -28,10 +28,10 @@ const ProfilePage = async (props: SearchParamProps) => {
       {/* My Tickets */}
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
         <div className="wrapper flex items-center justify-center sm:justify-between">
-          <h3 className='h3-bold text-center sm:text-left'>My Tickets</h3>
+          <h3 className='h3-bold text-center sm:text-left'>Sample đã lưu</h3>
           <Button asChild size="lg" className="button hidden sm:flex">
             <Link href="/#events">
-              Explore More Events
+              Khám phá thêm nhiều sample khác
             </Link>
           </Button>
         </div>
@@ -39,25 +39,24 @@ const ProfilePage = async (props: SearchParamProps) => {
 
       <section className="wrapper my-8">
         <Collection 
-          data={orderedEvents}
-          ordered={eventIdsOrdered}
-          emptyTitle="No event tickets purchased yet"
-          emptyStateSubtext="No worries - plenty of exciting events to explore!"
-          collectionType="My_Tickets"
-          limit={3}
-          page={ordersPage}
-          urlParamName="ordersPage"
-          totalPages={orders?.totalPages}
-        />
+            data={orders?.data || []}
+            emptyTitle="No event tickets purchased yet"
+            emptyStateSubtext="No worries - plenty of exciting events to explore!"
+            collectionType="My_Tickets"
+            limit={3}
+            page={ordersPage}
+            urlParamName="ordersPage"
+            totalPages={orders?.totalPages}
+          />
       </section>
 
       {/* Events Organized */}
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
         <div className="wrapper flex items-center justify-center sm:justify-between">
-          <h3 className='h3-bold text-center sm:text-left'>Events Organized</h3>
+          <h3 className='h3-bold text-center sm:text-left'>Sample đã đăng</h3>
           <Button asChild size="lg" className="button hidden sm:flex">
             <Link href="/events/create">
-              Create New Event
+              Đăng thêm sample
             </Link>
           </Button>
         </div>
@@ -66,8 +65,8 @@ const ProfilePage = async (props: SearchParamProps) => {
       <section className="wrapper my-8">
         <Collection 
           data={organizedEvents?.data}
-          emptyTitle="No events have been created yet"
-          emptyStateSubtext="Go create some now"
+          emptyTitle="Bạn chưa đăng sample nào cả"
+          emptyStateSubtext="Hãy đăng sample nào!"
           collectionType="Events_Organized"
           limit={3}
           page={eventsPage}

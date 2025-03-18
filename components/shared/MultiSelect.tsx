@@ -87,7 +87,7 @@
               <AlertDialogDescription>
                 <Input
                   type="text"
-                  placeholder="Category name"
+                  placeholder="Tên tag"
                   className="input-field mt-3"
                   value={newCategory} // Bind input value
                   onChange={(e) => setNewCategory(e.target.value)} // Handle input change
@@ -95,7 +95,7 @@
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Dửng</AlertDialogCancel>
+              <AlertDialogCancel>Quay lại</AlertDialogCancel>
               <AlertDialogAction onClick={() => startTransition(handleAddCategory)}>
                 Thêm
               </AlertDialogAction>

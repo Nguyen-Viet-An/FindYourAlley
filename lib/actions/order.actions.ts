@@ -52,6 +52,7 @@ export const createOrder = async (order: CreateOrderParams) => {
       ...order,
       event: order.eventId,
       buyer: order.buyerId,
+      imageIndex: order.imageIndex
     });
 
     return JSON.parse(JSON.stringify(newOrder));
@@ -143,9 +144,9 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
     const skipAmount = (Number(page) - 1) * limit
     const conditions = { buyer: userId }
 
-    const orders = await Order.distinct('event._id')
-      .find(conditions)
-      // .sort({ createdAt: 'desc' })
+    // Get orders with full event details and imageIndex
+    const orders = await Order.find(conditions)
+      .sort({ createdAt: 'desc' })
       .skip(skipAmount)
       .limit(limit)
       .populate({
@@ -158,9 +159,13 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
         },
       })
 
-    const ordersCount = await Order.distinct('event._id').countDocuments(conditions)
+    const ordersCount = await Order.countDocuments(conditions)
 
-    return { data: JSON.parse(JSON.stringify(orders)), totalPages: Math.ceil(ordersCount / limit) }
+    // Return orders with their events and imageIndex
+    return { 
+      data: JSON.parse(JSON.stringify(orders)), 
+      totalPages: Math.ceil(ordersCount / limit) 
+    }
   } catch (error) {
     handleError(error)
   }
@@ -170,36 +175,44 @@ export async function getEventIdsOrderedByUser({ userId }: GetEventIdsOrderedByU
   try {
     await connectToDatabase()
 
-    // const conditions = { buyer: userId }
-
-    // const eventIds = await Order.distinct('event._id').find(conditions)
+    // Get all orders for this user
+    const orders = await Order.find({ buyer: userId }).select('event imageIndex')
     
-    const eventIds = await Order.distinct("event", { buyer: userId });
-    // const ordersCount = await Order.distinct('event._id').countDocuments(conditions)
+    // Create an array of objects containing both eventId and imageIndex
+    const eventIdsWithImageIndex = orders.map(order => ({
+      eventId: order.event.toString(),
+      imageIndex: order.imageIndex
+    }))
 
-    return JSON.parse(JSON.stringify(eventIds)) 
+    return JSON.parse(JSON.stringify(eventIdsWithImageIndex))
   } catch (error) {
     handleError(error)
   }
 }
 
-export async function findOrder({ eventId, userId }: FindOrderParams) {
+export async function findOrder({ eventId, userId, imageIndex }: FindOrderParams) {
   try {
     await connectToDatabase();
 
-    // Query the database to find the order
+    // Query the database to find the order including imageIndex
     const order = await Order.findOne({
       event: eventId,
       buyer: userId,
-    }); // Select only the _id field
+      ...(imageIndex !== undefined && { imageIndex }), // Include imageIndex if provided
+    });
+    
+    if (!order) {
+      console.error(`No order found for event ${eventId} and user ${userId}`);
+      return null;
+    }
+    
     const result = await Order.deleteOne({ _id: order._id });
     if (result.deletedCount === 0) {
       console.error(`No order found with ID: ${order._id}`);
-      // throw new Error(`Order with ID ${orderId} not found`);
     }
     console.log(`Order with ID ${order._id} successfully deleted`);
-    // Return the orderId or null if no order is found
-    return order ? JSON.parse(JSON.stringify(order._id)) : null;
+    
+    return JSON.parse(JSON.stringify(order._id));
 
   } catch (error) {
     console.error('Error finding order:', error);

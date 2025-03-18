@@ -24,9 +24,9 @@ const getCategoryByName = async (name: string) => {
 
 const getCategoriesByNames = async (names: string | string[]) => {
   const nameArray = Array.isArray(names) ? names : [names]; // Ensure names is an array
-  // console.log("Searching for categories:", nameArray);
+  // // console.log("Searching for categories:", nameArray);
   const categories = await Category.find({ name: { $in: nameArray.map(name => new RegExp(`^${name}$`, 'i')) } });
-  // console.log("Found categories:", categories);
+  // // console.log("Found categories:", categories);
 
   return categories;
 };
@@ -34,8 +34,8 @@ const getCategoriesByNames = async (names: string | string[]) => {
 const populateEvent = (query: any) => {
   return query
     .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
-    .populate({ path: 'category', model: Category, select: '_id name type' })
-}
+    .populate({ path: 'images.category', model: Category, select: '_id name type' }); // Populate categories inside images
+};
 
 export const convertToObjectIdArray = async (stringIds: string[]): Promise<mongoose.Types.ObjectId[]> => {
   return stringIds.map(id => new mongoose.Types.ObjectId(id));
@@ -45,44 +45,56 @@ export const convertToObjectIdArray = async (stringIds: string[]): Promise<mongo
 export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase();
-    
-    // Extract fields from the event
+
+    // console.log("Received event data:", JSON.stringify(event, null, 2));  // Detailed logging
+    // console.log("Images structure:", JSON.stringify(event.images, null, 2));  // Log images
+
+
     const {
       title,
       description,
-      location,
-      imageUrl,
+      artistLink,
+      images, // Updated field
       startDateTime,
       endDateTime,
-      categoryIds,
-      itemTypeIds,
       hasPreorder,
-      price,
-      isFree,
-      url
+      extraTag,
+      url,
     } = event;
+
+    // Convert images to store categories and item types correctly
+    const formattedImages = await Promise.all(
+      images.map(async (img) => {
+        // console.log("Processing image:", img); // Log each image
     
-    // Create a new object with exactly what we want to save
+        // Ensure category is an array before conversion
+        const categoryIds = Array.isArray(img.category) ? img.category : 
+                            img.category ? [img.category] : [];
+    
+        // console.log("Using categoryIds:", categoryIds);
+    
+        return {
+          imageUrl: img.imageUrl,
+          category: await convertToObjectIdArray(categoryIds),
+        };
+      })
+    );
+
     const eventData = {
       title,
       description,
-      location,
-      imageUrl,
+      artistLink,
+      images: formattedImages, // Store images array
       startDateTime,
       endDateTime,
-      price,
-      isFree,
+      extraTag,
       url,
       hasPreorder: hasPreorder || "No",
-      category: await convertToObjectIdArray([...(categoryIds || []), ...(itemTypeIds || [])]),
-      organizer: userId
+      organizer: userId,
     };
-    
-    // console.log("Creating with explicit fields:", JSON.stringify(eventData, null, 2));
-    
+
     const newEvent = await Event.create(eventData);
-    
-    // console.log("newEvents:", JSON.stringify(newEvent, null, 2));
+
     revalidatePath(path);
     return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
@@ -108,23 +120,43 @@ export async function getEventById(eventId: string) {
 // UPDATE
 export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const eventToUpdate = await Event.findById(event._id)
+    const eventToUpdate = await Event.findById(event._id);
     if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
-      throw new Error('Unauthorized or event not found')
+      throw new Error("Unauthorized or event not found");
     }
+
+    // Convert categories inside each image
+    const formattedImages = await Promise.all(
+      event.images.map(async (img) => ({
+        imageUrl: img.imageUrl,
+        category: img.categoryIds.length > 0 ? await convertToObjectIdArray(img.categoryIds) : [],
+      }))
+    );
 
     const updatedEvent = await Event.findByIdAndUpdate(
       event._id,
-      { ...event, category: [...(event.categoryIds || []), ...(event.itemTypeIds || [])]},
+      {
+        $set: {
+          title: event.title,
+          description: event.description,
+          artistLink: event.artistLink,
+          images: formattedImages, //  Now correctly updates images
+          startDateTime: event.startDateTime,
+          endDateTime: event.endDateTime,
+          hasPreorder: event.hasPreorder || "No",
+          extraTag: event.extraTag,
+          url: event.url,
+        },
+      },
       { new: true }
-    )
-    revalidatePath(path)
+    );
 
-    return JSON.parse(JSON.stringify(updatedEvent))
+    revalidatePath(path);
+    return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
@@ -141,54 +173,61 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 }
 
 // GET ALL EVENTS
+// Update the getAllEvents function to include category info in the response
 export async function getAllEvents({ query, limit = 6, page, fandom, itemType, hasPreorder }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
-    const titleCondition = query ? { title: { $regex: query, $options: "i" } } : {};
+    // Start with a basic query object
+    const queryObject: any = {};
 
-    // Fetch categories by type
-    const categories = await getCategoriesByNames([...fandom || [], ...itemType || []]);
+    // Add title search if provided
+    if (query) {
+      queryObject.$or = [
+        { title: { $regex: query, $options: "i" } },
+        { extraTag: { $regex: query, $options: "i" } } // Search in extraTag field
+      ];
+    }
 
-    // Create category filtering conditions based on type
-    const fandomIds = categories.filter(cat => cat.type === "fandom").map(cat => cat._id);
-    const itemTypeIds = categories.filter(cat => cat.type === "itemType").map(cat => cat._id);
+    // Add hasPreorder filter if provided
+    if (hasPreorder) {
+      queryObject.hasPreorder = hasPreorder;
+    }
 
-    // Combine all category IDs into a single array
-    const categoryCondition = fandomIds.length && itemTypeIds.length 
-      ? { category: { $all: [...fandomIds, ...itemTypeIds] } } 
-      : fandomIds.length 
-      ? { category: { $all: fandomIds } } 
-      : itemTypeIds.length 
-      ? { category: { $all: itemTypeIds } } 
-      : {};
+    // Store the category IDs we're looking for to pass to the front end
+    let requestedCategoryIds: string[] = [];
 
+    // Fetch categories by name
+    if ((fandom && fandom.length > 0) || (itemType && itemType.length > 0)) {
+      const categories = await getCategoriesByNames([...(fandom || []), ...(itemType || [])]);
+      
+      if (categories.length > 0) {
+        // Create an array of ObjectIds from the category documents
+        const categoryIds = categories.map(cat => new mongoose.Types.ObjectId(cat._id));
+        requestedCategoryIds = categories.map(cat => cat._id.toString());
         
-    // Create hasPreorder condition
-    const hasPreorderCondition = hasPreorder ? { hasPreorder } : {};
-    
-    // Combine all conditions
-    const conditions = {
-      $and: [
-        titleCondition,
-        categoryCondition,
-        hasPreorderCondition, // Include preorder filtering
-      ],
-    };
+        // Match any event where at least one image contains at least one of our target categories
+        queryObject["images.category"] = { $in: categoryIds };
+      }
+    }
 
-    console.log("Final Query Conditions:", JSON.stringify(conditions, null, 2));
+    // console.log("Final Query Conditions:", JSON.stringify(queryObject, null, 2));
+    
     const skipAmount = (Number(page) - 1) * limit;
-    const eventsQuery = Event.find(conditions)
+    const eventsQuery = Event.find(queryObject)
       .sort({ createdAt: "desc" })
       .skip(skipAmount)
       .limit(limit);
 
     const events = await populateEvent(eventsQuery);
-    const eventsCount = await Event.countDocuments(conditions);
+    const eventsCount = await Event.countDocuments(queryObject);
+    // console.log(`Found ${eventsCount} matching events`);
+    // console.log("Returned events:", JSON.stringify(events, null, 2));
 
     return {
       data: JSON.parse(JSON.stringify(events)),
       totalPages: Math.ceil(eventsCount / limit),
+      requestedCategoryIds // Pass the requested category IDs
     };
   } catch (error) {
     handleError(error);
@@ -220,6 +259,7 @@ export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUs
 // GET RELATED EVENTS: EVENTS WITH SAME CATEGORY
 export async function getRelatedEventsByCategories({
   categoryIds,
+  requestedCategoryIds,
   eventId,
   limit = 3,
   page = 1,
@@ -229,22 +269,31 @@ export async function getRelatedEventsByCategories({
 
     const skipAmount = (Number(page) - 1) * limit
 
-    // Updated condition to match at least one category
+    // Updated condition to match events where at least one image has one of the categories
     const conditions = { $and: [
-        { category: { $in: categoryIds } }, // Match events where at least one category matches
-        { _id: { $ne: eventId } },          // Exclude the current event
+        { "images.category": { $in: categoryIds } }, // Match events where at least one image contains one of the categories
+        { _id: { $ne: eventId } },                  // Exclude the current event
       ],
     };
+
 
     const eventsQuery = Event.find(conditions)
       .sort({ createdAt: 'desc' })
       .skip(skipAmount)
       .limit(limit)
 
+    // console.log("Get events by category condition:", JSON.stringify(conditions, null, 2));
     const events = await populateEvent(eventsQuery)
     const eventsCount = await Event.countDocuments(conditions)
 
-    return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) }
+    // console.log(`Found ${eventsCount} matching events`);
+    // console.log("Returned events:", JSON.stringify(events, null, 2));
+    // Return requestedCategoryIds alongside the event data
+    return { 
+      data: JSON.parse(JSON.stringify(events)), 
+      totalPages: Math.ceil(eventsCount / limit),
+      requestedCategoryIds: requestedCategoryIds, // Return the requested categories
+    }
   } catch (error) {
     handleError(error)
   }

@@ -8,16 +8,20 @@ const optionSchema = z.object({
 });
 
 export const eventFormSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(3, 'Description must be at least 3 characters').max(400, 'Description must be less than 400 characters'),
-  location: z.string().min(3, 'Location must be at least 3 characters').max(400, 'Location must be less than 400 characters'),
-  imageUrl: z.string(),
+  title: z.string().min(3, 'Tiêu đề cần dài hơn 3 từ'),
+  description: z.string().min(3, 'Mô tả cần dài hơn 3 từ'),
+  artistLink: z.string().optional(),
+  images: z.array(
+    z.object({
+      imageUrl: z.string(),
+      categoryIds: z.array(optionSchema).default([]),
+      itemTypeIds: z.array(optionSchema).default([]),
+    })
+  ).min(1, "Cần ít nhất một sample"),
   startDateTime: z.date(),
   endDateTime: z.date(),
-  categoryIds:z.array(optionSchema).min(1),
-  itemTypeIds:z.array(optionSchema).min(1),
   hasPreorder: z.enum(["Yes", "No"]),
-  price: z.string(),
-  isFree: z.boolean(),
-  url: z.string().url()
-})
+  extraTag: z.string().optional(),
+  // isFree: z.boolean(),
+  url: z.string().optional()
+});

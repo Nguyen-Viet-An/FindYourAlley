@@ -1,14 +1,14 @@
 export const headerLinks = [
     {
-      label: 'Home',
+      label: 'Trang chủ',
       route: '/',
     },
     {
-      label: 'Create Event',
+      label: 'Đăng sample',
       route: '/events/create',
     },
     {
-      label: 'My Profile',
+      label: 'Profile',
       route: '/profile',
     },
   ]
@@ -16,13 +16,12 @@ export const headerLinks = [
   export const eventDefaultValues = {
     title: '',
     description: '',
-    location: '',
-    imageUrl: '',
+    artistLink: '',
+    images: [{ imageUrl: '', categoryIds: [], itemTypeIds: [] }],
     startDateTime: new Date(),
     endDateTime: new Date(),
-    categoryId: '',
+    // categoryId: '',
     hasPreorder: "No",
     price: '',
-    isFree: false,
     url: '',
   }

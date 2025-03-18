@@ -26,10 +26,10 @@ import {
           </SheetTrigger>
           <SheetContent className="flex flex-col gap-6 bg-white md:hidden">
             <Image 
-              src="/assets/images/logo.svg"
+              src="/assets/images/squid.png"
               alt="logo"
-              width={128}
-              height={38}
+              width={50}
+              height={10}
             />
             <Separator className="border border-gray-50" />
             <NavItems />

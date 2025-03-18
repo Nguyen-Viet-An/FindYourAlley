@@ -17,44 +17,37 @@ export type CreateUserParams = {
   
   // ====== EVENT PARAMS
   export type CreateEventParams = {
-    userId: string
+    userId: string;
     event: {
-      title: string
-      description: string
-      location: string
-      imageUrl: string
-      startDateTime: Date
-      endDateTime: Date
-      categoryIds: string[]
-      itemTypeIds: string[]
-      hasPreorder: string | undefined
-      price: string
-      isFree: boolean
-      url: string
-    }
-    path: string
-  }
+      title: string;
+      description: string;
+      artistLink?: string;
+      images: { imageUrl: string; category: string[] }[]; // Updated images field
+      startDateTime: Date;
+      endDateTime: Date;
+      hasPreorder: string;
+      extraTag?: string;
+      url?: string;
+    };
+    path: string;
+  };
   
   export type UpdateEventParams = {
-    userId: string
+    userId: string;
     event: {
-      _id: string
-      title: string
-      imageUrl: string
-      description: string
-      location: string
-      startDateTime: Date
-      endDateTime: Date
-      categoryIds: string[]
-      itemTypeIds: string[]
-      hasPreorder: string | undefined
-      price: string
-      isFree: boolean
-      url: string
-    }
-    path: string
-  }
-  
+      _id: string;
+      title: string;
+      description: string;
+      artistLink?: string;
+      images: { imageUrl: string; categoryIds: string[]; itemTypeIds: string[] }[]; // Updated images field
+      startDateTime: Date;
+      endDateTime: Date;
+      hasPreorder: string;
+      extraTag?: string;
+      url?: string;
+    };
+    path: string;
+  };
   export type DeleteEventParams = {
     eventId: string
     path: string
@@ -77,6 +70,7 @@ export type CreateUserParams = {
   
   export type GetRelatedEventsByCategoryParams = {
     categoryIds: string[]
+    requestedCategoryIds: string[]
     eventId: string
     limit?: number
     page: number | string
@@ -86,10 +80,9 @@ export type CreateUserParams = {
     _id: string
     title: string
     description: string
-    price: string
-    isFree: boolean
+    extraTag: string
     imageUrl: string
-    location: string
+    artistLink: string
     startDateTime: Date
     endDateTime: Date
     url: string
@@ -115,8 +108,7 @@ export type CreateUserParams = {
   export type CheckoutOrderParams = {
     eventTitle: string
     eventId: string
-    price: string
-    isFree: boolean
+    extraTag: string
     buyerId: string
   }
   
@@ -124,6 +116,7 @@ export type CreateUserParams = {
     // stripeId: string
     eventId: string
     buyerId: string
+    imageIndex?: number;
     // totalAmount: string
     // createdAt: Date
   }
@@ -146,6 +139,7 @@ export type CreateUserParams = {
   export type FindOrderParams = {
     eventId: string;
     userId: string;
+    imageIndex?: number;
   }
 
   export type DeleteOrderParams = {

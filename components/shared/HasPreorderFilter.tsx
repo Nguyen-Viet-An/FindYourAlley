@@ -48,9 +48,9 @@ const HasPreorderFilter = () => {
         <SelectValue placeholder="Select Preorder Status" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="All">All</SelectItem>
-        <SelectItem value="Yes">Yes</SelectItem>
-        <SelectItem value="No">No</SelectItem>
+        <SelectItem value="All">Bất kì</SelectItem>
+        <SelectItem value="Yes">Có</SelectItem>
+        <SelectItem value="No">Không</SelectItem>
       </SelectContent>
     </Select>
   );

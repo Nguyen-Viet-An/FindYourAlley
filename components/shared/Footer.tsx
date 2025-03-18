@@ -7,14 +7,14 @@ const Footer = () => {
       <div className="flex-center wrapper flex-between flex flex-col gap-4 p-5 text-center sm:flex-row">
         <Link href='/'>
           <Image 
-            src="/assets/images/logo.svg"
+            src="/assets/images/squid.png"
             alt="logo"
-            width={128}
-            height={38}
+            width={50}
+            height={5}
           />
         </Link>
 
-        <p>2024 FindYourAlley. All Rights reserved.</p>
+        <p>2025 FindYourAlley. Bản quyền thuộc về Myosotis Diamandis (Fb).</p>
       </div>
     </footer>
   )

@@ -20,9 +20,9 @@ module.exports = withUt({
     extend: {
       colors: {
         primary: {
-          500: '#624CF5',
+          500: '#4d62ff',
           50: ' #F6F8FD',
-          DEFAULT: '#624CF5',
+          DEFAULT: '#4d62ff',
           foreground: 'hsl(var(--primary-foreground))'
         },
         coral: {
@@ -71,7 +71,7 @@ module.exports = withUt({
       },
       backgroundImage: {
         'dotted-pattern': "url('/assets/images/dotted-pattern.png')",
-        'hero-img': "url('/assets/images/hero.png')",
+        'hero-img': "url('/assets/images/gen.png')",
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: 'FindYourAlley',
   description: 'FindYourAlley is a platform for event management.',
   icons: {
-    icon: '/assets/images/logo.svg'
+    icon: '/assets/images/squid.png'
   }
 }
 

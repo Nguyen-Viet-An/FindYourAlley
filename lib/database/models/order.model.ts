@@ -13,6 +13,7 @@ export interface IOrder extends Document {
     firstName: string
     lastName: string
   }
+  imageIndex?: number 
 }
 
 export type IOrderItem = {
@@ -22,6 +23,7 @@ export type IOrderItem = {
   eventTitle: string
   eventId: string
   buyer: string
+  imageIndex?: number
 }
 
 const OrderSchema = new Schema({
@@ -45,6 +47,7 @@ const OrderSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
   },
+  imageIndex: { type: Number, required: false }, // Add this field
 })
 
 const Order = models.Order || model('Order', OrderSchema)
