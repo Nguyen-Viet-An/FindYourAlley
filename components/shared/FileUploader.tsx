@@ -11,7 +11,7 @@ import { storage } from '@/lib/firebaseConfig'
 type FileUploaderProps = {
   onFieldChange: (url: string) => void
   imageUrl: string
-  setFiles: Dispatch<SetStateAction<File[]>>
+  setFiles: (files: File[]) => void 
 }
 
 export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploaderProps) {

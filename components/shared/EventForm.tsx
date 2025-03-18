@@ -568,10 +568,10 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                       <p className="ml-3 whitespace-nowrap text-grey-600">Ngày mở đơn:</p>
                       <DatePicker 
                         selected={field.value} 
-                        onChange={(date : Date) => field.onChange(date)} 
+                        onChange={(date: Date | null) => field.onChange(date)}
                         showTimeSelect
                         timeInputLabel="Time:"
-                        dateFormat="MM/dd/yyyy h:mm aa"
+                        dateFormat="dd/MM/yyyy h:mm aa"
                         wrapperClassName="datePicker"
                       />
                     </div>
@@ -599,10 +599,10 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                       <p className="ml-3 whitespace-nowrap text-grey-600">Ngày đóng đơn:</p>
                       <DatePicker 
                         selected={field.value} 
-                        onChange={(date : Date) => field.onChange(date)} 
+                        onChange={(date: Date | null) => field.onChange(date)}
                         showTimeSelect
                         timeInputLabel="Time:"
-                        dateFormat="MM/dd/yyyy h:mm aa"
+                        dateFormat="dd/MM/yyyy h:mm aa"
                         wrapperClassName="datePicker"
                       />
                     </div>

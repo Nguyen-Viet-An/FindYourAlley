@@ -8,11 +8,31 @@ import { SearchParamProps } from '@/types'
 import Image from 'next/image';
 import mongoose from 'mongoose';
 
-const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) =>  {
-  // const searchParams = await props.searchParams;
-  // const params = await props.params;
+// Define both params and searchParams as Promises
+export type paramsType = Promise<{ id: string }>;
+export type searchParamsType = Promise<{ 
+  [key: string]: string | string[] | undefined 
+}>;
 
-  // const { id } = params;
+export const generateStaticParams = async () => {
+  // If you have a list of events, you can generate static params
+  // const events = await getAllEvents();
+  // return events.map((event) => ({
+  //   id: String(event.id),
+  // }));
+  
+  // Or return an empty array if using dynamic routes
+  return [];
+};
+
+const EventDetails = async (props: { 
+  params: paramsType,
+  searchParams: searchParamsType
+}) => {
+  // Await both params and searchParams
+  const { id } = await props.params;
+  const searchParams = await props.searchParams;
+  
   const event = await getEventById(id);
 
   // Fetch the category IDs from the images
