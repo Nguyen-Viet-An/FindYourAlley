@@ -8,9 +8,9 @@ import { SearchParamProps } from '@/types'
 import Image from 'next/image';
 import mongoose from 'mongoose';
 
-const EventDetails = async (props: SearchParamProps) => {
-  const searchParams = await props.searchParams;
-  const params = await props.params;
+const EventDetails = async ({ params, searchParams }: SearchParamProps) => {
+  // const searchParams = await props.searchParams;
+  // const params = await props.params;
 
   const { id } = params;
   const event = await getEventById(id);
@@ -54,7 +54,7 @@ const EventDetails = async (props: SearchParamProps) => {
           <ImageCarousel images={imageUrls} />
         </div>
 
-        <div className="flex w-full flex-col gap-8 p-5 md:p-10">
+        <div className="flex w-full flex-col gap-2 p-5 md:p-10">
           <div className="flex flex-col gap-6">
             <h2 className='h2-bold'>{event.title}</h2>
 
@@ -69,7 +69,7 @@ const EventDetails = async (props: SearchParamProps) => {
           {event.artistLink && (
             <div className="mt-4">
               <a href={event.artistLink} target="_blank" rel="noopener noreferrer" className="text-blue-500">
-                Profile artist
+                Link trang cá nhân/blog của artist
               </a>
             </div>
           )}

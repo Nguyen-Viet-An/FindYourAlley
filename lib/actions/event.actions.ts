@@ -131,7 +131,9 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     const formattedImages = await Promise.all(
       event.images.map(async (img) => ({
         imageUrl: img.imageUrl,
-        category: img.categoryIds.length > 0 ? await convertToObjectIdArray(img.categoryIds) : [],
+        category: Array.isArray(img.category) && img.category.length > 0 
+          ? await convertToObjectIdArray(img.category) 
+          : [],
       }))
     );
 

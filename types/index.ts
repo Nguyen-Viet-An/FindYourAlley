@@ -39,7 +39,7 @@ export type CreateUserParams = {
       title: string;
       description: string;
       artistLink?: string;
-      images: { imageUrl: string; categoryIds: string[]; itemTypeIds: string[] }[]; // Updated images field
+      images: { imageUrl: string; category: string[] }[]; // Updated images field
       startDateTime: Date;
       endDateTime: Date;
       hasPreorder: string;
