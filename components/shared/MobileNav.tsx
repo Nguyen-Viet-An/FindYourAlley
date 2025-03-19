@@ -28,7 +28,7 @@ import {
             <Image 
               src="/assets/images/squid.png"
               alt="logo"
-              width={50}
+              width={60}
               height={10}
             />
             <Separator className="border border-gray-50" />

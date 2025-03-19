@@ -9,7 +9,7 @@ const Footer = () => {
           <Image 
             src="/assets/images/squid.png"
             alt="logo"
-            width={50}
+            width={60}
             height={5}
           />
         </Link>

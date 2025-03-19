@@ -27,18 +27,6 @@ export type IOrderItem = {
 }
 
 const OrderSchema = new Schema({
-  // createdAt: {
-  //   type: Date,
-  //   default: Date.now,
-  // },
-  // stripeId: {
-  //   type: String,
-  //   required: true,
-  //   unique: true,
-  // },
-  // totalAmount: {
-  //   type: String,
-  // },
   event: {
     type: Schema.Types.ObjectId,
     ref: 'Event',

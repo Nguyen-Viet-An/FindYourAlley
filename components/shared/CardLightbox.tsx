@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 
 type CardLightboxProps = {
   imageUrl: string;
@@ -38,30 +38,12 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
     if (!imageRef.current) return;
     
     // Reduce zoom sensitivity
-    const delta = e.deltaY * -0.002; // Reduced from -0.01 to -0.005
+    const delta = e.deltaY * -0.001; // Reduced sensitivity
     const newZoom = Math.max(1, Math.min(5, zoomLevel + delta));
     
     if (newZoom === 1) {
       // Reset position when fully zoomed out
       setPosition({ x: 0, y: 0 });
-    } else {
-      // Calculate mouse position relative to image
-      const rect = imageRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      
-      // Calculate where the mouse is on the image as a percentage
-      const mouseXPercent = mouseX / rect.width;
-      const mouseYPercent = mouseY / rect.height;
-      
-      // Calculate how much the position should change based on zoom change
-      const zoomChange = newZoom - zoomLevel;
-      
-      // Adjust position to keep the mouse point fixed
-      const newX = position.x - (zoomChange * mouseXPercent * rect.width);
-      const newY = position.y - (zoomChange * mouseYPercent * rect.height);
-      
-      setPosition({ x: newX, y: newY });
     }
     
     setZoomLevel(newZoom);
@@ -70,6 +52,9 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (zoomLevel <= 1) return;
+    
+    // Prevent default browser behavior that might cause selection
+    e.preventDefault();
     
     setIsDragging(true);
     setDragStart({
@@ -87,6 +72,9 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || zoomLevel <= 1) return;
     
+    // Prevent default browser behavior during drag
+    e.preventDefault();
+    
     // Calculate new position
     const newX = e.clientX - dragStart.x;
     const newY = e.clientY - dragStart.y;
@@ -96,7 +84,11 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
   };
 
   // Handle mouse up to end dragging
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging) {
+      e.preventDefault(); // Prevent any default behavior
+    }
+    
     setIsDragging(false);
     
     // Reset cursor style
@@ -106,8 +98,9 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
   };
 
   // Handle mouse leave to end dragging if mouse leaves the container
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging) {
+      e.preventDefault();
       setIsDragging(false);
       
       // Reset cursor style
@@ -130,16 +123,77 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
       }
     };
     
+    // Add CSS to prevent text selection during dragging
+    const addNoSelectCSS = () => {
+      if (isDragging) {
+        document.body.classList.add('no-select');
+      } else {
+        document.body.classList.remove('no-select');
+      }
+    };
+    
+    addNoSelectCSS(); // Apply immediately when isDragging changes
+    
     window.addEventListener('mouseup', handleGlobalMouseUp);
     
     return () => {
       window.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.body.classList.remove('no-select'); // Clean up on unmount
     };
   }, [isDragging, zoomLevel]);
+
+  // Add global style for no selection
+  useEffect(() => {
+    // Create a style element for the no-select class
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .no-select {
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+      }
+      
+      .no-drag {
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // Determine aspect ratio of the container based on the aspect ratio of the image
   const aspectRatioStyle = {
     paddingBottom: '75%', // Default 4:3 aspect ratio
+  };
+
+  // Define image style with TypeScript-safe properties
+  const imageStyle: CSSProperties = {
+    transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
+    transition: zoomLevel === 1 ? 'transform 0.3s ease-out' : 'none',
+    maxWidth: '90vw',
+    maxHeight: '90vh',
+    pointerEvents: 'none', // Prevent image from receiving mouse events
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    MozUserSelect: 'none',
+    msUserSelect: 'none'
+  };
+
+  // Define container style with TypeScript-safe properties
+  const containerStyle: CSSProperties = {
+    cursor: zoomLevel > 1 ? 'grab' : 'zoom-in',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    MozUserSelect: 'none',
+    msUserSelect: 'none'
   };
 
   return (
@@ -172,7 +226,7 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseLeave}
-            style={{ cursor: zoomLevel > 1 ? 'grab' : 'zoom-in' }}
+            style={containerStyle}
           >
             <button 
               onClick={closeLightbox}
@@ -185,17 +239,10 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
                 ref={imageRef}
                 src={imageUrl}
                 alt={alt}
-                style={{ 
-                  transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
-                  transition: zoomLevel === 1 ? 'transform 0.3s ease-out' : 'none',
-                  maxWidth: '90vw',
-                  maxHeight: '90vh',
-                  pointerEvents: 'none' // Prevent image from receiving mouse events
-                }}
+                className="no-drag"
+                style={imageStyle}
+                draggable="false" // Prevent default drag behavior
               />
-            </div>
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-70 px-4 py-2 rounded-full">
-              <span className="text-sm">Zoom: {Math.round(zoomLevel * 100)}% (scroll to zoom, drag to move)</span>
             </div>
           </div>
         </div>

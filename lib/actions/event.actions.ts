@@ -300,3 +300,19 @@ export async function getRelatedEventsByCategories({
     handleError(error)
   }
 }
+
+export async function getUniqueEventTitleCount() {
+  await connectToDatabase();
+  const events = await Event.find({}, 'title').lean();
+
+  const codeRegex = /([A-Z]+\d+)/i;
+
+  const uniqueCodes = new Set(
+    events.map((event) => {
+      const match = event.title.match(codeRegex);
+      return match ? match[1].toUpperCase() : null;
+    }).filter(Boolean)
+  );
+
+  return uniqueCodes.size;
+}

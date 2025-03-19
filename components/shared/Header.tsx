@@ -17,7 +17,7 @@ const Header = () => {
         <div className="wrapper flex items-center justify-between">
           <Link href="/" className="w-36">
             <Image 
-              src="/assets/images/squid.png" width={50} height={5}
+              src="/assets/images/squid.png" width={60} height={5}
               alt="FindYourAlley logo" 
             />
           </Link>
@@ -36,7 +36,7 @@ const Header = () => {
             <SignedOut>
               <Button asChild className="rounded-full" size="lg">
                 <Link href="/sign-in">
-                  Login
+                  Đăng nhập
                 </Link>
               </Button>
             </SignedOut>

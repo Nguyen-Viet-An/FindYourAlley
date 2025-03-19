@@ -219,3 +219,16 @@ export async function findOrder({ eventId, userId, imageIndex }: FindOrderParams
     throw new Error('Failed to find order');
   }
 }
+
+
+export async function getBuyerCountForEvent(eventId: string): Promise<number> {
+  try {
+    await connectToDatabase();
+
+    const buyerCount = await Order.countDocuments({ event: eventId });
+    return buyerCount;
+  } catch (error) {
+    console.error('Error fetching buyer count:', error);
+    return 0;
+  }
+}

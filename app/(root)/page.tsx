@@ -3,7 +3,7 @@ import HasPreorderFilter from '@/components/shared/HasPreorderFilter';
 import Collection from '@/components/shared/Collection'
 import Search from '@/components/shared/Search';
 import { Button } from '@/components/ui/button'
-import { getAllEvents } from '@/lib/actions/event.actions';
+import { getAllEvents, getUniqueEventTitleCount } from '@/lib/actions/event.actions';
 import { SearchParamProps } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
 
   const page = Number(params?.page) || 1;
   const searchText = (params?.query as string) || '';
+  const uniqueEventTitleCount = await getUniqueEventTitleCount();
 
   const fandom = Array.isArray(params?.fandom) 
   ? params.fandom 
@@ -75,30 +76,28 @@ export default async function Home({ searchParams }: SearchParamProps) {
 
       <section id="events" className="wrapper my-8 flex flex-col gap-8 md:gap-12">
         <h2 className="h2-bold"> <br /> Sample COFI#14 </h2>
+        <span className="text-grey-700 text-base md:text-lg">
+          Hiện đã có sample của 
+          <span className="text-primary-500 font-semibold ml-1 text-2xl">{uniqueEventTitleCount} </span> 
+          gian hàng.
+        </span>
 
-        <div className="flex w-full flex-col gap-2">
-          {/* Line 1: Titles (except search) */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div /> {/* Empty for search box placeholder */}
-            <div className="font-semibold">Fandom</div>
-            <div className="font-semibold">Loại mặt hàng</div>
-            <div className="font-semibold">Mở preorder</div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+          <div>
+            <div className="font-semibold mb-1">Tìm kiếm</div>
+            <Search />
           </div>
-
-          {/* Line 2: search + dropdowns */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Search />
-            </div>
-            <div>
-              <CategoryFilter key="fandom-filter" categoryFilterType="fandom" />
-            </div>
-            <div>
-              <CategoryFilter key={`filter-${Math.random()}`} categoryFilterType="itemType" />
-            </div>
-            <div>
-              <HasPreorderFilter />
-            </div>
+          <div>
+            <div className="font-semibold mb-1">Fandom</div>
+            <CategoryFilter key="fandom-filter" categoryFilterType="fandom" />
+          </div>
+          <div>
+            <div className="font-semibold mb-1">Loại mặt hàng</div>
+            <CategoryFilter key={`filter-${Math.random()}`} categoryFilterType="itemType" />
+          </div>
+          <div>
+            <div className="font-semibold mb-1">Mở preorder</div>
+            <HasPreorderFilter />
           </div>
         </div>
 
@@ -108,7 +107,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
           emptyTitle="Không tìm thấy sample nào"
           emptyStateSubtext="Hãy trở lại sau"
           collectionType="All_Events"
-          limit={20}
+          limit={50}
           page={page}
           totalPages={events?.totalPages}
           urlParamName="page"

@@ -1,4 +1,5 @@
 import { IEvent } from '@/lib/database/models/event.model';
+import { getBuyerCountForEvent } from '@/lib/actions/order.actions';
 import { formatDateTime } from '@/lib/utils';
 import { auth } from "@clerk/nextjs/server";
 import Image from 'next/image';
@@ -29,6 +30,8 @@ export default async function Card({
   const userId = sessionClaims?.userId as string;
   const isEventCreator = userId === event.organizer._id.toString();
 
+  const buyerCount = hasOrderLink ? await getBuyerCountForEvent(event._id) : 0;
+
   const imageToDisplay = event.images && event.images.length > 0
     ? event.images[imageIndex < event.images.length ? imageIndex : 0]
     : { imageUrl: '', category: [] };
@@ -41,8 +44,15 @@ export default async function Card({
 
   return (
     <div className="group relative flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
-      <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/event-default.png'} alt={event.title}>
-        {/* Bookmark Button on Top Left */}
+       <div className="relative">
+        <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/event-default.png'} alt={event.title}>
+          {/* Only the image is inside the lightbox */}
+          <div className="relative">
+            {/* You might need to add your image here if it's not already in CardLightbox */}
+          </div>
+        </CardLightbox>
+        
+        {/* Then place action buttons outside the lightbox but still positioned absolutely */}
         {!hideBookmark && !isEventCreator && (
           <div className="absolute right-1 top-0.5 z-10">
             <div className="rounded-sm p-1 shadow-sm transition-all">
@@ -64,7 +74,7 @@ export default async function Card({
             <DeleteConfirmation eventId={event._id} />
           </div>
         )}
-      </CardLightbox>
+      </div>
 
       <div className="flex flex-col gap-3 p-5 md:gap-4">
         {/* <p className="p-medium-16 p-medium-18 text-grey-500">
@@ -77,16 +87,14 @@ export default async function Card({
           </p>
         </Link>
 
-        <div className="flex-between w-full">
+        <div className="flex flex-col gap-1">
           <p className="p-medium-14 md:p-medium-16 text-grey-600">
             {event.organizer?.firstName} {event.organizer?.lastName}
           </p>
           
-          {/* {hasOrderLink && (
-            <Link href={`/orders?eventId=${event._id}`} className="flex gap-2">
-              <p className="text-primary-500">Order Details</p>
-            </Link>
-          )} */}
+          {hasOrderLink && (
+            <p className="text-primary-500 text-sm">{buyerCount} người đã bookmark</p>
+          )}
         </div>
       </div>
     </div>

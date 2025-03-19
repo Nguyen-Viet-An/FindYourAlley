@@ -402,7 +402,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <Input placeholder="Số hiệu gian - tên gian - artist" {...field} className="input-field" />
+                  <Input placeholder="Vị trí gian - tên gian - artist (ví dụ: Q22 - Gà Rán - Nguyễn Thị A)" {...field} className="input-field" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -432,7 +432,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 <FormItem className="w-full">
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                      <Input placeholder="Link tới trang cá nhân/blog của artist" {...field} className="input-field" />
+                      <Input placeholder="Link tới trang cá nhân/blog của artist" {...field} value={field.value || ""} className="input-field" />
                     </div>
 
                   </FormControl>
@@ -480,7 +480,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               {/* Categories for this image */}
               <div className="flex flex-col gap-4">
                 <div className="w-full">
-                  <FormLabel>Các fandom trong ảnh sample</FormLabel>
+                  <FormLabel>Các fandom xuất hiện trong ảnh sample</FormLabel>
                   <MultiSelect 
                     onChange={(value) => handleFandomCategoriesChange(index, value)} 
                     value={imageWithCat.fandomCategories} 
@@ -489,7 +489,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                   />
                 </div>
                 <div className="w-full">
-                  <FormLabel>Các loại mặt hàng trong ảnh sample</FormLabel>
+                  <FormLabel>Các loại mặt hàng xuất hiện trong ảnh sample</FormLabel>
                   <MultiSelect 
                     onChange={(value) => handleItemTypeCategoriesChange(index, value)} 
                     value={imageWithCat.itemTypeCategories} 
@@ -510,6 +510,29 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             <Plus className="w-4 h-4 mr-2" /> Thêm ảnh
           </Button>
         </div>
+
+        <div className="flex flex-col gap-5 md:flex-row">
+          <FormField
+            control={form.control}
+            name="extraTag"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormControl>
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                    <Input 
+                      placeholder="Thêm tag (nếu bạn muốn thêm tag không nằm trong fandom hay loại mặt hàng (couple, nhân vật,..))" 
+                      {...field} 
+                      value={field.value || ""} // This ensures value is never undefined
+                      className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0" 
+                    />  
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
@@ -622,7 +645,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 <FormItem className="w-full">
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                      <Input placeholder="Link preorder" {...field} className="input-field" />
+                      <Input placeholder="Link preorder" {...field} value={field.value || ""} className="input-field" />
                     </div>
 
                   </FormControl>
@@ -630,30 +653,6 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 </FormItem>
               )}
             />
-        </div>
-        <div className="flex flex-col gap-5 md:flex-row">
-            <FormField
-              control={form.control}
-              name="extraTag"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormControl>
-                    <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                      {/* <Image
-                        src="/assets/icons/dollar.svg"
-                        alt="dollar"
-                        width={24}
-                        height={24}
-                        className="filter-grey"
-                      /> */}
-                      <Input placeholder="Thêm tag (nếu có)" {...field} className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />  
-                    </div>
-
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />   
         </div>
         <Button
           type="submit"

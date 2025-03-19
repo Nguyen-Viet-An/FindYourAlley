@@ -13,8 +13,8 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: 'FindYourAlley',
-  description: 'FindYourAlley is a platform for event management.',
+  title: 'Find Your Alley',
+  description: 'Find Your Alley is a platform for event management.',
   icons: {
     icon: '/assets/images/squid.png'
   }

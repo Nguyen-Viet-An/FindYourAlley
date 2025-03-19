@@ -40,10 +40,10 @@ const ProfilePage = async (props: SearchParamProps) => {
       <section className="wrapper my-8">
         <Collection 
             data={orders?.data || []}
-            emptyTitle="No event tickets purchased yet"
-            emptyStateSubtext="No worries - plenty of exciting events to explore!"
+            emptyTitle="Bạn chưa bookmark sample nào"
+            emptyStateSubtext="Có rất nhiều sample đang chờ bạn!"
             collectionType="My_Tickets"
-            limit={3}
+            limit={20}
             page={ordersPage}
             urlParamName="ordersPage"
             totalPages={orders?.totalPages}
@@ -68,7 +68,7 @@ const ProfilePage = async (props: SearchParamProps) => {
           emptyTitle="Bạn chưa đăng sample nào cả"
           emptyStateSubtext="Hãy đăng sample nào!"
           collectionType="Events_Organized"
-          limit={3}
+          limit={50}
           page={eventsPage}
           urlParamName="eventsPage"
           totalPages={organizedEvents?.totalPages}
