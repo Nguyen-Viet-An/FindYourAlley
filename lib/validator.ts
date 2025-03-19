@@ -10,7 +10,12 @@ const optionSchema = z.object({
 export const eventFormSchema = z.object({
   title: z.string().min(3, 'Tiêu đề cần dài hơn 3 từ'),
   description: z.string().min(3, 'Mô tả cần dài hơn 3 từ'),
-  artistLink: z.string().optional(),
+  artists: z.array(
+    z.object({
+      name: z.string().min(1, "Tên artist không được để trống"),
+      link: z.string().optional(),
+    })
+  ).min(1, "Cần ít nhất một artist"),
   images: z.array(
     z.object({
       imageUrl: z.string(),

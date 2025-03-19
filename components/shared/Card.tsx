@@ -17,6 +17,11 @@ type CardProps = {
   imageIndex?: number
 };
 
+type Artist = {
+  name: string;
+  link?: string;
+};
+
 export default async function Card({
   event,
   hasOrderLink,
@@ -28,7 +33,7 @@ export default async function Card({
   // Server-side auth check
   const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
-  const isEventCreator = userId === event.organizer._id.toString();
+  const isEventCreator = userId === event.organizer?._id?.toString();
 
   const buyerCount = hasOrderLink ? await getBuyerCountForEvent(event._id) : 0;
 
@@ -89,8 +94,10 @@ export default async function Card({
 
         <div className="flex flex-col gap-1">
           <p className="p-medium-14 md:p-medium-16 text-grey-600">
-            {event.organizer?.firstName} {event.organizer?.lastName}
-          </p>
+          {Array.isArray(event.artists)
+            ? event.artists.map((artist) => artist.name).join(', ')
+            : event.artists?.name}
+        </p>
           
           {hasOrderLink && (
             <p className="text-primary-500 text-sm">{buyerCount} người đã bookmark</p>

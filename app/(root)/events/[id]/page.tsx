@@ -14,6 +14,11 @@ export type searchParamsType = Promise<{
   [key: string]: string | string[] | undefined 
 }>;
 
+type Artist = {
+  name: string;
+  link?: string;
+};
+
 export const generateStaticParams = async () => {
   // If you have a list of events, you can generate static params
   // const events = await getAllEvents();
@@ -86,13 +91,29 @@ const EventDetails = async (props: {
             </div> */}
           </div>
           {/* Conditionally render the "Profile artist" and "Link preorder" */}
-          {event.artistLink && (
-            <div className="mt-4">
-              <a href={event.artistLink} target="_blank" rel="noopener noreferrer" className="text-blue-500">
-                Link trang cá nhân/blog của artist
-              </a>
-            </div>
-          )}
+          {event.artists && event.artists.length > 0 && (
+          <div className="mt-4">
+            <h4 className="p-bold-20 text-grey-600">Artists:</h4>
+            <ul className="list-disc pl-5">
+              {event.artists.map((artist: Artist, index: number) => (
+                <li key={index}>
+                  {artist.link ? (
+                    <a
+                      href={artist.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {artist.name}
+                    </a>
+                  ) : (
+                    <span>{artist.name}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
           <CheckoutButton event={event} />
 
           {event.hasPreorder === "Yes" && event.url && (

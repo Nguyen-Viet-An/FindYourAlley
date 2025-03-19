@@ -16,7 +16,7 @@ export const headerLinks = [
   export const eventDefaultValues = {
     title: '',
     description: '',
-    artistLink: '',
+    artists: [{ name: '', link: '' }], 
     images: [{ imageUrl: '', categoryIds: [], itemTypeIds: [] }],
     startDateTime: new Date(),
     endDateTime: new Date(),

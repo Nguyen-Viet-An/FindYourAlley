@@ -14,14 +14,13 @@ import { FileUploader } from "./FileUploader"
 import { useState, useEffect} from "react"
 import Image from "next/image"
 import DatePicker from "react-datepicker";
-import { useUploadThing } from '@/lib/uploadthing'
 
 import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox"
 import { useRouter } from "next/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
 import { IEvent } from "@/lib/database/models/event.model"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, PlusCircle, XCircle} from "lucide-react"
 import { storage } from '@/lib/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -39,6 +38,11 @@ type ImageWithCategories = {
   fandomCategories: { value: string; label: string }[];
   itemTypeCategories: { value: string; label: string }[];
 }
+
+type Artist = {
+  name: string;
+  link: string;
+};
 
 const mapCategoriesToOptions = (categories: { _id: string; name: string, type: string }[]) =>
   categories.map(category => ({ value: category._id, label: category.name }));
@@ -110,6 +114,16 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
         endDateTime: new Date(event.endDateTime),
         hasPreorder: event.hasPreorder === "Yes" ? "Yes" : event.hasPreorder === "No" ? "No" : undefined,
         
+      // Handle conversion for artists array
+        artists: Array.isArray(event.artists) 
+        ? event.artists.map((artist: any) => ({
+            name: artist.name || '',
+            link: artist.link || ''
+          }))
+        : event.artists 
+          ? [{ name: event.artists.name || '', link: event.artists.link || '' }]
+          : [{ name: '', link: '' }],
+
         // Map images with separate categoryIds and itemTypeIds
         images: event.images?.map((image: any) => {
           const categories = image.category || [];
@@ -128,6 +142,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     : {
         ...eventDefaultValues,
         hasPreorder: eventDefaultValues.hasPreorder ?? "No",
+        artists: [{ name: '', link: '' }], 
         images: [{
           imageUrl: '',
           categoryIds: [],
@@ -250,6 +265,21 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
       setImagesWithCategories(newImagesWithCategories);
     }
   };
+
+    // Get the current artists array from form
+    const artists = form.watch('artists') || [{ name: '', link: '' }];
+
+    // Add a new artist field
+    const addArtist = () => {
+      form.setValue('artists', [...artists, { name: '', link: '' }]);
+    };
+  
+    // Remove an artist field
+    const removeArtist = (index: number) => {
+      const updatedArtists = [...artists];
+      updatedArtists.splice(index, 1);
+      form.setValue('artists', updatedArtists);
+    };
 
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
     try {
@@ -424,23 +454,65 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             )}
           />
         </div>
-        <div className="flex flex-col gap-5 md:flex-row">
-          <FormField
-              control={form.control}
-              name="artistLink"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormControl>
-                    <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                      <Input placeholder="Link tới trang cá nhân/blog của artist" {...field} value={field.value || ""} className="input-field" />
+        <div className="flex flex-col gap-5">
+                {artists.map((artist, index) => (
+                  <div key={index} className="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-medium">Artist {index + 1}</h4>
+                      {index > 0 && (
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => removeArtist(index)}
+                        >
+                          <XCircle className="h-5 w-5 text-red-500" />
+                        </Button>
+                      )}
                     </div>
-
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name={`artists.${index}.name`}
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormControl>
+                            <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                              <Input placeholder="Tên artist" {...field} className="input-field" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name={`artists.${index}.link`}
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormControl>
+                            <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                              <Input placeholder="Link tới trang cá nhân/blog của artist" {...field} value={field.value || ""} className="input-field" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex items-center gap-2 w-full"
+                  onClick={addArtist}
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Thêm artist
+                </Button>
+              </div>
         {/* Multiple Images Section */}
         <div className="border rounded-lg p-4 mt-4">
           <h3 className="text-lg font-medium mb-4">Ảnh sample</h3>

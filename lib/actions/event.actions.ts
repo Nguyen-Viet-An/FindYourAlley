@@ -42,19 +42,16 @@ export const convertToObjectIdArray = async (stringIds: string[]): Promise<mongo
 }
 
 // CREATE
+// CREATE
 export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase();
 
-    // console.log("Received event data:", JSON.stringify(event, null, 2));  // Detailed logging
-    // console.log("Images structure:", JSON.stringify(event.images, null, 2));  // Log images
-
-
     const {
       title,
       description,
-      artistLink,
-      images, // Updated field
+      artists,    // new field from schema
+      images,
       startDateTime,
       endDateTime,
       hasPreorder,
@@ -62,17 +59,10 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       url,
     } = event;
 
-    // Convert images to store categories and item types correctly
     const formattedImages = await Promise.all(
       images.map(async (img) => {
-        // console.log("Processing image:", img); // Log each image
-    
-        // Ensure category is an array before conversion
         const categoryIds = Array.isArray(img.category) ? img.category : 
                             img.category ? [img.category] : [];
-    
-        // console.log("Using categoryIds:", categoryIds);
-    
         return {
           imageUrl: img.imageUrl,
           category: await convertToObjectIdArray(categoryIds),
@@ -83,8 +73,8 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
     const eventData = {
       title,
       description,
-      artistLink,
-      images: formattedImages, // Store images array
+      artists: artists || [], // add artists array
+      images: formattedImages,
       startDateTime,
       endDateTime,
       extraTag,
@@ -102,21 +92,6 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
   }
 }
 
-// GET ONE EVENT BY ID
-export async function getEventById(eventId: string) {
-  try {
-    await connectToDatabase()
-
-    const event = await populateEvent(Event.findById(eventId))
-
-    if (!event) throw new Error('Event not found')
-
-    return JSON.parse(JSON.stringify(event))
-  } catch (error) {
-    handleError(error)
-  }
-}
-
 // UPDATE
 export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
@@ -127,12 +102,11 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
       throw new Error("Unauthorized or event not found");
     }
 
-    // Convert categories inside each image
     const formattedImages = await Promise.all(
       event.images.map(async (img) => ({
         imageUrl: img.imageUrl,
-        category: Array.isArray(img.category) && img.category.length > 0 
-          ? await convertToObjectIdArray(img.category) 
+        category: Array.isArray(img.category) && img.category.length > 0
+          ? await convertToObjectIdArray(img.category)
           : [],
       }))
     );
@@ -143,8 +117,8 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
         $set: {
           title: event.title,
           description: event.description,
-          artistLink: event.artistLink,
-          images: formattedImages, //  Now correctly updates images
+          artists: event.artists || [], // update artists array
+          images: formattedImages,
           startDateTime: event.startDateTime,
           endDateTime: event.endDateTime,
           hasPreorder: event.hasPreorder || "No",
@@ -161,6 +135,21 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     handleError(error);
   }
 }
+// GET ONE EVENT BY ID
+export async function getEventById(eventId: string) {
+  try {
+    await connectToDatabase()
+
+    const event = await populateEvent(Event.findById(eventId))
+
+    if (!event) throw new Error('Event not found')
+
+    return JSON.parse(JSON.stringify(event))
+  } catch (error) {
+    handleError(error)
+  }
+}
+
 
 // DELETE
 export async function deleteEvent({ eventId, path }: DeleteEventParams) {

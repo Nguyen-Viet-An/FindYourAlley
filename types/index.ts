@@ -21,7 +21,7 @@ export type CreateUserParams = {
     event: {
       title: string;
       description: string;
-      artistLink?: string;
+      artists: { name: string; link?: string }[];
       images: { imageUrl: string; category: string[] }[]; // Updated images field
       startDateTime: Date;
       endDateTime: Date;
@@ -38,7 +38,7 @@ export type CreateUserParams = {
       _id: string;
       title: string;
       description: string;
-      artistLink?: string;
+      artists: { name: string; link?: string }[];
       images: { imageUrl: string; category: string[] }[]; // Updated images field
       startDateTime: Date;
       endDateTime: Date;
@@ -82,7 +82,7 @@ export type CreateUserParams = {
     description: string
     extraTag: string
     imageUrl: string
-    artistLink: string
+    artists: { name: string; link: string }[];
     startDateTime: Date
     endDateTime: Date
     url: string

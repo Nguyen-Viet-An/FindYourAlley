@@ -10,7 +10,10 @@ export interface IEvent extends Document {
   _id: string;
   title: string;
   description?: string;
-  artistLink?: string;
+  artists: {
+    name: string;
+    link?: string;
+  };
   createdAt: Date;
   images: {
     imageUrl: string;
@@ -28,7 +31,10 @@ const EventSchema = new Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
-    artistLink: { type: String },
+    artists: [{
+      name: { type: String, required: true },
+      link: { type: String, required: false }
+    }],
     createdAt: { type: Date, default: Date.now },
     images: [
       {
