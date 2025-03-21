@@ -48,7 +48,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
     itemType: itemType,
     hasPreorder: hasPreorder,
     page,
-    limit: 15
+    limit: 7
   });
 
   return (
@@ -107,7 +107,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
           emptyTitle="Không tìm thấy sample nào"
           emptyStateSubtext="Hãy trở lại sau"
           collectionType="All_Events"
-          limit={15}
+          limit={7}
           page={page}
           totalPages={events?.totalPages}
           urlParamName="page"

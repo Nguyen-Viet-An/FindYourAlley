@@ -7,6 +7,7 @@ import { formatDateTime } from '@/lib/utils';
 import { SearchParamProps } from '@/types'
 import Image from 'next/image';
 import mongoose from 'mongoose';
+import { isValidUrl } from '@/lib/utils';
 
 // Define both params and searchParams as Promises
 export type paramsType = Promise<{ id: string }>;
@@ -117,31 +118,47 @@ const EventDetails = async (props: {
               </div>
             )}
     
-              {event.hasPreorder === "Yes" && event.url && (
-                <div className="mt-4">
-                  <a href={event.url} target="_blank" rel="noopener noreferrer" className="p-bold-20 text-blue-500">
+            {event.hasPreorder === "Yes" && event.url && (
+              <div className="mt-4">
+                {isValidUrl(event.url) ? (
+                  <a
+                    href={event.url.startsWith('http') ? event.url : `https://${event.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-bold-20 text-blue-500"
+                  >
                     Link preorder
                   </a>
-                  <p className="p-medium-16 lg:p-regular-18 mt-4">
-                    Thời gian mở:
+                ) : (
+                  <p className="p-bold-20">
+                    Link preorder: {event.url}
                   </p>
-                  <div className="flex flex-col gap-5">
-                    <div className='flex gap-2 md:gap-3'>
-                      <Image src="/assets/icons/calendar.svg" alt="calendar" width={32} height={32} />
-                      <div className="p-medium-16 lg:p-regular-20 flex flex-wrap items-center">
-                        <p>
-                          {formatDateTime(event.startDateTime).dateOnly} - {' '}
-                          {formatDateTime(event.startDateTime).timeOnly}
-                        </p>
-                        <p>
-                          {formatDateTime(event.endDateTime).dateOnly} -  {' '}
-                          {formatDateTime(event.endDateTime).timeOnly}
-                        </p>
-                      </div>
+                )}
+                <p className="p-medium-16 lg:p-regular-18 mt-4">
+                  Thời gian mở:
+                </p>
+                <div className="flex flex-col gap-5">
+                  <div className="flex gap-2 md:gap-3">
+                    <Image
+                      src="/assets/icons/calendar.svg"
+                      alt="calendar"
+                      width={32}
+                      height={32}
+                    />
+                    <div className="p-medium-16 lg:p-regular-20 flex flex-wrap items-center">
+                      <p>
+                        {formatDateTime(event.startDateTime).dateOnly} -{" "}
+                        {formatDateTime(event.startDateTime).timeOnly}
+                      </p>
+                      <p>
+                        {formatDateTime(event.endDateTime).dateOnly} -{" "}
+                        {formatDateTime(event.endDateTime).timeOnly}
+                      </p>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
     
               <div className="flex flex-col gap-2">
                 <p className="p-bold-20 text-grey-600">Giới thiệu về gian hàng:</p>
@@ -179,7 +196,7 @@ const EventDetails = async (props: {
               emptyTitle="Không tìm thấy sample nào"
               emptyStateSubtext="Hãy trở lại sau"
               collectionType="All_Events"
-              limit={10}
+              limit={3}
               page={searchParams.page as string}
               totalPages={relatedEvents?.totalPages}
               requestedCategoryIds={relatedEvents?.requestedCategoryIds} // Pass the requestedCategoryIds
