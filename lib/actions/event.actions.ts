@@ -172,11 +172,12 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
     // Start with a basic query object
     const queryObject: any = {};
 
-    // Add title search if provided
+    // Add title, extraTag, and artist name search if provided
     if (query) {
       queryObject.$or = [
         { title: { $regex: query, $options: "i" } },
-        { extraTag: { $regex: query, $options: "i" } } // Search in extraTag field
+        { extraTag: { $regex: query, $options: "i" } }, // Search in extraTag field
+        { "artists.name": { $regex: query, $options: "i" } } // Search in artist names
       ];
     }
 
@@ -188,7 +189,7 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
     // Store the category IDs we're looking for to pass to the front end
     let requestedCategoryIds: string[] = [];
 
-    // Fetch categories by name
+    // Fetch categories by name for both fandom and itemType
     if ((fandom && fandom.length > 0) || (itemType && itemType.length > 0)) {
       const categories = await getCategoriesByNames([...(fandom || []), ...(itemType || [])]);
       
@@ -197,13 +198,11 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
         const categoryIds = categories.map(cat => new mongoose.Types.ObjectId(cat._id));
         requestedCategoryIds = categories.map(cat => cat._id.toString());
         
-        // Match any event where at least one image contains at least one of our target categories
-        queryObject["images.category"] = { $in: categoryIds };
+        // Match events where images contain both the fandom and itemType categories
+        queryObject["images.category"] = { $all: categoryIds }; // Use $all to ensure both categories are matched
       }
     }
 
-    // console.log("Final Query Conditions:", JSON.stringify(queryObject, null, 2));
-    
     const skipAmount = (Number(page) - 1) * limit;
     const eventsQuery = Event.find(queryObject)
       .sort({ createdAt: "desc" })
@@ -212,8 +211,6 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
 
     const events = await populateEvent(eventsQuery);
     const eventsCount = await Event.countDocuments(queryObject);
-    // console.log(`Found ${eventsCount} matching events`);
-    // console.log("Returned events:", JSON.stringify(events, null, 2));
 
     return {
       data: JSON.parse(JSON.stringify(events)),
@@ -252,7 +249,7 @@ export async function getRelatedEventsByCategories({
   categoryIds,
   requestedCategoryIds,
   eventId,
-  limit = 3,
+  limit = 5,
   page = 1,
 }: GetRelatedEventsByCategoryParams) {
   try {

@@ -43,7 +43,7 @@ const ProfilePage = async (props: SearchParamProps) => {
             emptyTitle="Bạn chưa bookmark sample nào"
             emptyStateSubtext="Có rất nhiều sample đang chờ bạn!"
             collectionType="My_Tickets"
-            limit={20}
+            limit={15}
             page={ordersPage}
             urlParamName="ordersPage"
             totalPages={orders?.totalPages}
@@ -68,7 +68,7 @@ const ProfilePage = async (props: SearchParamProps) => {
           emptyTitle="Bạn chưa đăng sample nào cả"
           emptyStateSubtext="Hãy đăng sample nào!"
           collectionType="Events_Organized"
-          limit={50}
+          limit={15}
           page={eventsPage}
           urlParamName="eventsPage"
           totalPages={organizedEvents?.totalPages}

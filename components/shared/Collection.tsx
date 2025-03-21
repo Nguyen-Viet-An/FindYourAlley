@@ -49,6 +49,7 @@ const Collection = ({
             
               const hasOrderLink = collectionType === 'Events_Organized';
               const hideBookmark = collectionType === 'Events_Organized';
+              const hideEdit = collectionType === 'All_Events';
               let hasOrdered = false;
               
               if (Array.isArray(ordered)) {
@@ -103,6 +104,7 @@ const Collection = ({
                     <Card
                       event={event}
                       hasOrderLink={hasOrderLink}
+                      hideEdit={hideEdit}
                       hideBookmark={hideBookmark}
                       hasOrdered={hasOrdered}
                       imageIndex={imgIndex}

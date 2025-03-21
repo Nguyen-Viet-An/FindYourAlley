@@ -26,9 +26,11 @@ export const getAllCategories = async (type?: string) => {
 
     const filter = type ? { type } : {}; // Add filter only if 'type' is provided
 
-    const categories = await Category.find(filter);
+    // Sort by the 'name' field (replace with your actual field name if necessary)
+    const categories = await Category.find(filter).sort({ name: 1 }); // 1 for ascending order
 
     return JSON.parse(JSON.stringify(categories));
   } catch (error) {
-    handleError(error)
-  }};
+    handleError(error);
+  }
+};

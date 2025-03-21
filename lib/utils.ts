@@ -5,6 +5,7 @@ import qs from 'query-string'
 
 import { UrlQueryParams, RemoveUrlQueryParams } from '@/types'
 
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -57,18 +58,27 @@ export const formatPrice = (price: string) => {
   return formattedPrice
 }
 
-export function formUrlQuery({ params, key, value }: UrlQueryParams) {
-  const currentUrl = qs.parse(params)
+export function isValidUrl(url: string): boolean {
+  const regex = /^(https?:\/\/)?([a-z0-9]+([-\w]*[a-z0-9])*\.)+[a-z]{2,6}(\/[^\s]*)?$/i;
+  return regex.test(url);
+}
 
-  currentUrl[key] = value
+export function formUrlQuery({ params, key, value }: UrlQueryParams) {
+  const currentUrl = qs.parse(params);
+  currentUrl[key] = value;
+
+  // If a filter is changed, reset page to 1
+  if (key !== 'page') {
+    currentUrl['page'] = '1';
+  }
 
   return qs.stringifyUrl(
     {
-      url: window.location.pathname,
+      url: '', // leave url empty, handle push with router
       query: currentUrl,
     },
-    { skipNull: true }
-  )
+    { skipNull: true, skipEmptyString: true }
+  ).replace(/^\?/, '/?'); // add leading slash
 }
 
 export function removeKeysFromQuery({ params, keysToRemove }: RemoveUrlQueryParams) {

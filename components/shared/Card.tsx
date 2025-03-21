@@ -1,6 +1,6 @@
 import { IEvent } from '@/lib/database/models/event.model';
 import { getBuyerCountForEvent } from '@/lib/actions/order.actions';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime, isValidUrl } from '@/lib/utils';
 import { auth } from "@clerk/nextjs/server";
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import CardLightbox from './CardLightbox';
 type CardProps = {
   event: IEvent,
   hasOrderLink?: boolean,
+  hideEdit?: boolean,
   hidePrice?: boolean,
   hideBookmark?: boolean,
   hasOrdered?: boolean,
@@ -25,7 +26,7 @@ type Artist = {
 export default async function Card({
   event,
   hasOrderLink,
-  hidePrice,
+  hideEdit,
   hideBookmark,
   hasOrdered,
   imageIndex = 0
@@ -71,7 +72,7 @@ export default async function Card({
         )}
 
         {/* Edit & Delete Options for Event Creator */}
-        {isEventCreator && (
+        {isEventCreator && !hideEdit && (
           <div className="absolute right-2 top-2 flex flex-col gap-4 rounded-xl bg-white p-3 shadow-sm transition-all">
             <Link href={`/events/${event._id}/update`}>
               <Image src="/assets/icons/edit.svg" alt="edit" width={20} height={20} />
@@ -92,13 +93,24 @@ export default async function Card({
           </p>
         </Link>
 
-        <div className="flex flex-col gap-1">
-          <p className="p-medium-14 md:p-medium-16 text-grey-600">
-          {Array.isArray(event.artists)
-            ? event.artists.map((artist) => artist.name).join(', ')
-            : event.artists?.name}
-        </p>
-          
+        <div className="flex flex-col gap-2"> {/* Increase gap for better spacing */}
+          <div className="flex justify-between items-center">
+            {/* Artist Names Column */}
+            <p className="p-medium-14 md:p-medium-16 text-grey-600">
+              {Array.isArray(event.artists) && event.artists.length > 0
+                ? event.artists.map((artist) => artist.name).join(', ') // Join all artist names
+                : event.artists?.name || 'No artist information'}
+            </p>
+
+            {/* Preorder Link Column */}
+            {event.hasPreorder === "Yes" && event.url && isValidUrl(event.url) && (
+              <a href={event.url} className="text-primary-500 font-semibold" target="_blank" rel="noopener noreferrer">
+                Preorder Link
+              </a>
+            )}
+          </div>
+
+          {/* Bookmark count */}
           {hasOrderLink && (
             <p className="text-primary-500 text-sm">{buyerCount} người đã bookmark</p>
           )}

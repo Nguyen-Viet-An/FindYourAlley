@@ -432,7 +432,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <Input placeholder="Vị trí gian - tên gian - artist (ví dụ: Q22 - Gà Rán - Nguyễn Thị A)" {...field} className="input-field" />
+                  <Input placeholder="Vị trí gian - tên gian (ví dụ: Q22 - Gà Rán)" {...field} className="input-field" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

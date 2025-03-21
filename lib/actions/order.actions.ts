@@ -137,7 +137,7 @@ export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEve
 }
 
 // GET ORDERS BY USER
-export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUserParams) {
+export async function getOrdersByUser({ userId, limit = 6, page }: GetOrdersByUserParams) {
   try {
     await connectToDatabase()
 

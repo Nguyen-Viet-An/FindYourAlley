@@ -48,8 +48,7 @@ const EventSchema = new Schema(
     url: { type: String },
     hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
     organizer: { type: Schema.Types.ObjectId, ref: "User" },
-  },
-  { strict: false }
+  }
 );
 
 const Event = models.Event || model('Event', EventSchema);

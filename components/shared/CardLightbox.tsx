@@ -5,10 +5,16 @@ import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 type CardLightboxProps = {
   imageUrl: string;
   alt: string;
+  onLoad?: () => void;
+  renderImage?: boolean; // New prop to control image rendering
   children?: React.ReactNode;
 };
 
-export default function CardLightbox({ imageUrl, alt, children }: CardLightboxProps) {
+export default function CardLightbox({   imageUrl, 
+  alt, 
+  onLoad, 
+  renderImage = true, // Default to true for backward compatibility
+  children  }: CardLightboxProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -203,11 +209,14 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
         className="cursor-zoom-in w-full overflow-hidden relative"
         style={aspectRatioStyle}
       >
-        <img 
-          src={imageUrl}
-          alt={alt}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {renderImage && (
+          <img 
+            src={imageUrl}
+            alt={alt}
+            className="absolute inset-0 w-full h-full object-cover"
+            onLoad={onLoad}
+          />
+        )}
         {children}
       </div>
 
@@ -217,6 +226,13 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
           className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center"
           onClick={closeLightbox}
         >
+          <button 
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 bg-white rounded-full p-2 text-black z-10"
+            style={{ zIndex: 20 }} // Ensure the button appears above other content
+          >
+            ×
+          </button>
           <div 
             ref={containerRef}
             className="relative overflow-hidden max-w-full max-h-full"
@@ -228,12 +244,6 @@ export default function CardLightbox({ imageUrl, alt, children }: CardLightboxPr
             onMouseLeave={handleMouseLeave}
             style={containerStyle}
           >
-            <button 
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 bg-white rounded-full p-2 text-black z-10"
-            >
-              ×
-            </button>
             <div className="flex items-center justify-center h-full">
               <img 
                 ref={imageRef}
