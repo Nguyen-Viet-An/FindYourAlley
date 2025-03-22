@@ -14,7 +14,7 @@ const ImageCarousel = ({ images }: ImageCarouselProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Ensure we have at least one image
-  const displayImages = images.length > 0 ? images : ['/assets/images/default-event-image.png'];
+  const displayImages = images.length > 0 ? images : ['/assets/images/broken-image.png'];
 
   const prevSlide = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the lightbox when clicking navigation

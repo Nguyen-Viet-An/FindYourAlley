@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,21 +78,25 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={`w-full justify-between ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-          disabled={isLoading}
-        >
-          {isLoading ? "Tải tag..." : displayValue}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        role="combobox"
+        aria-expanded={open}
+        className={`w-full justify-between ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+        disabled={isLoading}
+      >
+        <div className="flex items-center gap-2">
+          {displayValue}
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        </div>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    </PopoverTrigger>
+  
+    {!isLoading && (
       <PopoverContent className="w-full p-0">
         <div className="w-full">
-          {/* Search input */}
           <div className="flex w-full items-center border-b px-3">
             <input
               className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
@@ -101,10 +105,8 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
-          {/* Results list */}
+  
           <div className="max-h-72 overflow-y-auto">
-            {/* "All" option */}
             <div
               className={cn(
                 "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
@@ -120,8 +122,7 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
               />
               <span>Bất kì</span>
             </div>
-            
-            {/* Filtered categories */}
+  
             {filteredCategories.length === 0 ? (
               <div className="py-6 text-center text-sm">Không tìm thấy tag.</div>
             ) : (
@@ -147,7 +148,8 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
           </div>
         </div>
       </PopoverContent>
-    </Popover>
+    )}
+  </Popover>
   );
 };
 

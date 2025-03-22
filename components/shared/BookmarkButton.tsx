@@ -5,19 +5,19 @@ import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import React from 'react';
 import { Button } from '../ui/button';
-import Checkout from './Checkout';
+import Bookmark from './Bookmark';
 
-type CheckoutButtonProps = {
+type BookmarkButtonProps = {
   event: IEvent;
   hasOrdered?: boolean; // New prop for checking order status
   imageIndex?: number;
 };
 
-const CheckoutButton = ({ 
+const BookmarkButton = ({ 
   event, 
   hasOrdered, 
   imageIndex 
-}: CheckoutButtonProps) => {
+}: BookmarkButtonProps) => {
   const { user } = useUser();
   const userId = user?.publicMetadata.userId as string;
   const hasEventFinished = new Date(event.endDateTime) < new Date();
@@ -33,7 +33,7 @@ const CheckoutButton = ({
           </Button>
         </SignedOut> */} 
         <SignedIn>
-          <Checkout 
+          <Bookmark 
             event={event} 
             userId={userId} 
             hasOrdered={hasOrdered}
@@ -45,4 +45,4 @@ const CheckoutButton = ({
   );
 }
 
-export default CheckoutButton;
+export default BookmarkButton;

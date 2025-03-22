@@ -22,7 +22,7 @@ export type CreateUserParams = {
       title: string;
       description: string;
       artists: { name: string; link?: string }[];
-      images: { imageUrl: string; category: string[] }[]; // Updated images field
+      images: { imageUrl: string; category: string[] }[];
       startDateTime: Date;
       endDateTime: Date;
       hasPreorder: string;
@@ -105,7 +105,7 @@ export type CreateUserParams = {
   }
   
   // ====== ORDER PARAMS
-  export type CheckoutOrderParams = {
+  export type BookmarkOrderParams = {
     eventTitle: string
     eventId: string
     extraTag: string
@@ -113,12 +113,9 @@ export type CreateUserParams = {
   }
   
   export type CreateOrderParams = {
-    // stripeId: string
     eventId: string
     buyerId: string
     imageIndex?: number;
-    // totalAmount: string
-    // createdAt: Date
   }
   
   export type GetOrdersByEventParams = {

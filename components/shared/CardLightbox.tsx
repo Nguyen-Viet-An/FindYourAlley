@@ -186,7 +186,7 @@ export default function CardLightbox({   imageUrl,
     transition: zoomLevel === 1 ? 'transform 0.3s ease-out' : 'none',
     maxWidth: '90vw',
     maxHeight: '90vh',
-    pointerEvents: 'none', // Prevent image from receiving mouse events
+    pointerEvents: 'none',
     userSelect: 'none',
     WebkitUserSelect: 'none',
     MozUserSelect: 'none',

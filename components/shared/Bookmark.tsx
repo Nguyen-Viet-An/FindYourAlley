@@ -3,7 +3,7 @@ import { IEvent } from '@/lib/database/models/event.model'
 import { Button } from '../ui/button'
 import { createOrder, deleteOrder, findOrder } from '@/lib/actions/order.actions'
 
-const Checkout = ({ 
+const Bookmark = ({ 
   event, 
   userId, 
   hasOrdered,
@@ -16,7 +16,7 @@ const Checkout = ({
 }) => {
   const [isBookmarked, setIsBookmarked] = useState(hasOrdered);
   
-  const onCheckout = async () => {
+  const onBookmark = async () => {
     if (isBookmarked) {
       const orderId = await findOrder({ 
         eventId: event._id,  
@@ -40,7 +40,7 @@ const Checkout = ({
   
   return (
     <Button
-      onClick={onCheckout}
+      onClick={onBookmark}
       size="default"
       className="button sm:w-fit text-sm"
     >
@@ -49,4 +49,4 @@ const Checkout = ({
   )
 }
 
-export default Checkout
+export default Bookmark

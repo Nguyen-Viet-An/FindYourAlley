@@ -1,6 +1,7 @@
 "use client"
   import { ICategory } from "@/lib/database/models/category.model"
   import { startTransition, useEffect, useState } from "react"
+  import { Loader2 } from "lucide-react";
   import {
     AlertDialog,
     AlertDialogAction,
@@ -28,11 +29,6 @@
     const [isLoaded, setIsLoaded] = useState(false); // Track whether data is loaded
     const [newCategory, setNewCategory] = useState(''); // State for new category input
   
-    // const handleSelectionChange = (selectedValues: string[]) => {
-    //     if (onChangeHandler) {
-    //         onChangeHandler(selectedValues);
-    //     }
-    //   };
     // Fetch categories when the component mounts
     useEffect(() => {
       const getCategories = async () => {
@@ -63,9 +59,9 @@
         {/* Render only after data is loaded */}
         {isLoaded ? (
           <MultipleSelector
-            value={value} // Pass value
-            onChange={onChange} // Pass handler
-            defaultOptions={categoryOptions} // Dynamically set options
+            value={value}
+            onChange={onChange}
+            defaultOptions={categoryOptions}
             placeholder={promptText}
             emptyIndicator={
               <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
@@ -74,9 +70,12 @@
             }
           />
         ) : (
-          <p>Tải tag...</p> // Show a loading indicator while fetching data
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-base">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Đang tải tag...</span>
+          </div>
         )}
-  
+          
         <AlertDialog>
           <AlertDialogTrigger className="p-medium-14 flex w-full rounded-sm py-3 pl-8 text-primary-500 hover:bg-primary-50 focus:text-primary-500">
             Không có tag bạn đang tìm? Nhấn vào đây để thêm.

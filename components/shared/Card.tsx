@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import Image from 'next/image';
 import Link from 'next/link';
 import { DeleteConfirmation } from './DeleteConfirmation';
-import CheckoutButton from './CheckoutButton';
+import BookmarkButton from './BookmarkButton';
 import CardLightbox from './CardLightbox';
 
 type CardProps = {
@@ -51,7 +51,7 @@ export default async function Card({
   return (
     <div className="group relative flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
        <div className="relative">
-        <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/event-default.png'} alt={event.title}>
+        <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/broken-image.png'} alt={event.title}>
           {/* Only the image is inside the lightbox */}
           <div className="relative">
             {/* You might need to add your image here if it's not already in CardLightbox */}
@@ -62,7 +62,7 @@ export default async function Card({
         {!hideBookmark && !isEventCreator && (
           <div className="absolute right-1 top-0.5 z-10">
             <div className="rounded-sm p-1 shadow-sm transition-all">
-              <CheckoutButton 
+              <BookmarkButton 
                 event={event} 
                 hasOrdered={hasOrdered} 
                 imageIndex={imageIndex}

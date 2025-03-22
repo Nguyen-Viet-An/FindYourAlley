@@ -1,4 +1,4 @@
-import CheckoutButton from '@/components/shared/CheckoutButton';
+import BookmarkButton from '@/components/shared/BookmarkButton';
 import Collection from '@/components/shared/Collection';
 import ImageCarousel from '@/components/shared/ImageCarousel';
 import { getEventById, getRelatedEventsByCategories } from '@/lib/actions/event.actions'
@@ -20,16 +20,6 @@ type Artist = {
   link?: string;
 };
 
-export const generateStaticParams = async () => {
-  // If you have a list of events, you can generate static params
-  // const events = await getAllEvents();
-  // return events.map((event) => ({
-  //   id: String(event.id),
-  // }));
-  
-  // Or return an empty array if using dynamic routes
-  return [];
-};
 
 const EventDetails = async (props: { 
   params: paramsType,
@@ -69,7 +59,7 @@ const EventDetails = async (props: {
   // Handle the case where images is undefined or empty
   const imageUrls = event.images && event.images.length > 0 
     ? event.images.map((img: any) => img.imageUrl || img.url) 
-    : [event.imageUrl || '/assets/images/default-event-image.png'];
+    : [event.imageUrl || '/assets/images/broken-image.png'];
 
     return (
       <>
@@ -84,7 +74,7 @@ const EventDetails = async (props: {
               <div className="flex flex-col gap-6">
                 <h2 className='h2-bold'>{event.title}</h2>
     
-                <CheckoutButton event={event} />
+                <BookmarkButton event={event} />
     
                 {/* <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <p className="p-medium-18 ml-2 mt-2 sm:mt-0">
