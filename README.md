@@ -1,4 +1,4 @@
-This is a full-stack platform for artists to showcase work (sample) and consumers to discover and bookmark products. The web application utilised Clerk for user authentication. It has the ability to search and filter for 1000+ (and growing!) tags for precise product discovery.Find Your Alley integrated Firebase Cloud Storage for images and email alerts for new listings. Scaled to 3,000+ peak users, ensuring seamless performance. The app is deployed on Vercel and current has 200 live users. 
+This is a full-stack platform for artists to showcase work (sample) and consumers to discover and bookmark products. The web application utilised Clerk for user authentication. It has the ability to search and filter for 1000+ (and growing!) tags for precise product discovery.Find Your Alley integrated Firebase Cloud Storage for images and email alerts for new listings. Scaled to 3,000+ peak users, ensuring seamless performance. The app is deployed on Vercel and currently has 200++ live users (who signed up, not counting guest users). 
 
 ## Tech Stack
 Node.js
