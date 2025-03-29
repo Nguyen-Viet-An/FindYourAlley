@@ -63,22 +63,21 @@ export function isValidUrl(url: string): boolean {
   return regex.test(url);
 }
 
-export function formUrlQuery({ params, key, value }: UrlQueryParams) {
+export function formUrlQuery({ params, key, value, path = '' }: UrlQueryParams & { path?: string }) {
   const currentUrl = qs.parse(params);
   currentUrl[key] = value;
 
-  // If a filter is changed, reset page to 1
   if (key !== 'page') {
     currentUrl['page'] = '1';
   }
 
   return qs.stringifyUrl(
     {
-      url: '', // leave url empty, handle push with router
+      url: path, // Use provided path
       query: currentUrl,
     },
     { skipNull: true, skipEmptyString: true }
-  ).replace(/^\?/, '/?'); // add leading slash
+  );
 }
 
 export function removeKeysFromQuery({ params, keysToRemove }: RemoveUrlQueryParams) {

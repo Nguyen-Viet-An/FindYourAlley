@@ -51,12 +51,20 @@ export default async function Card({
   return (
     <div className="group relative flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
        <div className="relative">
-        <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/broken-image.png'} alt={event.title}>
-          {/* Only the image is inside the lightbox */}
-          <div className="relative">
-            {/* You might need to add your image here if it's not already in CardLightbox */}
-          </div>
-        </CardLightbox>
+       <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/broken-image.png'} alt={event.title}>
+        <div className="relative">
+          <Image
+            src={imageToDisplay.imageUrl || '/assets/images/broken-image.png'}
+            alt={event.title}
+            fill
+            className="object-cover"
+            quality={70} // ✅ Reduce bandwidth
+            // sizes="(max-width: 768px) 100vw, 50vw" // ✅ Serve smaller images for mobile
+            priority={false} // ✅ Lazy load
+            unoptimized={true}
+          />
+        </div>
+      </CardLightbox>
         
         {/* Then place action buttons outside the lightbox but still positioned absolutely */}
         {!hideBookmark && !isEventCreator && (

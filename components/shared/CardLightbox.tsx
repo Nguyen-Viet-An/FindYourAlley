@@ -10,11 +10,13 @@ type CardLightboxProps = {
   children?: React.ReactNode;
 };
 
-export default function CardLightbox({   imageUrl, 
+export default function CardLightbox({ 
+  imageUrl, 
   alt, 
   onLoad, 
   renderImage = true, // Default to true for backward compatibility
-  children  }: CardLightboxProps) {
+  children 
+}: CardLightboxProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });

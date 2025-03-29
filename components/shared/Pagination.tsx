@@ -14,38 +14,80 @@ type PaginationProps = {
 const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const currentPage = Number(page)
 
-  const onClick = (btnType: string) => {
-    const pageValue = btnType === 'next' 
-      ? Number(page) + 1 
-      : Number(page) - 1
+  // Function to scroll to the top of the events section
+  const scrollToTop = () => {
+    const eventsSection = document.getElementById('events')
+    if (eventsSection) {
+      eventsSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
+  const onClick = (pageNumber: number) => {
     const newUrl = formUrlQuery({
       params: searchParams.toString(),
       key: urlParamName || 'page',
-      value: pageValue.toString(),
-    })
+      value: pageNumber.toString(),
+      path: window.location.pathname,
+    });
+    router.push(newUrl, { scroll: false })
+    // Scroll to the top of the events section
+    scrollToTop()
+  }
 
-    router.push(newUrl, {scroll: false})
+  const getPageNumbers = () => {
+    const pages = []
+    if (totalPages <= 5) {
+      // Show all if pages are few
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      // Always show first, last, and range around current
+      pages.push(1)
+      if (currentPage > 3) pages.push('...')
+
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
+
+      for (let i = start; i <= end; i++) pages.push(i)
+
+      if (currentPage < totalPages - 2) pages.push('...')
+      pages.push(totalPages)
+    }
+    return pages
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       <Button
         size="lg"
         variant="outline"
-        className="w-28"
-        onClick={() => onClick('prev')}
-        disabled={Number(page) <= 1}
+        className="w-20"
+        onClick={() => onClick(currentPage - 1)}
+        disabled={currentPage <= 1}
       >
         Trước
       </Button>
+
+      {getPageNumbers().map((pageNum, idx) => (
+        <Button
+          key={idx}
+          size="lg"
+          variant={pageNum === currentPage ? 'default' : 'outline'}
+          className="w-12"
+          onClick={() => typeof pageNum === 'number' && onClick(pageNum)}
+          disabled={pageNum === '...'}
+        >
+          {pageNum}
+        </Button>
+      ))}
+
       <Button
         size="lg"
         variant="outline"
-        className="w-28"
-        onClick={() => onClick('next')}
-        disabled={Number(page) >= totalPages}
+        className="w-20"
+        onClick={() => onClick(currentPage + 1)}
+        disabled={currentPage >= totalPages}
       >
         Sau
       </Button>

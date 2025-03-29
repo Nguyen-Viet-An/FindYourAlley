@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,29 +20,85 @@ type CategoryFilterProps = {
   categoryFilterType: string;
 };
 
+// Caching utility functions
+const CategoryCache = {
+  get: (type: string) => {
+    try {
+      const cached = localStorage.getItem(`categories_${type}`);
+      const cachedData = cached ? JSON.parse(cached) : null;
+      
+      // Check if cache is still valid (within 24 hours)
+      if (cachedData && cachedData.timestamp) {
+        const hoursSinceCache = (Date.now() - cachedData.timestamp) / (1000 * 60 * 60);
+        if (hoursSinceCache < 24) {
+          return cachedData.categories;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error reading category cache:', error);
+      return null;
+    }
+  },
+  
+  set: (type: string, categories: ICategory[]) => {
+    try {
+      const cacheEntry = {
+        categories,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(`categories_${type}`, JSON.stringify(cacheEntry));
+    } catch (error) {
+      console.error('Error setting category cache:', error);
+    }
+  },
+
+  clear: (type: string) => {
+    localStorage.removeItem(`categories_${type}`);
+  }
+};
+
 const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Fetch categories when the component mounts
+  // Fetch categories with intelligent caching
   useEffect(() => {
     const fetchCategories = async () => {
-      console.log(`Fetching categories for: ${categoryFilterType}`);
+      // Try to get cached categories first
+      const cachedCategories = CategoryCache.get(categoryFilterType);
+      
+      if (cachedCategories) {
+        setCategories(cachedCategories);
+        setIsLoading(false);
+        return;
+      }
+
+      // If no valid cache, fetch from server
       try {
+        setIsLoading(true);
         const categoryList = await getAllCategories(categoryFilterType);
-        setCategories(Array.isArray(categoryList) ? categoryList : []);
+        
+        // Ensure we have an array
+        const validCategories = Array.isArray(categoryList) ? categoryList : [];
+        
+        // Set categories and cache them
+        setCategories(validCategories);
+        CategoryCache.set(categoryFilterType, validCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error(`Error fetching ${categoryFilterType} categories:`, error);
         setCategories([]);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchCategories();
   }, [categoryFilterType]);
 
@@ -69,87 +125,90 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
     }
   }, [searchParams, categoryFilterType, selectedCategory]);
 
-  // Filter categories based on search query
-  const filteredCategories = categories.filter(cat => 
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Memoized filtered categories
+  const filteredCategories = useMemo(() => 
+    categories.filter(cat => 
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ), 
+    [categories, searchQuery]
   );
 
   const displayValue = selectedCategory === "All" ? "Bất kì" : selectedCategory;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-    <PopoverTrigger asChild>
-      <Button
-        variant="outline"
-        role="combobox"
-        aria-expanded={open}
-        className={`w-full justify-between ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-        disabled={isLoading}
-      >
-        <div className="flex items-center gap-2">
-          {displayValue}
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-        </div>
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    </PopoverTrigger>
-  
-    {!isLoading && (
-      <PopoverContent className="w-full p-0">
-        <div className="w-full">
-          <div className="flex w-full items-center border-b px-3">
-            <input
-              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Tìm kiếm tag..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={`w-full justify-between ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          disabled={isLoading}
+        >
+          <div className="flex items-center gap-2">
+            {displayValue}
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
   
-          <div className="max-h-72 overflow-y-auto">
-            <div
-              className={cn(
-                "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                selectedCategory === "All" ? "bg-accent text-accent-foreground" : ""
-              )}
-              onClick={() => onSelectCategory("All")}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  selectedCategory === "All" ? "opacity-100" : "opacity-0"
-                )}
+      {!isLoading && (
+        <PopoverContent className="w-full p-0">
+          <div className="w-full">
+            <div className="flex w-full items-center border-b px-3">
+              <input
+                className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Tìm kiếm tag..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <span>Bất kì</span>
             </div>
   
-            {filteredCategories.length === 0 ? (
-              <div className="py-6 text-center text-sm">Không tìm thấy tag.</div>
-            ) : (
-              filteredCategories.map((category) => (
-                <div
-                  key={category._id}
+            <div className="max-h-72 overflow-y-auto">
+              <div
+                className={cn(
+                  "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                  selectedCategory === "All" ? "bg-accent text-accent-foreground" : ""
+                )}
+                onClick={() => onSelectCategory("All")}
+              >
+                <Check
                   className={cn(
-                    "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                    selectedCategory === category.name ? "bg-accent text-accent-foreground" : ""
+                    "mr-2 h-4 w-4",
+                    selectedCategory === "All" ? "opacity-100" : "opacity-0"
                   )}
-                  onClick={() => onSelectCategory(category.name)}
-                >
-                  <Check
+                />
+                <span>Bất kì</span>
+              </div>
+  
+              {filteredCategories.length === 0 ? (
+                <div className="py-6 text-center text-sm">Không tìm thấy tag.</div>
+              ) : (
+                filteredCategories.map((category) => (
+                  <div
+                    key={category._id}
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedCategory === category.name ? "opacity-100" : "opacity-0"
+                      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                      selectedCategory === category.name ? "bg-accent text-accent-foreground" : ""
                     )}
-                  />
-                  <span>{category.name}</span>
-                </div>
-              ))
-            )}
+                    onClick={() => onSelectCategory(category.name)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedCategory === category.name ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <span>{category.name}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    )}
-  </Popover>
+        </PopoverContent>
+      )}
+    </Popover>
   );
 };
 

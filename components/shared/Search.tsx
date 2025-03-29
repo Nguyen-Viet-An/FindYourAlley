@@ -1,10 +1,10 @@
 "use client"
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react'
-import { Input } from '../ui/input';
-import { formUrlQuery, removeKeysFromQuery } from '@/lib/utils';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import { Input } from '@/components/ui/input';
+import { formUrlQuery, removeKeysFromQuery } from '@/lib/utils';
 
 const Search = ({ placeholder = 'Tìm theo tên gian/artist/couple...' }: { placeholder?: string }) => {
   const [query, setQuery] = useState('');
@@ -22,24 +22,25 @@ const Search = ({ placeholder = 'Tìm theo tên gian/artist/couple...' }: { plac
     const delayDebounceFn = setTimeout(() => {
       let newUrl = '';
 
-      if(query) {
+      // Only perform search if query is meaningful (more than 2 characters)
+      if (query && query.trim().length > 2) {
         newUrl = formUrlQuery({
           params: searchParams.toString(),
           key: 'query',
           value: query
-        })
+        });
       } else {
         newUrl = removeKeysFromQuery({
           params: searchParams.toString(),
           keysToRemove: ['query']
-        })
+        });
       }
 
       router.push(newUrl, { scroll: false });
-    }, 300)
+    }, 300); // Maintain original 300ms delay
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, searchParams, router, isClient])
+  }, [query, searchParams, router, isClient]);
 
   if (!isClient) {
     return null; // or a placeholder
@@ -55,7 +56,7 @@ const Search = ({ placeholder = 'Tìm theo tên gian/artist/couple...' }: { plac
         className="p-regular-16 border-0 bg-grey-50 outline-offset-0 placeholder:text-grey-500 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     </div>
-  )
-}
+  );
+};
 
-export default Search
+export default Search;
