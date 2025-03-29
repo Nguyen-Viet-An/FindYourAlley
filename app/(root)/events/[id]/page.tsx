@@ -74,7 +74,7 @@ const EventDetails = async (props: {
               <div className="flex flex-col gap-6">
                 <h2 className='h2-bold'>{event.title}</h2>
     
-                <BookmarkButton event={event} />
+                {/* <BookmarkButton event={event} /> */}
     
                 {/* <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <p className="p-medium-18 ml-2 mt-2 sm:mt-0">
