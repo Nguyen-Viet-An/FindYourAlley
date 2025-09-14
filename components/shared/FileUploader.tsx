@@ -1,12 +1,11 @@
 'use client'
 
-import { useCallback, Dispatch, SetStateAction, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { FileWithPath } from 'react-dropzone'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
+import imageCompression from 'browser-image-compression';
 import { convertFileToUrl } from '@/lib/utils'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { storage } from '@/lib/firebaseConfig'
 
 type FileUploaderProps = {
   onFieldChange: (url: string) => void
@@ -23,33 +22,66 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
     // Set files for reference
     setFiles(acceptedFiles as File[])
     
-    // Create a temporary preview URL
-    const previewUrl = convertFileToUrl(acceptedFiles[0])
-    onFieldChange(previewUrl)
-    
     try {
       setIsUploading(true)
-      
-      // Upload to Firebase
-      const file = acceptedFiles[0]
-      
-      // Create a unique filename (timestamp + original name)
-      const timestamp = new Date().getTime()
-      const uniqueFileName = `${timestamp}-${file.name}`
-      
-      // Create a reference to the file location in Firebase Storage
-      const storageRef = ref(storage, `images/${uniqueFileName}`)
-      
-      // Upload the file
-      const snapshot = await uploadBytes(storageRef, file)
-      
-      // Get download URL
-      const downloadURL = await getDownloadURL(snapshot.ref)
-      
-      // Update form with the downloadURL
-      onFieldChange(downloadURL)
+
+      let file = acceptedFiles[0]
+      console.log("Uploading file:", acceptedFiles[0])
+      console.log("Type:", acceptedFiles[0].type, "Size:", acceptedFiles[0].size)
+
+      // Compress image if it's too large
+      if (file.size > 8 * 1024 * 1024) { // 8MB threshold to stay safe
+        console.log('Compressing image...')
+        const options = {
+          maxSizeMB: 8, // Maximum size in MB
+          maxWidthOrHeight: 1920, // Max dimension
+          useWebWorker: true,
+          fileType: 'image/jpeg', // Convert to JPEG for better compression
+          quality: 0.8 // 80% quality
+        }
+        
+        file = await imageCompression(file, options)
+        console.log('Compressed from', acceptedFiles[0].size, 'to', file.size)
+      }
+
+      // Create preview with compressed file
+      const previewUrl = URL.createObjectURL(file)
+      onFieldChange(previewUrl)
+
+      // Cloudinary unsigned upload
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!) // your preset
+      formData.append("cloud_name", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!) // optional if using unsigned
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData
+        }
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`Cloudinary upload failed: ${errorData.error?.message || response.statusText}`)
+      }
+
+      const data = await response.json()
+      // console.log('Upload successful:', {
+      //   public_id: data.public_id,
+      //   secure_url: data.secure_url,
+      //   width: data.width,
+      //   height: data.height,
+      //   format: data.format,
+      //   resource_type: data.resource_type,
+      //   created_at: data.created_at
+      // })
+
+      // Cloudinary returns secure_url (full CDN link)
+      onFieldChange(data.secure_url)
     } catch (error) {
-      console.error('Error uploading file:', error)
+      console.error('Error uploading file to Cloudinary:', error)
     } finally {
       setIsUploading(false)
     }

@@ -282,44 +282,51 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
     };
 
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
-    try {
+  try {
       // Upload all images and collect their URLs and categories
-      const imagesData = [];
-  
+    const imagesData = [];
+
       // Log for debugging
-      console.log("Form values before processing:", values);
-      console.log("Images with categories state:", imagesWithCategories);
-  
-      for (let i = 0; i < imagesWithCategories.length; i++) {
-        const imageWithCategories = imagesWithCategories[i];
-        let imageUrl = imageWithCategories.imageUrl;
-        
-        // Get corresponding form values
-        const formImage = values.images[i] || { categoryIds: [], itemTypeIds: [] };
-        
-        // Upload file to Firebase if it's a new file
-        if (imageWithCategories.file && !imageUrl.includes('firebasestorage.googleapis.com')) {
-          try {
-            // Create a unique filename
-            const timestamp = new Date().getTime();
-            const uniqueFileName = `${timestamp}-${imageWithCategories.file.name}`;
-            
-            // Create a reference to the file location
-            const storageRef = ref(storage, `images/${uniqueFileName}`);
-            
-            // Upload the file
-            const snapshot = await uploadBytes(storageRef, imageWithCategories.file);
-            
-            // Get download URL
-            imageUrl = await getDownloadURL(snapshot.ref);
-          } catch (error) {
-            console.error('Error uploading file:', error);
-            continue; // Skip this image if upload fails
+    console.log("Form values before processing:", values);
+    console.log("Images with categories state:", imagesWithCategories);
+
+    for (let i = 0; i < imagesWithCategories.length; i++) {
+      const imageWithCategories = imagesWithCategories[i];
+      let imageUrl = imageWithCategories.imageUrl;
+
+      // Get corresponding form values
+      const formImage = values.images[i] || { categoryIds: [], itemTypeIds: [] };
+
+      // Upload file to Cloudinary if it's a new file
+      if (imageWithCategories.file && !imageUrl.includes('res.cloudinary.com')) {
+        try {
+          const formData = new FormData();
+          formData.append("file", imageWithCategories.file);
+          formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!); // unsigned preset
+          formData.append("folder", "my-app-images"); // optional: group uploads into a folder
+
+          const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Cloudinary upload failed");
           }
+
+          const data = await response.json();
+          imageUrl = data.secure_url; // ✅ Cloudinary returns the final URL
+        } catch (error) {
+          console.error("Error uploading file to Cloudinary:", error);
+          continue; // Skip this image if upload fails
         }
-        
-        // Skip if no image URL
-        if (!imageUrl) continue;
+      }
+
+      // Skip if no image URL
+      if (!imageUrl) continue;
         
         // Get category IDs from form data OR state if needed
       let fandomCategoryIds: string[] = [];
