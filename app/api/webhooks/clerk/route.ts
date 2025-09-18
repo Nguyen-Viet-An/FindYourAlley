@@ -73,12 +73,12 @@ export async function POST(req: Request) {
     console.log("Updating Clerk user metadata for clerkId:", id);
 
     try {
-      const updatedClerkUser = await clerkClient.users.updateUserMetadata(clerkId, {
+      await (await clerkClient()).users.updateUserMetadata(id, {
         publicMetadata: {
           userId: newUser._id
         }
       });
-      console.log("Updated Clerk user metadata:", updatedClerkUser);
+      console.log("Updated Clerk user metadata:", id);
     } catch (err) {
       console.error("Failed to update Clerk user metadata:", err);
     }
