@@ -26,7 +26,7 @@ export type CreateUserParams = {
       startDateTime: Date;
       endDateTime: Date;
       hasPreorder: string;
-      extraTag?: string;
+      extraTag?: string[];
       url?: string;
     };
     path: string;
@@ -43,7 +43,7 @@ export type CreateUserParams = {
       startDateTime: Date;
       endDateTime: Date;
       hasPreorder: string;
-      extraTag?: string;
+      extraTag?: string[];
       url?: string;
     };
     path: string;
@@ -80,7 +80,7 @@ export type CreateUserParams = {
     _id: string
     title: string
     description: string
-    extraTag: string
+    extraTag: string[]
     imageUrl: string
     artists: { name: string; link: string }[];
     startDateTime: Date
@@ -108,7 +108,7 @@ export type CreateUserParams = {
   export type BookmarkOrderParams = {
     eventTitle: string
     eventId: string
-    extraTag: string
+    extraTag: string[]
     buyerId: string
   }
   

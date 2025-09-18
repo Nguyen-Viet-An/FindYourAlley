@@ -302,3 +302,85 @@ export async function getUniqueEventTitleCount() {
 
   return uniqueCodes.size;
 }
+
+export async function getPopularFandoms(limit = 5) {
+  await connectToDatabase();
+
+  const results = await Event.aggregate([
+    { $unwind: "$images" },
+    { $unwind: "$images.category" },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "images.category",
+        foreignField: "_id",
+        as: "categoryDoc"
+      }
+    },
+    { $unwind: "$categoryDoc" },
+    { $match: { "categoryDoc.type": "fandom" } },
+    {
+      $group: {
+        _id: "$categoryDoc.name",
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { count: -1 } },
+    { $limit: limit }
+  ]);
+
+  return results.map(r => ({ name: r._id, value: r.count }));
+}
+
+export async function getPopularItemTypes(limit = 5) {
+  await connectToDatabase();
+
+  const results = await Event.aggregate([
+    { $unwind: "$images" },
+    { $unwind: "$images.category" },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "images.category",
+        foreignField: "_id",
+        as: "categoryDoc"
+      }
+    },
+    { $unwind: "$categoryDoc" },
+    { $match: { "categoryDoc.type": "itemType" } },
+    {
+      $group: {
+        _id: "$categoryDoc.name",
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { count: -1 } },
+    { $limit: limit }
+  ]);
+
+  return results.map(r => ({ name: r._id, value: r.count }));
+}
+
+export async function getAllExtraTags() {
+  const tags = await Event.distinct("extraTag"); // get unique values
+  return tags.filter((tag) => !!tag); // remove null/empty
+}
+
+export async function getEventsByTag(tag: string) {
+  const events = await Event.find({ extraTag: tag }).populate("organizer").lean();
+  return JSON.parse(JSON.stringify(events));
+}
+
+export async function getPopularExtraTags(limit = 10) {
+  await connectToDatabase();
+
+  const results = await Event.aggregate([
+    { $unwind: "$extraTag" }, // Make sure extraTag is stored as an array
+    { $match: { extraTag: { $ne: null } } },
+    { $group: { _id: "$extraTag", count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+    { $limit: limit }
+  ]);
+
+  return results.map(r => ({ name: r._id, value: r.count }));
+}

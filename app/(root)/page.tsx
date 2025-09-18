@@ -75,7 +75,18 @@ export default async function Home({ searchParams }: SearchParamProps) {
       </section> 
 
       <section id="events" className="wrapper my-8 flex flex-col gap-8 md:gap-12">
-        <h2 className="h2-bold"> <br /> Sample COFI#14 </h2>
+        <h2 className="h2-bold"> <br /> Sample COFI#15 </h2>
+
+        {/* Buttons for Tags and Stats */}
+        <div className="flex gap-4 mb-2">
+          <Button size="sm" asChild className="bg-primary-500 hover:bg-primary-400 text-white">
+            <Link href="/tags">Tags</Link>
+          </Button>
+          <Button size="sm" asChild className="bg-primary-500 hover:bg-primary-400 text-white">
+            <Link href="/stats">Thống kê</Link>
+          </Button>
+        </div>
+
         <span className="text-grey-700 text-base md:text-lg">
           Hiện đã có sample của 
           <span className="text-primary-500 font-semibold ml-1 text-2xl">{uniqueEventTitleCount} </span> 

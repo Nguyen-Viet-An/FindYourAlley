@@ -104,3 +104,8 @@ export const handleError = (error: unknown) => {
     throw new Error(typeof error === 'string' ? error : JSON.stringify(error));
   }
 }
+
+export function getLowResUrl(url: string) {
+  if (!url) return url;
+  return url.replace("/upload/", "/upload/w_300,c_scale,q_70/");
+}

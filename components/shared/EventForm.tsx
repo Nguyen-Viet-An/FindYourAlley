@@ -17,6 +17,7 @@ import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox"
+import { TagInput } from "./TagInput"
 import { useRouter } from "next/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
 import { IEvent } from "@/lib/database/models/event.model"
@@ -597,12 +598,12 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Input 
-                      placeholder="Thêm tag (nếu bạn muốn thêm tag không nằm trong fandom hay loại mặt hàng (couple, nhân vật,..))" 
-                      {...field} 
-                      value={field.value || ""} // This ensures value is never undefined
-                      className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0" 
+                  <div className="flex items-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                    <TagInput
+                      value={field.value || []}   // always an array
+                      onChange={field.onChange}   // updates react-hook-form
+                      placeholder="Thêm tag (ví dụ: couple, nhân vật,..)"
+                      className="flex-1 bg-transparent p-0 border-0 outline-none" 
                     />  
                   </div>
                 </FormControl>

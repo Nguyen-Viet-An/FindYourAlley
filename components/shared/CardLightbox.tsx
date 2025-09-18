@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, CSSProperties } from 'react';
+import { getLowResUrl } from '@/lib/utils';
 
 type CardLightboxProps = {
   imageUrl: string;
@@ -24,7 +25,7 @@ export default function CardLightbox({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsLightboxOpen(true);
@@ -213,7 +214,7 @@ export default function CardLightbox({
       >
         {renderImage && (
           <img 
-            src={imageUrl}
+            src={getLowResUrl(imageUrl)}
             alt={alt}
             className="absolute inset-0 w-full h-full object-cover"
             onLoad={onLoad}

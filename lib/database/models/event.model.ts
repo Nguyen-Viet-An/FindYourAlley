@@ -21,7 +21,7 @@ export interface IEvent extends Document {
   }[];
   startDateTime: Date;
   endDateTime: Date;
-  extraTag?: string;
+  extraTag?: string[];
   url?: string;
   hasPreorder: "Yes" | "No" | undefined;
   organizer: { _id: string, firstName: string, lastName: string };
@@ -44,7 +44,7 @@ const EventSchema = new Schema(
     ],
     startDateTime: { type: Date, default: Date.now },
     endDateTime: { type: Date, default: Date.now },
-    extraTag: { type: String },
+    extraTag: { type: [String], default: [] },
     url: { type: String },
     hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
     organizer: { type: Schema.Types.ObjectId, ref: "User" },
