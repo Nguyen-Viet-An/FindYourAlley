@@ -17,13 +17,13 @@ export default async function StatsPage() {
       {/* Fandom chart */}
       <div className="w-full h-96 md:h-112">
         <h3 className="h3-bold mb-2">Fandom phổ biến</h3>
-        <StatsCharts data={fandoms} title="Fandoms" color="#D87A6B" /> {/* salmon */}
+        <StatsCharts data={fandoms} color="#8B6FC4" />
       </div>
 
       {/* Item Type chart */}
       <div className="w-full">
         <h3 className="h3-bold mb-2">Mặt hàng phổ biến</h3>
-        <StatsCharts data={itemTypes} title="Item Types" color="#6BC7D8" /> {/* tealish */}
+        <StatsCharts data={itemTypes} color="#6BC7D8" />
       </div>
 
       {/* Extra tags list */}

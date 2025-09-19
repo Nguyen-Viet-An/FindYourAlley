@@ -2,11 +2,9 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { clerkClient, WebhookEvent } from '@clerk/nextjs/server'
 import { createUser, deleteUser, updateUser } from '@/lib/actions/user.actions'
-// import { clerkClient } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
  
 export async function POST(req: Request) {
-  console.log('[Webhook] POST handler triggered');
  
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const CLERK_WEBHOOK_SIGNING_SECRET = process.env.CLERK_WEBHOOK_SIGNING_SECRET
@@ -56,7 +54,6 @@ export async function POST(req: Request) {
   const eventType = evt.type;
  
   if(eventType === 'user.created') {
-    console.log('[Webhook] user.created event received');
     const { id, email_addresses, image_url, first_name, last_name, username } = evt.data;
 
     const user = {
@@ -71,18 +68,13 @@ export async function POST(req: Request) {
     const newUser = await createUser(user);
 
     if (newUser) {
-    console.log("New user created in DB:", newUser);
-    console.log("Updating Clerk user metadata for clerkId:", id);
-
       try {
         const client = await clerkClient();
-        console.log('[Webhook] Attempting to update Clerk publicMetadata for Clerk ID:', id, 'with userId:', newUser._id);
         await client.users.updateUserMetadata(id, {
           publicMetadata: {
             userId: newUser._id
           }
         });
-        console.log('[Webhook] Clerk publicMetadata update success');
       } catch (err) {
         console.error('[Webhook] Clerk publicMetadata update failed:', err);
         return NextResponse.json({ message: 'Clerk metadata update failed', error: err }, { status: 500 });

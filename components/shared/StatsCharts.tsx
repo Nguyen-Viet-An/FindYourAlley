@@ -4,11 +4,10 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 
 interface StatsChartsProps {
   data: { name: string; value: number }[];
-  title: string;
   color?: string; // single color for bars
 }
 
-export default function StatsCharts({ data, title, color = "#D87A6B" }: StatsChartsProps) {
+export default function StatsCharts({ data, color = "#D87A6B" }: StatsChartsProps) {
   // Compute bottom margin based on the longest label
   const longestLabelLength = Math.max(...data.map(d => d.name.length));
   const bottomMargin = Math.min(120, 30 + longestLabelLength * 6); // adjust multiplier as needed

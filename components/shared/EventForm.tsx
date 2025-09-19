@@ -602,7 +602,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                     <TagInput
                       value={field.value || []}   // always an array
                       onChange={field.onChange}   // updates react-hook-form
-                      placeholder="Thêm tag (ví dụ: couple, nhân vật,..)"
+                      placeholder="Thêm tag khác (không thuộc fandom hay mặt hàng, ví dụ: couple, nhân vật... - phân cách bằng dấu phẩy hoặc Enter)"
                       className="flex-1 bg-transparent p-0 border-0 outline-none" 
                     />  
                   </div>
