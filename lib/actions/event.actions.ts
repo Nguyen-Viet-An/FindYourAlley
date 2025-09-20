@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-
+import { S3Client, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { connectToDatabase } from '@/lib/database'
 import Event from '@/lib/database/models/event.model'
 import User from '@/lib/database/models/user.model'
@@ -17,6 +17,15 @@ import {
   GetEventsByUserParams,
   GetRelatedEventsByCategoryParams,
 } from '@/types'
+
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
 
 const getCategoryByName = async (name: string) => {
   return Category.findOne({ name: { $regex: name, $options: 'i' } })
@@ -156,7 +165,26 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
     await connectToDatabase()
 
     const deletedEvent = await Event.findByIdAndDelete(eventId)
-    if (deletedEvent) revalidatePath(path)
+
+    if (deletedEvent) {
+      const keys = deletedEvent.images.map((img: any) => {
+        // imageUrl looks like https://r2-worker.yourdomain.workers.dev/uploads/uuid-filename.jpg
+        // we only need the path inside the bucket (after the domain)
+        const url = new URL(img.imageUrl);
+        return { Key: url.pathname.replace(/^\/+/, "") }; // e.g. "uploads/uuid-file.jpg"
+      });
+
+      if (keys.length > 0) {
+        await r2.send(
+          new DeleteObjectsCommand({
+            Bucket: process.env.R2_BUCKET_NAME!,
+            Delete: { Objects: keys },
+          })
+        );
+      }
+
+      revalidatePath(path)
+    }
   } catch (error) {
     handleError(error)
   }

@@ -40,22 +40,58 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
       const previewUrl = URL.createObjectURL(file)
       onFieldChange(previewUrl)
 
-      // Upload directly to your Next.js route
-      const formData = new FormData()
-      formData.append('file', file)
+      // Retry logic for upload
+      let uploadSuccess = false
+      let retryCount = 0
+      const maxRetries = 3
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData, // no JSON, just FormData
-      })
+      while (!uploadSuccess && retryCount < maxRetries) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
 
-      if (!res.ok) throw new Error('Upload failed')
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+            // Add timeout
+            signal: AbortSignal.timeout(30000) // 30 second timeout
+          })
 
-      const { fileUrl } = await res.json()
-      onFieldChange(fileUrl)
+          if (!res.ok) {
+            throw new Error(`Đăng ảnh không thành công: ${res.status}`)
+          }
+
+          const { fileUrl } = await res.json()
+          
+          if (!fileUrl) {
+            throw new Error('Không có link ảnh')
+          }
+
+          // Success - replace preview with real URL
+          onFieldChange(fileUrl)
+          uploadSuccess = true
+
+        } catch (error) {
+          retryCount++
+          console.log(`Đăng ảnh lần ${retryCount} thất bại:`, error)
+          
+          if (retryCount < maxRetries) {
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+          }
+        }
+      }
+
+      if (!uploadSuccess) {
+        // All retries failed - revert to no image
+        onFieldChange('')
+        alert('Đăng ảnh thất bại. Vui lòng thử lại.')
+      }
 
     } catch (error) {
-      console.error('Error uploading file to R2:', error)
+      console.error('Error in upload process:', error)
+      // Revert to no image on compression or other errors
+      onFieldChange('')
     } finally {
       setIsUploading(false)
     }

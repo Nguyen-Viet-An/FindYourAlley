@@ -23,7 +23,7 @@ const Search = ({ placeholder = 'Tìm theo tên gian/artist/couple...' }: { plac
       let newUrl = '';
 
       // Only perform search if query is meaningful (more than 2 characters)
-      if (query && query.trim().length > 2) {
+      if (query && query.trim().length >= 2) {
         newUrl = formUrlQuery({
           params: searchParams.toString(),
           key: 'query',

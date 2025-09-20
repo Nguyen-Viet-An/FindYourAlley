@@ -45,7 +45,7 @@ export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
                 await deleteEvent({ eventId, path: pathname })
               })
             }>
-            {isPending ? 'Đang xóa...' : 'Đã xóa'}
+            {isPending ? 'Đang xóa...' : 'Xóa'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

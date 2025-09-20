@@ -179,6 +179,14 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     }
   }, [imagesWithCategories]);
 
+  const hasInvalidImages = imagesWithCategories.some((img) => {
+    // Allow blob URLs if we have a file to upload
+    if (img.imageUrl.startsWith('blob:')) {
+      return !img.file; // Only invalid if blob URL but no file
+    }
+    return !img.imageUrl; // Invalid if no URL at all
+  });
+
   // Handle file selection for a specific image entry
   const handleFileChange = (index: number, file: File | null, imageUrl: string = '') => {
     const newImagesWithCategories = [...imagesWithCategories];
@@ -738,12 +746,16 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               )}
             />
         </div>
+        {hasInvalidImages && (
+          <p className="text-red-500 text-sm mb-2">
+            Vui lòng chờ ảnh được upload thành công trước khi đăng hoặc thử đăng lại ảnh.
+          </p>
+        )}
         <Button
           type="submit"
           size="lg"
-          disabled={form.formState.isSubmitting}
+          disabled={form.formState.isSubmitting || hasInvalidImages}
           className="button col-span-2 w-full"
-          onClick={() => console.log("Button clicked")}
         >
           {form.formState.isSubmitting
             ? "Đang đăng..."
