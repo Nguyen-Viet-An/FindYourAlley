@@ -1,17 +1,30 @@
+"use client"
+
 import EventForm from "@/components/shared/EventForm"
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { useAuth, SignIn } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
-export default async function CreateEvent() {
-  const { sessionClaims } = await auth()
+export default function CreateEvent() {
+  const { isLoaded, userId } = useAuth()
+  const router = useRouter()
+  const [authorized, setAuthorized] = useState(false)
 
-  const userId = sessionClaims?.userId as string;
+  useEffect(() => {
+    if (isLoaded) {
+      if (!userId) {
+        // Redirect to sign-in if no user
+        router.push("/sign-in")
+      } else {
+        setAuthorized(true)
+      }
+    }
+  }, [isLoaded, userId, router])
 
-  if (!userId) redirect('/sign-in');
-//   console.log(userId)
-//   if (!userId) {
-//     return <div>Unauthorized</div>; // Optionally handle unauthorized users
-//   }
+  if (!isLoaded || !authorized) {
+    // Show a loader or placeholder while session is being checked
+    return <div>Loading...</div>
+  }
 
   return (
     <>
@@ -25,4 +38,3 @@ export default async function CreateEvent() {
     </>
   )
 }
-

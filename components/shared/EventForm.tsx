@@ -298,30 +298,34 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
       // Get corresponding form values
       const formImage = values.images[i] || { categoryIds: [], itemTypeIds: [] };
 
-      // Upload file to Cloudinary if it's a new file
-      if (imageWithCategories.file && !imageUrl.includes('res.cloudinary.com')) {
+      if (imageWithCategories.file && !imageUrl.includes(process.env.NEXT_PUBLIC_R2_PUBLIC_URL!)) {
         try {
-          const formData = new FormData();
-          formData.append("file", imageWithCategories.file);
-          formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!); // unsigned preset
-          formData.append("folder", "my-app-images"); // optional: group uploads into a folder
+          // 1️⃣ Request a signed URL from your Next.js API
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: imageWithCategories.file.name,
+              fileType: imageWithCategories.file.type,
+            }),
+          });
 
-          const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          if (!res.ok) throw new Error('Failed to get signed URL for R2');
 
-          if (!response.ok) {
-            throw new Error("Cloudinary upload failed");
-          }
+          const { uploadUrl, fileUrl } = await res.json();
 
-          const data = await response.json();
-          imageUrl = data.secure_url; // ✅ Cloudinary returns the final URL
+          // 2️⃣ Upload file directly to R2
+          const uploadRes = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': imageWithCategories.file.type },
+            body: imageWithCategories.file,
+          });
+
+          if (!uploadRes.ok) throw new Error('Failed to upload file to R2');
+
+          imageUrl = fileUrl; // ✅ final URL served via your Worker + caching
         } catch (error) {
-          console.error("Error uploading file to Cloudinary:", error);
+          console.error("Error uploading file to R2:", error);
           continue; // Skip this image if upload fails
         }
       }

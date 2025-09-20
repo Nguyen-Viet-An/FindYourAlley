@@ -109,3 +109,9 @@ export function getLowResUrl(url: string) {
   if (!url) return url;
   return url.replace("/upload/", "/upload/w_300,c_scale,q_70/");
 }
+
+export function normalizeTags(tags?: string | string[]): string[] {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags.map(tag => tag.trim().toLowerCase());
+  return [tags.trim().toLowerCase()];
+}
