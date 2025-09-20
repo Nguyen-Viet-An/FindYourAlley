@@ -12,6 +12,26 @@ type FileUploaderProps = {
   setFiles: (files: File[]) => void 
 }
 
+// Function to sanitize filename
+const sanitizeFilename = (filename: string): string => {
+  // Get the file extension
+  const lastDotIndex = filename.lastIndexOf('.')
+  const name = lastDotIndex !== -1 ? filename.slice(0, lastDotIndex) : filename
+  const ext = lastDotIndex !== -1 ? filename.slice(lastDotIndex) : ''
+  
+  // Replace spaces and special characters with underscores
+  const sanitizedName = name
+    .replace(/\s+/g, '_')           // Replace spaces with underscores
+    .replace(/[^\w\-_.]/g, '_')     // Replace special chars with underscores
+    .replace(/_+/g, '_')            // Replace multiple underscores with single
+    .replace(/^_|_$/g, '')          // Remove leading/trailing underscores
+  
+  // Add timestamp to make it unique
+  const timestamp = Date.now()
+  
+  return `${sanitizedName}_${timestamp}${ext}`
+}
+
 export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploaderProps) {
   const [isUploading, setIsUploading] = useState(false)
 
@@ -36,8 +56,15 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
         file = await imageCompression(file, options)
       }
 
+      // Sanitize filename and create new File object
+      const sanitizedFilename = sanitizeFilename(file.name)
+      const sanitizedFile = new File([file], sanitizedFilename, {
+        type: file.type,
+        lastModified: file.lastModified,
+      })
+
       // Preview before upload
-      const previewUrl = URL.createObjectURL(file)
+      const previewUrl = URL.createObjectURL(sanitizedFile)
       onFieldChange(previewUrl)
 
       // Retry logic for upload
@@ -48,7 +75,7 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
       while (!uploadSuccess && retryCount < maxRetries) {
         try {
           const formData = new FormData()
-          formData.append('file', file)
+          formData.append('file', sanitizedFile) // Use sanitized file
 
           const res = await fetch('/api/upload', {
             method: 'POST',

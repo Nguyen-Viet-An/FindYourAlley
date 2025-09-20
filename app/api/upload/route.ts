@@ -20,16 +20,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const key = `uploads/${uuidv4()}-${file.name}`;
+    // Optional: Additional server-side sanitization
+    const sanitizedFilename = file.name
+      .replace(/\s+/g, '_')
+      .replace(/[^\w\-_.]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
 
-    // Convert File to Uint8Array (required by AWS SDK)
+    const key = `uploads/${uuidv4()}-${sanitizedFilename}`;
+
+    // Rest of your code remains the same
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
-      Body: uint8Array,  // ✅ Use Uint8Array instead of ArrayBuffer
+      Body: uint8Array,
       ContentType: file.type,
     });
 
