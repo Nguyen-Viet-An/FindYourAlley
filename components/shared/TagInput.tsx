@@ -14,8 +14,9 @@ export function TagInput({ value, onChange, placeholder, className }: TagInputPr
   const [inputValue, setInputValue] = useState("");
 
   const addTag = (tag: string) => {
-    if (tag && !value.includes(tag)) {
-      onChange([...value, tag]);
+    const normalized = tag.trim().toLowerCase();
+    if (normalized && !value.map(v => v.toLowerCase()).includes(normalized)) {
+      onChange([...value, normalized]);
     }
   };
 

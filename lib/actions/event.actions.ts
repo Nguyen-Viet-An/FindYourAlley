@@ -33,16 +33,14 @@ const getCategoryByName = async (name: string) => {
 
 const getCategoriesByNames = async (names: string | string[]) => {
   const nameArray = Array.isArray(names) ? names : [names]; // Ensure names is an array
-  // // console.log("Searching for categories:", nameArray);
   const categories = await Category.find({ name: { $in: nameArray.map(name => new RegExp(`^${name}$`, 'i')) } });
-  // // console.log("Found categories:", categories);
-
   return categories;
 };
 
 const populateEvent = (query: any) => {
   return query
     .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
+    .populate({ path: 'festival', select: '_id name code' })
     .populate({ path: 'images.category', model: Category, select: '_id name type' }); // Populate categories inside images
 };
 
@@ -65,11 +63,12 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       hasPreorder,
       extraTag,
       url,
+      festival,
     } = event;
 
     const formattedImages = await Promise.all(
       images.map(async (img) => {
-        const categoryIds = Array.isArray(img.category) ? img.category : 
+        const categoryIds = Array.isArray(img.category) ? img.category :
                             img.category ? [img.category] : [];
         return {
           imageUrl: img.imageUrl,
@@ -78,7 +77,16 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       })
     );
 
-    const eventData = {
+    // multi festivals
+    let festivalIds: mongoose.Types.ObjectId[] = [];
+    if (festival && festival.length) {
+      festivalIds = festival.reduce((acc: mongoose.Types.ObjectId[], fid: string) => {
+        try { acc.push(new mongoose.Types.ObjectId(fid)); } catch {}
+        return acc;
+      }, []);
+    }
+
+    const eventData: any = {
       title,
       description,
       artists: artists || [], // add artists array
@@ -90,6 +98,8 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       hasPreorder: hasPreorder || "No",
       organizer: userId,
     };
+
+    if (festivalIds.length) eventData.festival = festivalIds;
 
     const newEvent = await Event.create(eventData);
 
@@ -119,21 +129,31 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
       }))
     );
 
+    let festivalIds: mongoose.Types.ObjectId[] = [];
+    if (event.festival && event.festival.length) {
+      festivalIds = event.festival.reduce((acc: mongoose.Types.ObjectId[], fid: string) => {
+        try { acc.push(new mongoose.Types.ObjectId(fid)); } catch {}
+        return acc;
+      }, []);
+    }
+
+    const updatePayload: any = {
+      title: event.title,
+      description: event.description,
+      artists: event.artists || [], // update artists array
+      images: formattedImages,
+      startDateTime: event.startDateTime,
+      endDateTime: event.endDateTime,
+      hasPreorder: event.hasPreorder || "No",
+      extraTag: normalizeTags(event.extraTag), // normalize on update
+      url: event.url,
+    };
+
+    if (festivalIds.length) updatePayload.festival = festivalIds; else updatePayload.festival = [];
+
     const updatedEvent = await Event.findByIdAndUpdate(
       event._id,
-      {
-        $set: {
-          title: event.title,
-          description: event.description,
-          artists: event.artists || [], // update artists array
-          images: formattedImages,
-          startDateTime: event.startDateTime,
-          endDateTime: event.endDateTime,
-          hasPreorder: event.hasPreorder || "No",
-          extraTag: event.extraTag,
-          url: event.url,
-        },
-      },
+      { $set: updatePayload },
       { new: true }
     );
 
@@ -143,6 +163,7 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     handleError(error);
   }
 }
+
 // GET ONE EVENT BY ID
 export async function getEventById(eventId: string) {
   try {
@@ -191,126 +212,131 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 }
 
 // GET ALL EVENTS
-// Update the getAllEvents function to include category info in the response
-export async function getAllEvents({ query, limit = 6, page, fandom, itemType, hasPreorder }: GetAllEventsParams) {
+export async function getAllEvents({ query, limit = 6, page, fandom, itemType, hasPreorder, festivalId }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
-    // Start with a basic query object
-    const queryObject: any = {};
+    const pageNumber = Number(page) || 1;
+    const imagesPerPage = Number(limit) || 6;
 
-    // Add title, extraTag, and artist name search if provided
+    // 1. Build base query (event-level) excluding category specifics first
+    const baseQuery: any = {};
+
     if (query) {
-      queryObject.$or = [
-        { title: { $regex: query, $options: "i" } },
-        { extraTag: { $regex: query, $options: "i" } }, // Search in extraTag field
-        { "artists.name": { $regex: query, $options: "i" } } // Search in artist names
+      baseQuery.$or = [
+        { title: { $regex: query, $options: 'i' } },
+        { extraTag: { $regex: query, $options: 'i' } },
+        { 'artists.name': { $regex: query, $options: 'i' } }
       ];
     }
 
-    // Add hasPreorder filter if provided
     if (hasPreorder) {
-      queryObject.hasPreorder = hasPreorder;
+      baseQuery.hasPreorder = hasPreorder; // "Yes" | "No"
     }
 
-    // Store the category IDs we're looking for to pass to the front end
-    let requestedCategoryIds: string[] = [];
-
-    // Fetch categories by name for both fandom and itemType
-    if ((fandom && fandom.length > 0) || (itemType && itemType.length > 0)) {
-      const categories = await getCategoriesByNames([...(fandom || []), ...(itemType || [])]);
-      
-      if (categories.length > 0) {
-        // Create an array of ObjectIds from the category documents
-        const categoryIds = categories.map(cat => new mongoose.Types.ObjectId(cat._id));
-        requestedCategoryIds = categories.map(cat => cat._id.toString());
-        
-        // Match events where images contain both the fandom and itemType categories
-        queryObject["images.category"] = { $all: categoryIds }; // Use $all to ensure both categories are matched
+    if (festivalId) {
+      if (Array.isArray(festivalId)) {
+        baseQuery.festival = { $in: festivalId.map(id => { try { return new mongoose.Types.ObjectId(id); } catch { return null } }).filter(Boolean) };
+      } else {
+        baseQuery.festival = { $in: [new mongoose.Types.ObjectId(festivalId)] };
       }
     }
 
-    const skipAmount = (Number(page) - 1) * limit;
-    const eventsQuery = Event.find(queryObject)
-      .sort({ createdAt: "desc" })
-      .skip(skipAmount)
-      .limit(limit);
+    // Category filter handling
+    const hasCategoryFilter = (fandom && fandom.length > 0) || (itemType && itemType.length > 0);
+    let requestedCategoryIds: string[] = [];
+    let categoryIds: mongoose.Types.ObjectId[] = [];
 
-    const events = await populateEvent(eventsQuery);
-    const eventsCount = await Event.countDocuments(queryObject);
+    if (hasCategoryFilter) {
+      const categories = await getCategoriesByNames([...(fandom || []), ...(itemType || [])]);
+      if (categories.length) {
+        categoryIds = categories.map((c: any) => new mongoose.Types.ObjectId(c._id));
+        requestedCategoryIds = categories.map((c: any) => c._id.toString());
+        // Event must have at least one image including ALL selected categories to be considered
+        baseQuery['images.category'] = { $all: categoryIds };
+      } else {
+        // No matching categories -> return empty result early
+        return { data: [], totalPages: 1, requestedCategoryIds: [] };
+      }
+    }
+
+    // Helper to determine how many events to fetch to satisfy images up to current page
+    const determineEventIdsForPage = (counts: Array<{ _id: any; imgCount: number }>, neededImages: number) => {
+      let cumulative = 0;
+      let lastIdx = counts.length - 1; // fallback all
+      for (let i = 0; i < counts.length; i++) {
+        cumulative += counts[i].imgCount;
+        if (cumulative >= neededImages) { lastIdx = i; break; }
+      }
+      return counts.slice(0, lastIdx + 1).map(c => c._id);
+    };
+
+    // CATEGORY FILTER PATH (paginate by matching images only)
+    if (hasCategoryFilter && categoryIds.length > 0) {
+      // Aggregate per-event matching image counts (respecting createdAt sort desc)
+      const matchingCounts = await Event.aggregate([
+        { $match: baseQuery },
+        {
+          $project: {
+            createdAt: 1,
+            matchingImages: {
+              $filter: {
+                input: '$images',
+                as: 'img',
+                cond: { $setIsSubset: [categoryIds, '$$img.category'] } // image must contain ALL selected categories
+              }
+            }
+          }
+        },
+        { $addFields: { imgCount: { $size: '$matchingImages' } } },
+        { $match: { imgCount: { $gt: 0 } } },
+        { $sort: { createdAt: -1 } },
+        { $project: { imgCount: 1 } }
+      ]);
+
+      const totalMatchingImages = matchingCounts.reduce((sum: number, d: any) => sum + (d.imgCount || 0), 0);
+      const totalPages = Math.max(1, Math.ceil(totalMatchingImages / imagesPerPage));
+
+      // Determine required events to cover pages up to current page
+      const neededImages = pageNumber * imagesPerPage;
+      const eventIdsToFetch = determineEventIdsForPage(matchingCounts, neededImages);
+
+      const events = await populateEvent(
+        Event.find({ _id: { $in: eventIdsToFetch } }).sort({ createdAt: -1 })
+      );
+
+      return {
+        data: JSON.parse(JSON.stringify(events)),
+        totalPages,
+        requestedCategoryIds
+      };
+    }
+
+    // NO CATEGORY FILTER: paginate across ALL images of matching events
+    // Aggregate counts of images per event (sorted desc by createdAt)
+    const counts = await Event.aggregate([
+      { $match: baseQuery },
+      { $project: { createdAt: 1, imgCount: { $size: '$images' } } },
+      { $sort: { createdAt: -1 } }
+    ]);
+
+    const totalImages = counts.reduce((sum: number, d: any) => sum + (d.imgCount || 0), 0);
+    const totalPages = Math.max(1, Math.ceil(totalImages / imagesPerPage));
+
+    const neededImages = pageNumber * imagesPerPage;
+    const eventIdsToFetch = determineEventIdsForPage(counts, neededImages);
+
+    const events = await populateEvent(
+      Event.find({ _id: { $in: eventIdsToFetch } }).sort({ createdAt: -1 })
+    );
 
     return {
       data: JSON.parse(JSON.stringify(events)),
-      totalPages: Math.ceil(eventsCount / limit),
-      requestedCategoryIds // Pass the requested category IDs
+      totalPages,
+      requestedCategoryIds
     };
   } catch (error) {
     handleError(error);
-  }
-}
-
-// GET EVENTS BY ORGANIZER
-export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUserParams) {
-  try {
-    await connectToDatabase()
-
-    const conditions = { organizer: userId }
-    const skipAmount = (page - 1) * limit
-
-    const eventsQuery = Event.find(conditions)
-      .sort({ createdAt: 'desc' })
-      .skip(skipAmount)
-      .limit(limit)
-
-    const events = await populateEvent(eventsQuery)
-    const eventsCount = await Event.countDocuments(conditions)
-
-    return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) }
-  } catch (error) {
-    handleError(error)
-  }
-}
-
-// GET RELATED EVENTS: EVENTS WITH SAME CATEGORY
-export async function getRelatedEventsByCategories({
-  categoryIds,
-  requestedCategoryIds,
-  eventId,
-  limit = 5,
-  page = 1,
-}: GetRelatedEventsByCategoryParams) {
-  try {
-    await connectToDatabase()
-
-    const skipAmount = (Number(page) - 1) * limit
-
-    // Updated condition to match events where at least one image has one of the categories
-    const conditions = { $and: [
-        { "images.category": { $in: categoryIds } }, // Match events where at least one image contains one of the categories
-        { _id: { $ne: eventId } },                  // Exclude the current event
-      ],
-    };
-
-
-    const eventsQuery = Event.find(conditions)
-      .sort({ createdAt: 'desc' })
-      .skip(skipAmount)
-      .limit(limit)
-
-    // console.log("Get events by category condition:", JSON.stringify(conditions, null, 2));
-    const events = await populateEvent(eventsQuery)
-    const eventsCount = await Event.countDocuments(conditions)
-
-    // console.log(`Found ${eventsCount} matching events`);
-    // console.log("Returned events:", JSON.stringify(events, null, 2));
-    // Return requestedCategoryIds alongside the event data
-    return { 
-      data: JSON.parse(JSON.stringify(events)), 
-      totalPages: Math.ceil(eventsCount / limit),
-      requestedCategoryIds: requestedCategoryIds, // Return the requested categories
-    }
-  } catch (error) {
-    handleError(error)
   }
 }
 
@@ -321,7 +347,7 @@ export async function getUniqueEventTitleCount() {
   const codeRegex = /([A-Z]+\d+)/i;
 
   const uniqueCodes = new Set(
-    events.map((event) => {
+    events.map((event: { title: string }) => {
       const match = event.title.match(codeRegex);
       return match ? match[1].toUpperCase() : null;
     }).filter(Boolean)
@@ -356,7 +382,7 @@ export async function getPopularFandoms(limit = 5) {
     { $limit: limit }
   ]);
 
-  return results.map(r => ({ name: r._id, value: r.count }));
+  return results.map((r: any) => ({ name: r._id, value: r.count }));
 }
 
 export async function getPopularItemTypes(limit = 5) {
@@ -385,16 +411,22 @@ export async function getPopularItemTypes(limit = 5) {
     { $limit: limit }
   ]);
 
-  return results.map(r => ({ name: r._id, value: r.count }));
+  return results.map((r: any) => ({ name: r._id, value: r.count }));
 }
 
 export async function getAllExtraTags() {
-  const tags = await Event.distinct("extraTag"); // get unique values
-  return tags.filter((tag) => !!tag); // remove null/empty
+  await connectToDatabase();
+  const tags = await Event.distinct("extraTag"); // get raw values
+  const normalized = Array.from(new Set(tags.filter(Boolean).map((t: string) => t.trim().toLowerCase())));
+  (normalized as string[]).sort((a: string, b: string) => a.localeCompare(b, 'en'));
+  return normalized;
 }
 
 export async function getEventsByTag(tag: string) {
-  const events = await Event.find({ extraTag: tag }).populate("organizer").lean();
+  await connectToDatabase();
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`^${escapeRegExp(tag)}$`, 'i');
+  const events = await Event.find({ extraTag: regex }).populate("organizer").lean();
   return JSON.parse(JSON.stringify(events));
 }
 
@@ -409,5 +441,53 @@ export async function getPopularExtraTags(limit = 10) {
     { $limit: limit }
   ]);
 
-  return results.map(r => ({ name: r._id, value: r.count }));
+  return results.map((r: any) => ({ name: r._id, value: r.count }));
+}
+
+// RELATED EVENTS (simplified: return up to `limit` events, no pagination)
+export async function getRelatedEventsByCategories({
+  categoryIds,
+  requestedCategoryIds,
+  eventId,
+  limit = 8,
+  festivalId,
+}: GetRelatedEventsByCategoryParams) {
+  try {
+    await connectToDatabase();
+
+    if (!categoryIds || categoryIds.length === 0) {
+      return { data: [], totalPages: 1, requestedCategoryIds: [] };
+    }
+
+    const normalizedCategoryIds = Array.from(new Set(categoryIds.map(id => id.toString())));
+    const categoryObjectIds = normalizedCategoryIds.map(id => new mongoose.Types.ObjectId(id));
+    const currentEventObjectId = new mongoose.Types.ObjectId(eventId);
+
+    const match: any = {
+      _id: { $ne: currentEventObjectId },
+      'images.category': { $in: categoryObjectIds }
+    };
+
+    if (festivalId) {
+      if (Array.isArray(festivalId)) {
+        match.festival = { $in: festivalId.map(id => { try { return new mongoose.Types.ObjectId(id); } catch { return null } }).filter(Boolean) };
+      } else {
+        try { match.festival = { $in: [new mongoose.Types.ObjectId(festivalId)] }; } catch {}
+      }
+    }
+
+    const eventsQuery = Event.find(match)
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    const events = await populateEvent(eventsQuery);
+
+    return {
+      data: JSON.parse(JSON.stringify(events)),
+      totalPages: 1,
+      requestedCategoryIds: Array.from(new Set(requestedCategoryIds))
+    };
+  } catch (error) {
+    handleError(error);
+  }
 }

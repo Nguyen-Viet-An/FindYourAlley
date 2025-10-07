@@ -24,12 +24,17 @@ import { IEvent } from "@/lib/database/models/event.model"
 import { Plus, Trash2, PlusCircle, XCircle} from "lucide-react"
 import { storage } from '@/lib/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
+import FestivalSelect from './FestivalSelect';
+
+// festivals now passed from server components to avoid calling server action directly in client
 
 type EventFormProps = {
-  userId: string
-  type: "Create" | "Update"
-  event?: IEvent,
-  eventId?: string
+  userId: string;
+  type: "Create" | "Update";
+  event?: IEvent;
+  eventId?: string;
+  festivals?: any[]; // passed from server
 }
 
 // Updated type definition for IEvent images
@@ -51,10 +56,38 @@ const mapCategoriesToOptions = (categories: { _id: string; name: string, type: s
 const mapOptionsToCategories = (options: { value: string; label: string }[]) =>
   options.map(option => option.value);
 
-const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
+const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormProps) => {
   // State for images with categories
   const [imagesWithCategories, setImagesWithCategories] = useState<ImageWithCategories[]>([]);
-  
+  const [festivalIds, setFestivalIds] = useState<string[]>(() => {
+    if (event && (event as any).festival) {
+      const fest = (event as any).festival;
+      return Array.isArray(fest) ? fest.map((f: any) => f._id) : fest?._id ? [fest._id] : [];
+    }
+    return festivals[0]?._id ? [festivals[0]._id] : [];
+  });
+
+  const festivalOptions: Option[] = (festivals || []).map((f: any) => ({ label: f.name, value: f._id }));
+  const selectedFestivalOptions: Option[] = festivalOptions.filter(o => festivalIds.includes(o.value));
+
+  const handleFestivalChange = (opts: Option[]) => {
+    setFestivalIds(opts.map(o => o.value));
+  };
+
+  useEffect(() => {
+    if (event && (event as any).festival) {
+      const fest = (event as any).festival;
+      const ids = Array.isArray(fest) ? fest.map((f: any) => f._id) : fest?._id ? [fest._id] : [];
+      setFestivalIds(ids);
+    }
+  }, [event]);
+
+  useEffect(() => {
+    if (festivalIds && festivalIds.length) {
+      form.setValue('festival', festivalIds as any, { shouldValidate: true });
+    }
+  }, [festivalIds]);
+
   // Initialize state with existing images if updating
   useEffect(() => {
     if (event && type === "Update" && event.images) {
@@ -62,7 +95,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
       const initialImages = event.images.map((img: any) => {
         // Get categories from the image
         const categories = img.category || [];
-        
+
         return {
           file: null,
           imageUrl: img.imageUrl || '',
@@ -74,7 +107,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
           )
         };
       });
-      
+
       // Ensure we have at least one image
       if (initialImages.length === 0) {
         initialImages.push({
@@ -84,16 +117,16 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
           itemTypeCategories: []
         });
       }
-      
+
       setImagesWithCategories(initialImages);
-      
+
       // Update the form values to match
       const formImages = initialImages.map(img => ({
         imageUrl: img.imageUrl,
         categoryIds: img.fandomCategories,
         itemTypeIds: img.itemTypeCategories
       }));
-      
+
       // Set the form values
       form.setValue('images', formImages);
     } else {
@@ -114,21 +147,18 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
         startDateTime: new Date(event.startDateTime),
         endDateTime: new Date(event.endDateTime),
         hasPreorder: event.hasPreorder === "Yes" ? "Yes" : event.hasPreorder === "No" ? "No" : undefined,
-        
-      // Handle conversion for artists array
-        artists: Array.isArray(event.artists) 
+        festival: festivalIds,
+        // Handle conversion for artists array
+        artists: Array.isArray(event.artists)
         ? event.artists.map((artist: any) => ({
             name: artist.name || '',
             link: artist.link || ''
           }))
-        : event.artists 
-          ? [{ name: event.artists.name || '', link: event.artists.link || '' }]
+        : event.artists
+          ? [{ name: (event as any).artists.name || '', link: (event as any).artists.link || '' }]
           : [{ name: '', link: '' }],
-
-        // Map images with separate categoryIds and itemTypeIds
         images: event.images?.map((image: any) => {
           const categories = image.category || [];
-          
           return {
             imageUrl: image.imageUrl || '',
             categoryIds: mapCategoriesToOptions(
@@ -143,7 +173,8 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     : {
         ...eventDefaultValues,
         hasPreorder: eventDefaultValues.hasPreorder ?? "No",
-        artists: [{ name: '', link: '' }], 
+        festival: festivalIds,
+        artists: [{ name: '', link: '' }],
         images: [{
           imageUrl: '',
           categoryIds: [],
@@ -155,7 +186,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   // const { startUpload } = useUploadThing('imageUploader')
 
   // console.log("Event form schema:", eventFormSchema);
-    
+
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues as z.infer<typeof eventFormSchema>,
@@ -166,25 +197,20 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   useEffect(() => {
     if (imagesWithCategories.length > 0) {
       const formValues = form.getValues();
-      
-      // Create a new images array with updated category values
-      const updatedImages = imagesWithCategories.map((img, index) => ({
+      const updatedImages = imagesWithCategories.map((img: ImageWithCategories, index: number) => ({
         imageUrl: img.imageUrl,
         categoryIds: img.fandomCategories,
         itemTypeIds: img.itemTypeCategories
       }));
-      
-      // Update the form
       form.setValue('images', updatedImages);
     }
   }, [imagesWithCategories]);
 
-  const hasInvalidImages = imagesWithCategories.some((img) => {
-    // Allow blob URLs if we have a file to upload
+  const hasInvalidImages = imagesWithCategories.some((img: ImageWithCategories) => {
     if (img.imageUrl.startsWith('blob:')) {
-      return !img.file; // Only invalid if blob URL but no file
+      return !img.file;
     }
-    return !img.imageUrl; // Invalid if no URL at all
+    return !img.imageUrl;
   });
 
   // Handle file selection for a specific image entry
@@ -207,22 +233,22 @@ const handleFandomCategoriesChange = (index: number, categories: { value: string
     fandomCategories: categories
   };
   setImagesWithCategories(newImagesWithCategories);
-  
+
   // Update form state
   const formValues = form.getValues();
   const images = [...(formValues.images || [])];
-  
+
   // Ensure we have enough items in the array
   while (images.length <= index) {
     images.push({ imageUrl: '', categoryIds: [], itemTypeIds: [] });
   }
-  
+
   // Update the specific image's categoryIds
   images[index] = {
     ...images[index],
     categoryIds: categories
   };
-  
+
   // Set the updated values
   form.setValue('images', images);
 };
@@ -236,22 +262,22 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
     itemTypeCategories: categories
   };
   setImagesWithCategories(newImagesWithCategories);
-  
+
   // Update form state
   const formValues = form.getValues();
   const images = [...(formValues.images || [])];
-  
+
   // Ensure we have enough items in the array
   while (images.length <= index) {
     images.push({ imageUrl: '', categoryIds: [], itemTypeIds: [] });
   }
-  
+
   // Update the specific image's itemTypeIds
   images[index] = {
     ...images[index],
     itemTypeIds: categories
   };
-  
+
   // Set the updated values
   form.setValue('images', images);
 };
@@ -282,7 +308,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
     const addArtist = () => {
       form.setValue('artists', [...artists, { name: '', link: '' }]);
     };
-  
+
     // Remove an artist field
     const removeArtist = (index: number) => {
       const updatedArtists = [...artists];
@@ -340,57 +366,57 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
 
       // Skip if no image URL
       if (!imageUrl) continue;
-        
+
         // Get category IDs from form data OR state if needed
       let fandomCategoryIds: string[] = [];
       let itemTypeCategoryIds: string[] = [];
-        
+
         // Try to get category data from form values first
         if (formImage.categoryIds && formImage.categoryIds.length > 0) {
           fandomCategoryIds = mapOptionsToCategories(formImage.categoryIds);
-        } 
+        }
         // Fallback to state data
         else if (imageWithCategories.fandomCategories.length > 0) {
           fandomCategoryIds = mapOptionsToCategories(imageWithCategories.fandomCategories);
         }
-        
+
         // Try to get item type data from form values first
         if (formImage.itemTypeIds && formImage.itemTypeIds.length > 0) {
           itemTypeCategoryIds = mapOptionsToCategories(formImage.itemTypeIds);
-        } 
+        }
         // Fallback to state data
         else if (imageWithCategories.itemTypeCategories.length > 0) {
           itemTypeCategoryIds = mapOptionsToCategories(imageWithCategories.itemTypeCategories);
         }
-        
+
         // Log for debugging
         console.log(`Image ${i} processed:`, {
           imageUrl,
           fandomCategoryIds,
           itemTypeCategoryIds
         });
-        
+
         // Format for API - combine all category IDs into a single array
         imagesData.push({
           imageUrl,
           category: [...fandomCategoryIds, ...itemTypeCategoryIds]
         });
       }
-  
+
       // Log processed data
       console.log("Processed images data for submission:", imagesData);
-  
+
       // Create a new event object with the structure expected by the API
       const eventData = {
         ...values,
-        // Replace the images array with our processed imagesData
         images: imagesData as any, // Use type assertion to bypass TypeScript check
-        hasPreorder: values.hasPreorder || "No"
+        hasPreorder: values.hasPreorder || "No",
+        festival: festivalIds,
       };
-  
+
       // Log final data
       console.log("Final event data for submission:", eventData);
-  
+
       // Update or create event with the processed data
       if (type === "Create") {
         try {
@@ -399,7 +425,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             userId,
             path: "/profile",
           });
-  
+
           if (newEvent) {
             form.reset();
             router.push(`/events/${newEvent._id}`);
@@ -411,7 +437,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         if (!eventId) {
           return router.back();
         }
-  
+
         try {
           const updatedEvent = await updateEvent({
             userId,
@@ -421,7 +447,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             },
             path: `/events/${eventId}`
           });
-  
+
           if (updatedEvent) {
             form.reset();
             router.push(`/events/${updatedEvent?._id}`);
@@ -437,13 +463,13 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => {
+      <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
         console.log("Form submit event triggered");
-        form.handleSubmit((data) => {
+        form.handleSubmit((data: z.infer<typeof eventFormSchema>) => {
           console.log("Form passed validation", data);
           onSubmit(data);
         })(e);
-      }} 
+      }}
   className="flex flex-col gap-5">
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
@@ -537,15 +563,15 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         <div className="border rounded-lg p-4 mt-4">
           <h3 className="text-lg font-medium mb-4">Ảnh sample</h3>
 
-          {imagesWithCategories.map((imageWithCat, index) => (
+          {imagesWithCategories.map((imageWithCat: ImageWithCategories, index: number) => (
             <div key={index} className="mb-8 p-4 border rounded-md">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-medium">Ảnh {index + 1}</h4>
                 {imagesWithCategories.length > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    size="sm" 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
                     onClick={() => removeImageEntry(index)}
                     className="flex items-center"
                   >
@@ -557,7 +583,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               {/* Image Upload */}
               <div className="mb-4">
                 <div className="w-full h-72">
-                <FileUploader 
+                <FileUploader
                   onFieldChange={(url) => handleFileChange(index, null, url)}
                   imageUrl={imageWithCat.imageUrl}
                   setFiles={(files) => {
@@ -573,19 +599,19 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               <div className="flex flex-col gap-4">
                 <div className="w-full">
                   <FormLabel>Các fandom xuất hiện trong ảnh sample</FormLabel>
-                  <MultiSelect 
-                    onChange={(value) => handleFandomCategoriesChange(index, value)} 
-                    value={imageWithCat.fandomCategories} 
-                    promptText="Chọn fandom cho ảnh này" 
+                  <MultiSelect
+                    onChange={(value) => handleFandomCategoriesChange(index, value)}
+                    value={imageWithCat.fandomCategories}
+                    promptText="Chọn fandom cho ảnh này"
                     categoryType="fandom"
                   />
                 </div>
                 <div className="w-full">
                   <FormLabel>Các loại mặt hàng xuất hiện trong ảnh sample</FormLabel>
-                  <MultiSelect 
-                    onChange={(value) => handleItemTypeCategoriesChange(index, value)} 
-                    value={imageWithCat.itemTypeCategories} 
-                    promptText="Chọn loại mặt hàng cho ảnh này" 
+                  <MultiSelect
+                    onChange={(value) => handleItemTypeCategoriesChange(index, value)}
+                    value={imageWithCat.itemTypeCategories}
+                    promptText="Chọn loại mặt hàng cho ảnh này"
                     categoryType="itemType"
                   />
                 </div>
@@ -593,10 +619,10 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             </div>
           ))}
 
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="w-full flex items-center justify-center" 
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full flex items-center justify-center"
             onClick={addImageEntry}
           >
             <Plus className="w-4 h-4 mr-2" /> Thêm ảnh
@@ -612,11 +638,11 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 <FormControl>
                   <div className="flex items-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
                     <TagInput
-                      value={field.value || []}   // always an array
-                      onChange={field.onChange}   // updates react-hook-form
+                      value={field.value || []}
+                      onChange={field.onChange}
                       placeholder="Thêm tag khác (không thuộc fandom hay mặt hàng, ví dụ: couple, nhân vật... - phân cách bằng dấu phẩy hoặc Enter)"
-                      className="flex-1 bg-transparent p-0 border-0 outline-none" 
-                    />  
+                      className="flex-1 bg-transparent p-0 border-0 outline-none"
+                    />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -681,8 +707,8 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         className="filter-grey"
                       />
                       <p className="ml-3 whitespace-nowrap text-grey-600">Ngày mở đơn:</p>
-                      <DatePicker 
-                        selected={field.value} 
+                      <DatePicker
+                        selected={field.value}
                         onChange={(date: Date | null) => field.onChange(date)}
                         showTimeSelect
                         timeInputLabel="Time:"
@@ -696,7 +722,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 </FormItem>
               )}
             />
-        
+
           <FormField
               control={form.control}
               name="endDateTime"
@@ -712,8 +738,8 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         className="filter-grey"
                       />
                       <p className="ml-3 whitespace-nowrap text-grey-600">Ngày đóng đơn:</p>
-                      <DatePicker 
-                        selected={field.value} 
+                      <DatePicker
+                        selected={field.value}
                         onChange={(date: Date | null) => field.onChange(date)}
                         showTimeSelect
                         timeInputLabel="Time:"
@@ -726,7 +752,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                   <FormMessage />
                 </FormItem>
               )}
-            /> 
+            />
         </div>
 
         <div className="flex flex-col gap-5 md:flex-row">
@@ -739,7 +765,6 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
                       <Input placeholder="Link preorder" {...field} value={field.value || ""} className="input-field" />
                     </div>
-
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -765,13 +790,6 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             ? "Cập nhật sample"
             : `${type} Sample`}
         </Button>
-        {/* <Button 
-          type="button"
-          onClick={handleFixAndSubmit}
-          className="mt-2 bg-gray-200"
-        >
-          Debug Form
-        </Button> */}
       </form>
     </Form>
   )

@@ -15,7 +15,7 @@ export default async function TagDetailPage({ params }: { params: Promise<{ tag:
         emptyTitle="Không tìm thấy sample nào"
         emptyStateSubtext="Hãy trở lại sau"
         collectionType="All_Events"
-        limit={7}
+        limit={10}
         page={1}
         totalPages={1}
       />

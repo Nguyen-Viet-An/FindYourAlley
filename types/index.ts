@@ -7,14 +7,14 @@ export type CreateUserParams = {
     email: string
     photo: string
   }
-  
+
   export type UpdateUserParams = {
     firstName: string | null
     lastName: string | null
     username: string
     photo: string
   }
-  
+
   // ====== EVENT PARAMS
   export type CreateEventParams = {
     userId: string;
@@ -28,10 +28,11 @@ export type CreateUserParams = {
       hasPreorder: string;
       extraTag?: string[];
       url?: string;
+      festival?: string[]; // multi-festival support
     };
     path: string;
   };
-  
+
   export type UpdateEventParams = {
     userId: string;
     event: {
@@ -45,6 +46,7 @@ export type CreateUserParams = {
       hasPreorder: string;
       extraTag?: string[];
       url?: string;
+      festival?: string[]; // multi-festival support
     };
     path: string;
   };
@@ -52,7 +54,7 @@ export type CreateUserParams = {
     eventId: string
     path: string
   }
-  
+
   export type GetAllEventsParams = {
     query: string
     fandom: string[]
@@ -60,22 +62,24 @@ export type CreateUserParams = {
     hasPreorder?: "Yes" | "No";
     limit: number
     page: number
+    festivalId?: string | string[] // allow multiple when filtering
   }
-  
+
   export type GetEventsByUserParams = {
     userId: string
     limit?: number
     page: number
   }
-  
+
   export type GetRelatedEventsByCategoryParams = {
     categoryIds: string[]
     requestedCategoryIds: string[]
     eventId: string
     limit?: number
-    page: number | string
+    page?: number | string // optional now (single page related events)
+    festivalId?: string | string[] // scope related events within same festivals
   }
-  
+
   export type Event = {
     _id: string
     title: string
@@ -97,13 +101,13 @@ export type CreateUserParams = {
       type: string
     }[]
   }
-  
+
   // ====== CATEGORY PARAMS
   export type CreateCategoryParams = {
     categoryName: string
     categoryType: string
   }
-  
+
   // ====== ORDER PARAMS
   export type BookmarkOrderParams = {
     eventTitle: string
@@ -111,18 +115,19 @@ export type CreateUserParams = {
     extraTag: string[]
     buyerId: string
   }
-  
+
   export type CreateOrderParams = {
     eventId: string
     buyerId: string
     imageIndex?: number;
+    note?: string;
   }
-  
+
   export type GetOrdersByEventParams = {
     eventId: string
     searchString: string
   }
-  
+
   export type GetOrdersByUserParams = {
     userId: string | null
     limit?: number
@@ -142,19 +147,19 @@ export type CreateUserParams = {
   export type DeleteOrderParams = {
     orderId: string
   }
-  
+
   // ====== URL QUERY PARAMS
   export type UrlQueryParams = {
     params: string
     key: string
     value: string | null
   }
-  
+
   export type RemoveUrlQueryParams = {
     params: string
     keysToRemove: string[]
   }
-  
+
   export type SearchParamProps = {
     params: Promise<{ id: string }>,
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>

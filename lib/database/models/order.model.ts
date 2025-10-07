@@ -10,7 +10,8 @@ export interface IOrder extends Document {
     firstName: string
     lastName: string
   }
-  imageIndex?: number 
+  imageIndex?: number
+  note?: string
 }
 
 export type IOrderItem = {
@@ -30,6 +31,7 @@ const OrderSchema = new Schema({
     ref: 'User',
   },
   imageIndex: { type: Number, required: false }, // Add this field
+  note: { type: String, required: false, default: '' },
 })
 
 const Order = models.Order || model('Order', OrderSchema)

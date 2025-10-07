@@ -113,6 +113,9 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
     } else {
       currentParams.set(categoryFilterType, category);
     }
+    // Reset pagination to first page when changing category filter
+    currentParams.delete('page'); // removing lets server default to page 1
+    // Alternatively: currentParams.set('page', '1');
 
     router.push(`?${currentParams.toString()}`, { scroll: false });
   };
@@ -142,12 +145,12 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={`w-full justify-between ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`w-full justify-between min-w-0 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           disabled={isLoading}
         >
-          <div className="flex items-center gap-2">
-            {displayValue}
-            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          <div className="flex items-center gap-2 min-w-0 w-full">
+            <span className="block flex-1 min-w-0 max-w-full truncate break-words text-left">{displayValue}</span>
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -168,18 +171,18 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
             <div className="max-h-72 overflow-y-auto">
               <div
                 className={cn(
-                  "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                  "relative flex cursor-default select-none items-start gap-1 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                   selectedCategory === "All" ? "bg-accent text-accent-foreground" : ""
                 )}
                 onClick={() => onSelectCategory("All")}
               >
                 <Check
                   className={cn(
-                    "mr-2 h-4 w-4",
+                    "mt-0.5 h-4 w-4 shrink-0",
                     selectedCategory === "All" ? "opacity-100" : "opacity-0"
                   )}
                 />
-                <span>Bất kì</span>
+                <span className="block break-words whitespace-normal leading-snug max-w-full">Bất kì</span>
               </div>
   
               {filteredCategories.length === 0 ? (
@@ -189,18 +192,20 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
                   <div
                     key={category._id}
                     className={cn(
-                      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                      "relative flex cursor-default select-none items-start gap-1 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                       selectedCategory === category.name ? "bg-accent text-accent-foreground" : ""
                     )}
                     onClick={() => onSelectCategory(category.name)}
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mt-0.5 h-4 w-4 shrink-0",
                         selectedCategory === category.name ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <span>{category.name}</span>
+                    <span className="block break-words whitespace-normal leading-snug max-w-full">
+                      {category.name}
+                    </span>
                   </div>
                 ))
               )}

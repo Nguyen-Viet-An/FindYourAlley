@@ -10,15 +10,16 @@ import {ObjectId} from 'mongodb';
 import User from '../database/models/user.model';
 
 
-export const createOrder = async (order: CreateOrderParams) => {
+export const createOrder = async (order: CreateOrderParams & { note?: string }) => {
   try {
     await connectToDatabase();
-    
+
     const newOrder = await Order.create({
       ...order,
       event: order.eventId,
       buyer: order.buyerId,
-      imageIndex: order.imageIndex
+      imageIndex: order.imageIndex,
+      note: order.note || ''
     });
 
     return JSON.parse(JSON.stringify(newOrder));
@@ -128,9 +129,9 @@ export async function getOrdersByUser({ userId, limit = 6, page }: GetOrdersByUs
     const ordersCount = await Order.countDocuments(conditions)
 
     // Return orders with their events and imageIndex
-    return { 
-      data: JSON.parse(JSON.stringify(orders)), 
-      totalPages: Math.ceil(ordersCount / limit) 
+    return {
+      data: JSON.parse(JSON.stringify(orders)),
+      totalPages: Math.ceil(ordersCount / limit)
     }
   } catch (error) {
     handleError(error)
@@ -143,7 +144,7 @@ export async function getEventIdsOrderedByUser({ userId }: GetEventIdsOrderedByU
 
     // Get all orders for this user
     const orders = await Order.find({ buyer: userId }).select('event imageIndex')
-    
+
     // Create an array of objects containing both eventId and imageIndex
     const eventIdsWithImageIndex = orders.map(order => ({
       eventId: order.event.toString(),
@@ -166,19 +167,8 @@ export async function findOrder({ eventId, userId, imageIndex }: FindOrderParams
       buyer: userId,
       ...(imageIndex !== undefined && { imageIndex }), // Include imageIndex if provided
     });
-    
-    if (!order) {
-      console.error(`No order found for event ${eventId} and user ${userId}`);
-      return null;
-    }
-    
-    const result = await Order.deleteOne({ _id: order._id });
-    if (result.deletedCount === 0) {
-      console.error(`No order found with ID: ${order._id}`);
-    }
-    console.log(`Order with ID ${order._id} successfully deleted`);
-    
-    return JSON.parse(JSON.stringify(order._id));
+
+    return order ? JSON.parse(JSON.stringify(order)) : null;
 
   } catch (error) {
     console.error('Error finding order:', error);
@@ -186,6 +176,15 @@ export async function findOrder({ eventId, userId, imageIndex }: FindOrderParams
   }
 }
 
+export async function updateOrderNote(orderId: string, note: string) {
+  try {
+    await connectToDatabase();
+    const updated = await Order.findByIdAndUpdate(orderId, { note }, { new: true });
+    return JSON.parse(JSON.stringify(updated));
+  } catch (error) {
+    handleError(error);
+  }
+}
 
 export async function getBuyerCountForEvent(eventId: string): Promise<number> {
   try {

@@ -9,10 +9,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getEventIdsOrderedByUser } from '@/lib/actions/order.actions';
 import { auth } from '@clerk/nextjs/server'
+import { getFestivals, ensureDefaultFestival } from '@/lib/actions/festival.actions';
+import FestivalFilter from '@/components/shared/FestivalFilter';
 
 export default async function Home({ searchParams }: SearchParamProps) {
   const params = await searchParams;
-
   const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
 
@@ -20,16 +21,16 @@ export default async function Home({ searchParams }: SearchParamProps) {
   const searchText = (params?.query as string) || '';
   const uniqueEventTitleCount = await getUniqueEventTitleCount();
 
-  const fandom = Array.isArray(params?.fandom) 
-  ? params.fandom 
-  : params?.fandom 
-    ? params.fandom.split(",") 
-    : [];
+  const fandom = Array.isArray(params?.fandom)
+    ? params.fandom
+    : params?.fandom
+      ? params.fandom.split(",")
+      : [];
 
-  const itemType = Array.isArray(params?.itemType) 
-    ? params.itemType 
-    : params?.itemType 
-      ? params.itemType.split(",") 
+  const itemType = Array.isArray(params?.itemType)
+    ? params.itemType
+    : params?.itemType
+      ? params.itemType.split(",")
       : [];
 
   const hasPreorder = params?.hasPreorder
@@ -38,9 +39,16 @@ export default async function Home({ searchParams }: SearchParamProps) {
       : params.hasPreorder === "true" ? "Yes" : "No"
     : undefined;
 
-  const eventIdsOrdered = await getEventIdsOrderedByUser({ userId })
+  // await ensureDefaultFestival();
+  // const festivals = await getFestivals(true);
+  // const rawFestivalParam = params?.festivalId;
+  // const selectedFestivalIds: string[] = rawFestivalParam
+  //   ? (Array.isArray(rawFestivalParam) ? rawFestivalParam : String(rawFestivalParam).split(',').filter(Boolean))
+  //   : (festivals[0]?._id ? [festivals[0]._id] : []);
 
-  // const orderedEvents = orders?.data.map((order: IOrder) => order.event) || [];
+  // const headingFestival = festivals.find((f: any) => selectedFestivalIds.length === 1 && f._id === selectedFestivalIds[0]);
+
+  const eventIdsOrdered = await getEventIdsOrderedByUser({ userId })
 
   const events = await getAllEvents({
     query: searchText,
@@ -48,7 +56,8 @@ export default async function Home({ searchParams }: SearchParamProps) {
     itemType: itemType,
     hasPreorder: hasPreorder,
     page,
-    limit: 7
+    limit: 20,
+    // festivalId: selectedFestivalIds,
   });
 
   return (
@@ -64,7 +73,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
             </Button>
           </div>
 
-          <Image 
+          <Image
             src="/assets/images/gen.png"
             alt="kimitowatshi"
             width={1000}
@@ -72,12 +81,12 @@ export default async function Home({ searchParams }: SearchParamProps) {
             className="max-h-[70vh] object-contain object-center 2xl:max-h-[50vh]"
           />
         </div>
-      </section> 
+      </section>
 
       <section id="events" className="wrapper my-8 flex flex-col gap-8 md:gap-12">
+        {/* <h2 className="h2-bold"> <br /> {headingFestival ? `Sample ${headingFestival.code || headingFestival.name}` : 'Sample'} </h2> */}
         <h2 className="h2-bold"> <br /> Sample COFI#15 </h2>
 
-        {/* Buttons for Tags and Stats */}
         <div className="flex gap-4 mb-2">
           <Button size="sm" asChild className="bg-primary-500 hover:bg-primary-400 text-white">
             <Link href="/tags">Tags</Link>
@@ -88,23 +97,27 @@ export default async function Home({ searchParams }: SearchParamProps) {
         </div>
 
         <span className="text-grey-700 text-base md:text-lg">
-          Hiện đã có sample của 
-          <span className="text-primary-500 font-semibold ml-1 text-2xl">{uniqueEventTitleCount} </span> 
+          Hiện đã có sample của
+          <span className="text-primary-500 font-semibold ml-1 text-2xl">{uniqueEventTitleCount} </span>
           gian hàng.
         </span>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+          {/* <div>
+            <div className="font-semibold mb-1">Festival</div>
+            <FestivalFilter festivals={festivals} />
+          </div> */}
           <div>
             <div className="font-semibold mb-1">Tìm kiếm</div>
             <Search />
           </div>
           <div>
             <div className="font-semibold mb-1">Fandom</div>
-            <CategoryFilter key="fandom-filter" categoryFilterType="fandom" />
+            <CategoryFilter categoryFilterType="fandom" />
           </div>
           <div>
             <div className="font-semibold mb-1">Loại mặt hàng</div>
-            <CategoryFilter key={`filter-${Math.random()}`} categoryFilterType="itemType" />
+            <CategoryFilter categoryFilterType="itemType" />
           </div>
           <div>
             <div className="font-semibold mb-1">Mở preorder</div>
@@ -112,13 +125,13 @@ export default async function Home({ searchParams }: SearchParamProps) {
           </div>
         </div>
 
-        <Collection 
+        <Collection
           data={events?.data}
           ordered={eventIdsOrdered}
           emptyTitle="Không tìm thấy sample nào"
           emptyStateSubtext="Hãy trở lại sau"
           collectionType="All_Events"
-          limit={7}
+          limit={20}
           page={page}
           totalPages={events?.totalPages}
           urlParamName="page"

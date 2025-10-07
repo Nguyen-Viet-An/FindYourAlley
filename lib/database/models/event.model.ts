@@ -3,7 +3,7 @@ import { Document, Schema, model, models } from "mongoose";
 export interface IImage {
   imageUrl: string;
   categoryIds: string[]; // fandom categories
-  itemTypeIds: string[]; // item type categories 
+  itemTypeIds: string[]; // item type categories
 }
 
 export interface IEvent extends Document {
@@ -13,7 +13,7 @@ export interface IEvent extends Document {
   artists: {
     name: string;
     link?: string;
-  };
+  }[]; // make artists array explicitly
   createdAt: Date;
   images: {
     imageUrl: string;
@@ -25,6 +25,7 @@ export interface IEvent extends Document {
   url?: string;
   hasPreorder: "Yes" | "No" | undefined;
   organizer: { _id: string, firstName: string, lastName: string };
+  festival?: { _id: string; name: string; code?: string }[]; // now an array of festivals
 }
 
 const EventSchema = new Schema(
@@ -48,8 +49,11 @@ const EventSchema = new Schema(
     url: { type: String },
     hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
     organizer: { type: Schema.Types.ObjectId, ref: "User" },
+    festival: [{ type: Schema.Types.ObjectId, ref: 'Festival' }], // now array
   }
 );
+
+EventSchema.index({ festival: 1, createdAt: -1 });
 
 const Event = models.Event || model('Event', EventSchema);
 

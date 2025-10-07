@@ -49,78 +49,64 @@ export default async function Card({
     : null;
 
   return (
-    <div className="group relative flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
-       <div className="relative">
-       <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/broken-image.png'} alt={event.title}>
-        <div className="relative">
-          <Image
-            src={imageToDisplay.imageUrl || '/assets/images/broken-image.png'}
-            alt={event.title}
-            fill
-            className="object-cover"
-            quality={70} // ✅ Reduce bandwidth
-            // sizes="(max-width: 768px) 100vw, 50vw" // ✅ Serve smaller images for mobile
-            priority={false} // ✅ Lazy load
-            unoptimized={true}
-          />
-        </div>
-      </CardLightbox>
-        
-        {/* Then place action buttons outside the lightbox but still positioned absolutely */}
-        {!hideBookmark && !isEventCreator && (
-          <div className="absolute right-1 top-0.5 z-10">
-            <div className="rounded-sm p-1 shadow-sm transition-all">
-              <BookmarkButton 
-                event={event} 
-                hasOrdered={hasOrdered} 
-                imageIndex={imageIndex}
-              />
-            </div>
-          </div>
-        )}
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
+       {/* Single fixed-height image wrapper to avoid double padding gap */}
+       <div className="relative w-full h-64 overflow-hidden">{/* consistent image height */}
+         <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/broken-image.png'} alt={event.title}>
+           <div className="relative w-full h-full">
+             <Image
+               src={imageToDisplay.imageUrl || '/assets/images/broken-image.png'}
+               alt={event.title}
+               fill
+               className="object-cover"
+               quality={70}
+               priority={false}
+               unoptimized={true}
+             />
+           </div>
+         </CardLightbox>
+         {!hideBookmark && !isEventCreator && (
+           <div className="absolute right-1 top-1 z-10">
+             <div className="rounded-sm p-1 shadow-sm transition-all">
+               <BookmarkButton
+                 event={event}
+                 hasOrdered={hasOrdered}
+                 imageIndex={imageIndex}
+               />
+             </div>
+           </div>
+         )}
+         {isEventCreator && !hideEdit && (
+           <div className="absolute right-2 top-2 flex flex-col gap-4 rounded-xl bg-white p-3 shadow-sm transition-all">
+             <Link href={`/events/${event._id}/update`}>
+               <Image src="/assets/icons/edit.svg" alt="edit" width={20} height={20} />
+             </Link>
+             <DeleteConfirmation eventId={event._id} />
+           </div>
+         )}
+       </div>
 
-        {/* Edit & Delete Options for Event Creator */}
-        {isEventCreator && !hideEdit && (
-          <div className="absolute right-2 top-2 flex flex-col gap-4 rounded-xl bg-white p-3 shadow-sm transition-all">
-            <Link href={`/events/${event._id}/update`}>
-              <Image src="/assets/icons/edit.svg" alt="edit" width={20} height={20} />
-            </Link>
-            <DeleteConfirmation eventId={event._id} />
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3 p-5 md:gap-4">
-        {/* <p className="p-medium-16 p-medium-18 text-grey-500">
-          {formatDateTime(event.startDateTime).dateTime}
-        </p> */}
-
+      <div className="flex flex-col gap-2 p-4 md:p-5 flex-grow">{/* reduced gap & padding */}
         <Link href={`/events/${event._id}`}>
-          <p className="p-medium-16 md:p-medium-20 line-clamp-2 text-black">
+          <p className="p-medium-16 md:p-medium-20 line-clamp-2 min-h-[40px] text-black">{/* slightly smaller reserved space */}
             {displayTitle}
           </p>
         </Link>
-
-        <div className="flex flex-col gap-2"> {/* Increase gap for better spacing */}
-          <div className="flex justify-between items-center">
-            {/* Artist Names Column */}
-            <p className="p-medium-14 md:p-medium-16 text-grey-600">
+        <div className="flex flex-col gap-1">{/* removed mt-auto so content sits right under title */}
+          <div className="flex justify-between items-center gap-2">
+            <p className="p-medium-14 md:p-medium-16 text-grey-600 line-clamp-1 min-h-[20px]">
               {Array.isArray(event.artists) && event.artists.length > 0
-                ? event.artists.map((artist) => artist.name).join(', ') // Join all artist names
+                ? event.artists.map((artist) => artist.name).join(', ')
                 : event.artists?.name || 'No artist information'}
             </p>
-
-            {/* Preorder Link Column */}
             {event.hasPreorder === "Yes" && event.url && isValidUrl(event.url) && (
-              <a href={event.url} className="text-primary-500 font-semibold" target="_blank" rel="noopener noreferrer">
+              <a href={event.url} className="text-primary-500 font-semibold text-xs md:text-sm truncate max-w-[120px]" target="_blank" rel="noopener noreferrer">
                 Preorder Link
               </a>
             )}
           </div>
-
-          {/* Bookmark count */}
           {hasOrderLink && (
-            <p className="text-primary-500 text-sm">{buyerCount} người đã bookmark</p>
+            <p className="text-primary-500 text-xs md:text-sm min-h-[16px]">{buyerCount} người đã bookmark</p>
           )}
         </div>
       </div>

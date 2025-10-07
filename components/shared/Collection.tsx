@@ -39,6 +39,7 @@ const Collection = ({
   collectionType,
   urlParamName,
   requestedCategoryIds = [],
+  limit,
 }: CollectionProps) => {
   const processedEvents: ProcessedEvent[] = useMemo(() => {
     return data.flatMap((itemOrEvent) => {
@@ -91,12 +92,19 @@ const Collection = ({
     });
   }, [data, ordered, collectionType, requestedCategoryIds]);
 
+  // Determine page size based on images (limit prop now represents images per page)
+  const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page;
+  const startIndex = (pageNumber - 1) * limit;
+  const endIndex = startIndex + limit;
+  const pagedEvents = processedEvents.slice(startIndex, endIndex);
+  const totalPagesComputed = totalPages || Math.ceil(processedEvents.length / limit) || 1;
+
   return (
     <>
       {processedEvents.length > 0 ? (
         <div className="flex flex-col items-center gap-10">
           <ul className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-min">
-            {processedEvents.map(({ event, imageIndex, hasOrdered }) => (
+            {pagedEvents.map(({ event, imageIndex, hasOrdered }) => (
               <li key={`${event._id}-${imageIndex ?? 'default'}`} className="flex justify-center flex-col max-w-xs w-full">
                 <Card
                   event={event}
@@ -104,14 +112,14 @@ const Collection = ({
                   hideEdit={collectionType === 'All_Events'}
                   hideBookmark={collectionType === 'Events_Organized'}
                   hasOrdered={hasOrdered}
-                  imageIndex={imageIndex} // Now properly typed as optional
+                  imageIndex={imageIndex}
                 />
               </li>
             ))}
           </ul>
 
-          {totalPages > 1 && (
-            <Pagination urlParamName={urlParamName} page={page} totalPages={totalPages} />
+          {totalPagesComputed > 1 && (
+            <Pagination urlParamName={urlParamName} page={page} totalPages={totalPagesComputed} />
           )}
         </div>
       ) : (
