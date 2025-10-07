@@ -97,17 +97,11 @@ const Collection = ({
   }, [data, ordered, collectionType, requestedCategoryIds]);
 
   // Determine page size based on images (limit prop now represents images per page)
-  const pageNumberRaw = typeof page === 'string' ? parseInt(page, 10) || 1 : page;
-  const backendTotal = totalPages || 1;
-  const computedTotal = Math.ceil(processedEvents.length / limit) || 1;
-  // Use the smaller to prevent showing pages that have no data client-side
-  const effectiveTotalPages = Math.min(backendTotal, computedTotal);
-  const pageNumber = Math.min(pageNumberRaw, effectiveTotalPages);
+  const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page;
   const startIndex = (pageNumber - 1) * limit;
   const endIndex = startIndex + limit;
   const pagedEvents = processedEvents.slice(startIndex, endIndex);
-  // Preserve original fallback if backendTotal not provided but avoid exceeding effectiveTotalPages
-  const totalPagesComputed = effectiveTotalPages;
+  const totalPagesComputed = totalPages || Math.ceil(processedEvents.length / limit) || 1;
 
   return (
     <>
@@ -129,7 +123,7 @@ const Collection = ({
           </ul>
 
           {totalPagesComputed > 1 && (
-            <Pagination urlParamName={urlParamName} page={pageNumber} totalPages={totalPagesComputed} />
+            <Pagination urlParamName={urlParamName} page={page} totalPages={totalPagesComputed} />
           )}
         </div>
       ) : (
