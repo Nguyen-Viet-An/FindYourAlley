@@ -25,7 +25,7 @@ import { Plus, Trash2, PlusCircle, XCircle} from "lucide-react"
 import { storage } from '@/lib/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
-import FestivalSelect from './FestivalSelect';
+// import FestivalSelect from './FestivalSelect';
 
 // festivals now passed from server components to avoid calling server action directly in client
 
