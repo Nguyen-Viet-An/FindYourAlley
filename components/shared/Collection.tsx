@@ -43,14 +43,14 @@ const Collection = ({
 }: CollectionProps) => {
   const processedEvents: ProcessedEvent[] = useMemo(() => {
     return data.flatMap((itemOrEvent) => {
-      const isOrderItem = 'event' in itemOrEvent && 'imageIndex' in itemOrEvent;
+      const isOrderItem = 'event' in itemOrEvent && ("buyer" in (itemOrEvent as any) || 'imageIndex' in itemOrEvent);
       const event = isOrderItem ? (itemOrEvent as IOrderWithEvent).event : (itemOrEvent as IEvent);
       const imageIndex = isOrderItem ? (itemOrEvent as IOrderWithEvent).imageIndex : undefined;
 
       if (!event) return [];
 
       let hasOrdered = false;
-      if (Array.isArray(ordered)) {
+      if (Array.isArray(ordered) && ordered.length) {
         if (typeof ordered[0] === 'string') {
           hasOrdered = (ordered as string[]).includes(event._id);
         } else {
@@ -58,6 +58,10 @@ const Collection = ({
             (item) => item.eventId === event._id
           );
         }
+      }
+      // Force true for items coming from the user's orders (My_Tickets view)
+      if (collectionType === 'My_Tickets' && isOrderItem) {
+        hasOrdered = true;
       }
 
       // If My_Tickets, only show the specific image
@@ -93,11 +97,17 @@ const Collection = ({
   }, [data, ordered, collectionType, requestedCategoryIds]);
 
   // Determine page size based on images (limit prop now represents images per page)
-  const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page;
+  const pageNumberRaw = typeof page === 'string' ? parseInt(page, 10) || 1 : page;
+  const backendTotal = totalPages || 1;
+  const computedTotal = Math.ceil(processedEvents.length / limit) || 1;
+  // Use the smaller to prevent showing pages that have no data client-side
+  const effectiveTotalPages = Math.min(backendTotal, computedTotal);
+  const pageNumber = Math.min(pageNumberRaw, effectiveTotalPages);
   const startIndex = (pageNumber - 1) * limit;
   const endIndex = startIndex + limit;
   const pagedEvents = processedEvents.slice(startIndex, endIndex);
-  const totalPagesComputed = totalPages || Math.ceil(processedEvents.length / limit) || 1;
+  // Preserve original fallback if backendTotal not provided but avoid exceeding effectiveTotalPages
+  const totalPagesComputed = effectiveTotalPages;
 
   return (
     <>
@@ -119,7 +129,7 @@ const Collection = ({
           </ul>
 
           {totalPagesComputed > 1 && (
-            <Pagination urlParamName={urlParamName} page={page} totalPages={totalPagesComputed} />
+            <Pagination urlParamName={urlParamName} page={pageNumber} totalPages={totalPagesComputed} />
           )}
         </div>
       ) : (
