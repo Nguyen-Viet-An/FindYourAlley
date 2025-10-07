@@ -340,6 +340,28 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
   }
 }
 
+// GET EVENTS BY ORGANIZER
+export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUserParams) {
+  try {
+    await connectToDatabase()
+
+    const conditions = { organizer: userId }
+    const skipAmount = (page - 1) * limit
+
+    const eventsQuery = Event.find(conditions)
+      .sort({ createdAt: 'desc' })
+      .skip(skipAmount)
+      .limit(limit)
+
+    const events = await populateEvent(eventsQuery)
+    const eventsCount = await Event.countDocuments(conditions)
+
+    return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) }
+  } catch (error) {
+    handleError(error)
+  }
+}
+
 export async function getUniqueEventTitleCount() {
   await connectToDatabase();
   const events = await Event.find({}, 'title').lean();
@@ -347,7 +369,7 @@ export async function getUniqueEventTitleCount() {
   const codeRegex = /([A-Z]+\d+)/i;
 
   const uniqueCodes = new Set(
-    events.map((event: { title: string }) => {
+    events.map((event) => {
       const match = event.title.match(codeRegex);
       return match ? match[1].toUpperCase() : null;
     }).filter(Boolean)

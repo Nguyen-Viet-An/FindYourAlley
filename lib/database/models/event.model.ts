@@ -13,7 +13,7 @@ export interface IEvent extends Document {
   artists: {
     name: string;
     link?: string;
-  }[]; // make artists array explicitly
+  }; // make artists array explicitly
   createdAt: Date;
   images: {
     imageUrl: string;

@@ -50,14 +50,13 @@ const EventDetails = async (props: {
   : [];
 
   // Dedupe to avoid inflated counts
-  categoryIds = Array.from(new Set(categoryIds.map((c: any) => c.toString()))).map(id => new mongoose.Types.ObjectId(id));
   requestedCategoryIds = Array.from(new Set(requestedCategoryIds));
 
   const RELATED_LIMIT = 8; // show up to 8 related events, single page
 
   // Get related events based on the categories from images (ensure backend uses same limit for pagination math)
   const relatedEvents = await getRelatedEventsByCategories({
-    categoryIds: categoryIds.map((c: any) => c.toString()),
+    categoryIds: categoryIds,
     requestedCategoryIds: requestedCategoryIds,
     eventId: event._id,
     limit: RELATED_LIMIT,
