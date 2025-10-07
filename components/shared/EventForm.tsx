@@ -83,10 +83,17 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
   }, [event]);
 
   useEffect(() => {
-    if (festivalIds && festivalIds.length) {
-      form.setValue('festival', festivalIds as any, { shouldValidate: true });
+    if (festivalIds.length === 0) {
+      // Fallback default to "Color Fiesta 15" or empty array
+      const defaultFestival = festivals.find(f => f.name === "Color Fiesta 15");
+      if (defaultFestival) {
+        setFestivalIds([defaultFestival._id]);
+        form.setValue("festival", [defaultFestival._id]);
+      } else {
+        form.setValue("festival", []); // still safe
+      }
     }
-  }, [festivalIds]);
+  }, [festivals]);
 
   // Initialize state with existing images if updating
   useEffect(() => {

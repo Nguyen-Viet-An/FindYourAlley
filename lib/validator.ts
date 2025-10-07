@@ -29,5 +29,5 @@ export const eventFormSchema = z.object({
   extraTag: z.array(z.string()).optional(),
   // isFree: z.boolean(),
   url: z.string().optional(),
-  festival: z.array(z.string().min(1)).min(1, 'Festival là bắt buộc').optional(),
+  festival: z.array(z.string()).optional().default([]),
 });
