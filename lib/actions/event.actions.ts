@@ -6,6 +6,7 @@ import { connectToDatabase } from '@/lib/database'
 import Event from '@/lib/database/models/event.model'
 import User from '@/lib/database/models/user.model'
 import Category from '@/lib/database/models/category.model'
+import Festival from '@/lib/database/models/festival.model';
 import { handleError, normalizeTags } from '@/lib/utils'
 import mongoose from 'mongoose';
 
@@ -40,7 +41,7 @@ const getCategoriesByNames = async (names: string | string[]) => {
 const populateEvent = (query: any) => {
   return query
     .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
-    .populate({ path: 'festival', select: '_id name code' })
+    .populate({ path: 'festival', model: Festival, select: '_id name code' })
     .populate({ path: 'images.category', model: Category, select: '_id name type' }); // Populate categories inside images
 };
 
