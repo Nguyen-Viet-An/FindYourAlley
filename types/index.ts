@@ -164,3 +164,40 @@ export type CreateUserParams = {
     params: Promise<{ id: string }>,
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
   }
+
+
+ // ====== BOOTH PARAMS
+  export type BoothEventMap = {
+    [boothCode: string]: {
+      eventId: string;
+      title: string;
+      boothLabel: string;
+      boothName: string;
+      thumb: string;
+      hasPreorder: boolean;
+      // New fields for multi-event support
+      allEvents?: BoothEvent[];
+      images?: string[];
+      totalEvents?: number;
+    }
+  }
+
+  export type BoothEvent = {
+    eventId: string;
+    title: string;
+    boothLabel: string;
+    boothName: string;
+    images: string[];
+    hasPreorder: boolean;
+    startDateTime?: Date;
+    endDateTime?: Date;
+  }
+
+  export type ParsedBooth = {
+    label: string;
+    codes: string[];
+    boothName: string;
+  }
+
+  export type GetBoothEventMapParams = {}
+

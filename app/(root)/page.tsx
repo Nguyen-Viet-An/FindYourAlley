@@ -87,12 +87,15 @@ export default async function Home({ searchParams }: SearchParamProps) {
         {/* <h2 className="h2-bold"> <br /> {headingFestival ? `Sample ${headingFestival.code || headingFestival.name}` : 'Sample'} </h2> */}
         <h2 className="h2-bold"> <br /> Sample COFI#15 </h2>
 
-        <div className="flex gap-4 mb-2">
+        <div className="flex gap-4 mb-3">
           <Button size="sm" asChild className="bg-primary-500 hover:bg-primary-400 text-white">
             <Link href="/tags">Tags</Link>
           </Button>
           <Button size="sm" asChild className="bg-primary-500 hover:bg-primary-400 text-white">
             <Link href="/stats">Thống kê</Link>
+          </Button>
+          <Button size="sm" asChild className="bg-primary-500 hover:bg-primary-400 text-white">
+            <Link href="/map">Sơ đồ</Link>
           </Button>
         </div>
 

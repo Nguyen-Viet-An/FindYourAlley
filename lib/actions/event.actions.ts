@@ -9,6 +9,8 @@ import Category from '@/lib/database/models/category.model'
 import Festival from '@/lib/database/models/festival.model';
 import { handleError, normalizeTags } from '@/lib/utils'
 import mongoose from 'mongoose';
+import { Schema } from "mongoose";
+import { parseBooth } from '@/lib/utils/booth';
 
 import {
   CreateEventParams,
@@ -17,6 +19,7 @@ import {
   GetAllEventsParams,
   GetEventsByUserParams,
   GetRelatedEventsByCategoryParams,
+  BoothEventMap,
 } from '@/types'
 
 const r2 = new S3Client({
@@ -512,5 +515,156 @@ export async function getRelatedEventsByCategories({
     };
   } catch (error) {
     handleError(error);
+  }
+}
+
+export async function getRarestFandoms(limit = 5) {
+  await connectToDatabase();
+  const results = await Event.aggregate([
+    { $unwind: '$images' },
+    { $unwind: '$images.category' },
+    { $lookup: { from: 'categories', localField: 'images.category', foreignField: '_id', as: 'categoryDoc' } },
+    { $unwind: '$categoryDoc' },
+    { $match: { 'categoryDoc.type': 'fandom', $and: [ { 'categoryDoc.name': { $ne: null } }, { 'categoryDoc.name': { $ne: '' } } ] } },
+    { $group: { _id: { lower: { $toLower: '$categoryDoc.name' } }, name: { $first: '$categoryDoc.name' }, count: { $sum: 1 }, eventId: { $first: '$_id' }, eventTitle: { $first: '$title' } } },
+    { $match: { count: { $gt: 0 } } },
+    { $sort: { count: 1 } },
+    { $addFields: { randomValue: { $rand: {} } } },
+    { $sort: { count: 1, randomValue: 1 } },
+    { $limit: limit }
+  ]);
+  return results.map((r: any) => ({ name: r.name, value: r.count, eventId: r.eventId?.toString(), eventTitle: r.eventTitle }));
+}
+
+export async function getRarestItemTypes(limit = 5) {
+  await connectToDatabase();
+  const results = await Event.aggregate([
+    { $unwind: '$images' },
+    { $unwind: '$images.category' },
+    { $lookup: { from: 'categories', localField: 'images.category', foreignField: '_id', as: 'categoryDoc' } },
+    { $unwind: '$categoryDoc' },
+    { $match: { 'categoryDoc.type': 'itemType', $and: [ { 'categoryDoc.name': { $ne: null } }, { 'categoryDoc.name': { $ne: '' } } ] } },
+    { $group: { _id: { lower: { $toLower: '$categoryDoc.name' } }, name: { $first: '$categoryDoc.name' }, count: { $sum: 1 }, eventId: { $first: '$_id' }, eventTitle: { $first: '$title' } } },
+    { $match: { count: { $gt: 0 } } },
+    { $sort: { count: 1 } },
+    { $addFields: { randomValue: { $rand: {} } } },
+    { $sort: { count: 1, randomValue: 1 } },
+    { $limit: limit }
+  ]);
+  return results.map((r: any) => ({ name: r.name, value: r.count, eventId: r.eventId?.toString(), eventTitle: r.eventTitle }));
+}
+
+export async function getMostBookmarkedEvents(limit = 5) {
+  await connectToDatabase();
+  const results = await Event.aggregate([
+    { $lookup: { from: 'orders', localField: '_id', foreignField: 'event', as: 'orders' } },
+    { $addFields: { bookmarkCount: { $size: '$orders' } } },
+    { $sort: { bookmarkCount: -1 } },
+    { $limit: limit },
+    { $project: { _id: 1, title: 1, bookmarkCount: 1, images: { $slice: ['$images', 1] } } }
+  ]);
+  return results.map((e: any) => ({ id: e._id.toString(), title: e.title, count: e.bookmarkCount, imageUrl: e.images?.[0]?.imageUrl || '' }));
+}
+
+export async function getBoothEventMap(): Promise<BoothEventMap> {
+  try {
+    await connectToDatabase();
+    const events = await Event.find({}, 'title images startDateTime endDateTime hasPreorder').lean();
+
+    const boothEvents: { [boothCode: string]: any[] } = {};
+
+    // First pass: collect all events by booth code
+    for (const event of events) {
+      const parsed = parseBooth(event.title);
+      if (!parsed) continue;
+
+      const eventData = {
+        eventId: (event._id as  Schema.Types.ObjectId).toString(),
+        title: event.title,
+        boothLabel: parsed.label,
+        boothName: parsed.boothName,
+        images: event.images?.map((img: any) => img.imageUrl).filter(Boolean) || [],
+        hasPreorder: event.hasPreorder === 'Yes',
+        startDateTime: event.startDateTime,
+        endDateTime: event.endDateTime
+      };
+
+      // Add event to each booth code it belongs to
+      for (const code of parsed.codes) {
+        if (!boothEvents[code]) {
+          boothEvents[code] = [];
+        }
+        boothEvents[code].push(eventData);
+      }
+    }
+
+    // Second pass: consolidate events per booth
+    const map: BoothEventMap = {};
+
+    for (const [boothCode, events] of Object.entries(boothEvents)) {
+      if (events.length === 0) continue;
+
+      // Sort events by start date if available
+      events.sort((a, b) => {
+        if (a.startDateTime && b.startDateTime) {
+          return new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime();
+        }
+        return 0;
+      });
+
+      // Use the first/primary event for main display
+      const primaryEvent = events[0];
+
+      // Collect all unique images from all events in this booth
+      const allImages = [...new Set(events.flatMap(e => e.images))].filter(Boolean);
+
+      // Determine if any event has preorder
+      const hasAnyPreorder = events.some(e => e.hasPreorder);
+
+      // Create consolidated booth name (prefer non-empty names)
+      const consolidatedBoothName = events
+        .map(e => e.boothName)
+        .find(name => name && name.trim()) || primaryEvent.boothName;
+
+      // Use the primary event's title directly (no generic message)
+      const consolidatedTitle = primaryEvent.title;
+
+      map[boothCode] = {
+        eventId: primaryEvent.eventId,
+        title: consolidatedTitle,
+        boothLabel: primaryEvent.boothLabel,
+        boothName: consolidatedBoothName,
+        thumb: allImages[0] || '/assets/images/broken-image.png',
+        hasPreorder: hasAnyPreorder,
+        // Enhanced fields for multi-event support
+        allEvents: events,
+        images: allImages,
+        totalEvents: events.length
+      };
+    }
+
+    return map;
+  } catch (error) {
+    handleError(error);
+    return {};
+  }
+}
+
+export async function getEventByBoothCode(boothCode: string) {
+  try {
+    await connectToDatabase();
+    const normalizedCode = boothCode.toUpperCase().trim();
+
+    // Find event where title starts with the booth code
+    const event = await Event.findOne({
+      title: { $regex: `^${normalizedCode}(?:\\s*-|\\s|$)`, $options: 'i' }
+    }).populate('organizer', '_id firstName lastName').lean();
+
+    if (!event) return null;
+
+    return JSON.parse(JSON.stringify(event));
+  } catch (error) {
+    handleError(error);
+    return null;
   }
 }
