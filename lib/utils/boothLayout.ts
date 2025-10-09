@@ -20,6 +20,19 @@ export function generateBoothLayout(): BoothPosition[] {
     });
   }
 
+  // Section P (bottom) - 9 booths in 1 line
+  for (let i = 1; i <= 9; i++) {
+    booths.push({
+      code: `P${i}`,
+      section: 'P',
+      number: i,
+      x: 5500 + (i - 1) * 120,
+      y: 2450,
+      width: 110,
+      height: 110
+    });
+  }
+
   // Section B (left side) - 44 booths in 2 lines
   // Bottom line: 1-22, Top line: 23-44 (facing each other)
   for (let i = 1; i <= 44; i++) {

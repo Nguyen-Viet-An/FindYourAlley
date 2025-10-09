@@ -287,7 +287,8 @@ export default function InteractiveFloorplan({
       'G': { fill: '#d1fae5', stroke: '#059669', hoverFill: '#a7f3d0' },
       'H': { fill: '#fef2e2', stroke: '#f97316', hoverFill: '#fed7aa' },
       'J': { fill: '#f3e8ff', stroke: '#8b5cf6', hoverFill: '#e9d5ff' },
-      'K': { fill: '#fdf2f8', stroke: '#d946ef', hoverFill: '#f5d0fe' }
+      'K': { fill: '#fdf2f8', stroke: '#d946ef', hoverFill: '#f5d0fe' },
+      'P': { fill: '#d1d5db', stroke: '#6b7280', hoverFill: '#e5e7eb' }
     };
     return colors[section] || { fill: '#f3f4f6', stroke: '#6b7280', hoverFill: '#e5e7eb' };
   };
@@ -329,7 +330,7 @@ export default function InteractiveFloorplan({
       {/* SVG Floorplan */}
       <svg
         ref={svgRef}
-        viewBox="0 0 7000 2700"
+        viewBox="0 0 7100 2700"
         className="border rounded-lg bg-gray-50"
         style={{ width: '1200px', height: 'auto' }}
         preserveAspectRatio="xMidYMid meet"
@@ -349,6 +350,7 @@ export default function InteractiveFloorplan({
         {/* Section Labels */}
         <g className="section-labels">
           <text x="800" y="2520" fontSize="80" fontWeight="bold" fill="#f59e0b" textAnchor="middle">A</text>
+          <text x="5400" y="2520" fontSize="80" fontWeight="bold" fill="#6b7280" textAnchor="middle">P</text>
           <text x="350" y="2110" fontSize="80" fontWeight="bold" fill="#3b82f6" textAnchor="middle">B</text>
           <text x="350" y="1710" fontSize="80" fontWeight="bold" fill="#10b981" textAnchor="middle">C</text>
           <text x="350" y="1310" fontSize="80" fontWeight="bold" fill="#ec4899" textAnchor="middle">D</text>
@@ -529,7 +531,7 @@ export default function InteractiveFloorplan({
                           stroke={color}
                           strokeWidth={isActive ? "4" : "3"}
                           rx="8"
-                          opacity={shouldDimLabel ? "0.3" : (isActive ? "1" : "0.9")}
+                          opacity={shouldDimLabel ? "0.1" : (isActive ? "1" : "0.9")}
                           className="cursor-pointer transition-all duration-200"
                           style={{ filter: isActive ? 'url(#shadow)' : 'none' }}
                           onMouseEnter={() => handleRallyHover(rally)}
@@ -707,7 +709,7 @@ export default function InteractiveFloorplan({
                   href={`/events/${focusedBooth.eventId}`}
                   className="flex-1 bg-primary-500 text-white text-center py-3 px-4 rounded-lg hover:bg-primary-600 transition-colors font-medium"
                 >
-                  Thông tin chi tiết
+                  Bài đăng gian
                 </a>
                 {/* <button
                   onClick={() => setFocusedBooth(null)}
@@ -774,7 +776,7 @@ export default function InteractiveFloorplan({
 
               <div className="mb-4">
                 <h4 className="font-semibold text-gray-800 mb-2">
-                  🏪 Các gian tham gia ({focusedStampRally.booths.length} gian):
+                  🏪 Các gian tham gia ({focusedStampRally.booths.length} trạm):
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {expandBoothCodes(focusedStampRally.booths).map((boothCode, index) => {
