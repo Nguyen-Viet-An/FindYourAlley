@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BoothEventMap } from '@/types';
 import { BoothPosition } from '@/lib/utils/floormap';
 import { generateBoothLayout } from '@/lib/utils/boothLayout';
@@ -10,13 +10,13 @@ interface StampRally {
   name: string;
   rules: string;
   booths: string[];
+  artists?: string[];
   link?: string;
 }
 
 interface InteractiveFloorplanProps {
   boothMap: BoothEventMap;
   xmlContent: string;
-  uniqueEventTitleCount: number;
   boothNames: { [key: string]: string };
   stampRallies: StampRally[];
 }
@@ -39,7 +39,6 @@ type ViewMode = 'booth' | 'rally';
 export default function InteractiveFloorplan({
   boothMap,
   xmlContent,
-  uniqueEventTitleCount,
   boothNames,
   stampRallies
 }: InteractiveFloorplanProps) {
@@ -48,9 +47,11 @@ export default function InteractiveFloorplan({
   const [focusedBooth, setFocusedBooth] = useState<HoverData | null>(null);
   const [focusedStampRally, setFocusedStampRally] = useState<StampRally | null>(null);
   const [hoveredRally, setHoveredRally] = useState<StampRally | null>(null);
+  const [selectedRally, setSelectedRally] = useState<StampRally | null>(null); // For mobile click persistence
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('booth');
+  const [isMobile, setIsMobile] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Generate booth layout
@@ -64,6 +65,24 @@ export default function InteractiveFloorplan({
       setLoading(false);
     }
   }, []);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Clear selected rally when switching view modes
+  useEffect(() => {
+    setSelectedRally(null);
+    setHoveredRally(null);
+    setFocusedStampRally(null);
+  }, [viewMode]);
 
   // Helper function to expand booth codes (handles ranges like "G23-24")
   const expandBoothCodes = (boothCodes: string[]): string[] => {
@@ -124,26 +143,52 @@ export default function InteractiveFloorplan({
     });
   };
 
-  // Check if booth is in active rally
+  // Check if booth is in active rally (considers both hover and selected states)
   const isBoothInActiveRally = (boothCode: string): boolean => {
-    if (!hoveredRally) return false;
-    const expandedBooths = expandBoothCodes(hoveredRally.booths);
+    const activeRally = selectedRally || hoveredRally;
+    if (!activeRally) return false;
+    const expandedBooths = expandBoothCodes(activeRally.booths);
     return expandedBooths.includes(boothCode);
   };
 
   // Determine booth opacity in rally mode
   const getBoothOpacity = (boothCode: string): number => {
-    if (viewMode !== 'rally' || !hoveredRally) return 1;
+    if (viewMode !== 'rally') return 1;
+    const activeRally = selectedRally || hoveredRally;
+    if (!activeRally) return 1;
     return isBoothInActiveRally(boothCode) ? 1 : 0.2;
   };
 
-  // Handle stamp rally click
+  // Handle stamp rally click - select rally and open modal for both desktop and mobile
   const handleStampRallyClick = (stampRally: StampRally) => {
+    // Always set selected rally when in rally mode, regardless of what was clicked (lines, name box, etc.)
+    if (viewMode === 'rally') {
+      setSelectedRally(stampRally);
+    }
+    // Always open the modal
     setFocusedStampRally(stampRally);
   };
 
   const handleRallyHover = (rally: StampRally | null) => {
-    setHoveredRally(rally);
+    if (!isMobile) {
+      setHoveredRally(rally);
+    }
+  };
+
+  // Handle clicking outside to close modal and deselect rally
+  const handleBackgroundClick = () => {
+    if (focusedStampRally) {
+      setFocusedStampRally(null);
+    } else {
+      // If no modal is open, deselect the rally to restore hover functionality
+      setSelectedRally(null);
+    }
+  };
+
+  // Handle closing stamp rally modal (keep rally selected)
+  const handleCloseStampRallyModal = () => {
+    setFocusedStampRally(null);
+    // Keep selectedRally as is - rally stays highlighted
   };
 
   // Helper function to get booth name from boothNames object
@@ -288,6 +333,7 @@ export default function InteractiveFloorplan({
         className="border rounded-lg bg-gray-50"
         style={{ width: '1200px', height: 'auto' }}
         preserveAspectRatio="xMidYMid meet"
+        onClick={handleBackgroundClick}
       >
         {/* Background grid */}
         <defs>
@@ -392,8 +438,9 @@ export default function InteractiveFloorplan({
                 return index === 0 ? `M ${center.x} ${center.y}` : `L ${center.x} ${center.y}`;
               }).join(' ');
 
-              const isHovered = hoveredRally?.name === rally.name;
-              const shouldDim = hoveredRally && hoveredRally.name !== rally.name;
+              const activeRally = selectedRally || hoveredRally;
+              const isActive = activeRally?.name === rally.name;
+              const shouldDim = activeRally && activeRally.name !== rally.name;
 
               return (
                 <g key={rally.name}>
@@ -401,12 +448,12 @@ export default function InteractiveFloorplan({
                   <path
                     d={pathData}
                     stroke={color}
-                    strokeWidth={isHovered ? "10" : "6"}
+                    strokeWidth={isActive ? "10" : "6"}
                     fill="none"
-                    strokeDasharray={isHovered ? "0" : "12,8"}
-                    opacity={shouldDim ? "0.2" : (isHovered ? "0.9" : "0.6")}
+                    strokeDasharray={isActive ? "0" : "12,8"}
+                    opacity={shouldDim ? "0.2" : (isActive ? "0.9" : "0.6")}
                     className="pointer-events-none transition-all duration-200"
-                    style={{ filter: isHovered ? 'url(#shadow)' : 'none' }}
+                    style={{ filter: isActive ? 'url(#shadow)' : 'none' }}
                   />
 
                   {/* Invisible wider path for easier hovering */}
@@ -418,8 +465,11 @@ export default function InteractiveFloorplan({
                     className="cursor-pointer"
                     onMouseEnter={() => handleRallyHover(rally)}
                     onMouseLeave={() => handleRallyHover(null)}
-                    onClick={() => handleStampRallyClick(rally)}
-                  />
+                    onClick={(e) => {
+                        e.stopPropagation(); // prevent background click
+                        handleStampRallyClick(rally);
+                    }}
+                    />
 
                   {/* Rally indicators on booths */}
                   {boothPositions.map((booth) => {
@@ -429,25 +479,25 @@ export default function InteractiveFloorplan({
                         <circle
                           cx={center.x}
                           cy={center.y}
-                          r={isHovered ? "24" : "16"}
+                          r={isActive ? "24" : "16"}
                           fill={color}
                           stroke="white"
-                          strokeWidth={isHovered ? "5" : "4"}
+                          strokeWidth={isActive ? "5" : "4"}
                           opacity={shouldDim ? "0.2" : "1"}
                           className="pointer-events-none transition-all duration-200"
-                          style={{ filter: isHovered ? 'url(#shadow)' : 'none' }}
+                          style={{ filter: isActive ? 'url(#shadow)' : 'none' }}
                         />
-                        {/* Booth number next to dot */}
+                        {/* Booth number next to dot - positioned to avoid overlaps */}
                         <text
-                          x={center.x + (isHovered ? 35 : 28)}
-                          y={center.y + 8}
-                          fontSize={isHovered ? "50" : "24"}
+                          x={center.x + (isActive ? 35 : 28)}
+                          y={center.y + (boothPositions.findIndex(b => b.code === booth.code) % 2 === 0 ? 8 : -8)}
+                          fontSize={isActive ? "50" : "20"}
                           fontWeight="bold"
                           fill={color}
                           opacity={shouldDim ? "0.2" : "1"}
                           className="pointer-events-none select-none transition-all duration-200"
                           style={{
-                            filter: isHovered ? 'url(#shadow)' : 'none',
+                            filter: isActive ? 'url(#shadow)' : 'none',
                             textShadow: '0 0 3px white, 0 0 3px white, 0 0 3px white'
                           }}
                         >
@@ -466,7 +516,7 @@ export default function InteractiveFloorplan({
                     const boxPadding = 30;
 
                     // Determine if this rally should be dimmed
-                    const shouldDim = hoveredRally && hoveredRally.name !== rally.name;
+                    const shouldDimLabel = activeRally && activeRally.name !== rally.name;
 
                     return (
                       <>
@@ -477,11 +527,11 @@ export default function InteractiveFloorplan({
                           height="60"
                           fill="white"
                           stroke={color}
-                          strokeWidth={isHovered ? "4" : "3"}
+                          strokeWidth={isActive ? "4" : "3"}
                           rx="8"
-                          opacity={shouldDim ? "0.3" : (isHovered ? "1" : "0.9")}
+                          opacity={shouldDimLabel ? "0.3" : (isActive ? "1" : "0.9")}
                           className="cursor-pointer transition-all duration-200"
-                          style={{ filter: isHovered ? 'url(#shadow)' : 'none' }}
+                          style={{ filter: isActive ? 'url(#shadow)' : 'none' }}
                           onMouseEnter={() => handleRallyHover(rally)}
                           onMouseLeave={() => handleRallyHover(null)}
                           onClick={(e) => {
@@ -496,7 +546,7 @@ export default function InteractiveFloorplan({
                           fontSize="48"
                           fontWeight="bold"
                           fill={color}
-                          opacity={shouldDim ? "0.3" : "1"}
+                          opacity={shouldDimLabel ? "0.3" : "1"}
                           className="cursor-pointer select-none transition-all duration-200"
                           onMouseEnter={() => handleRallyHover(rally)}
                           onMouseLeave={() => handleRallyHover(null)}
@@ -524,9 +574,9 @@ export default function InteractiveFloorplan({
             hoveredBooth.isEmptyBooth ? 'bg-gray-50 border-gray-300' : 'bg-white border-gray-200'
           }`}
           style={{
-            left: mousePosition.x + 15,
-            top: mousePosition.y - 10,
-            transform: 'translateY(-100%)'
+            left: isMobile ? '50%' : mousePosition.x + 15,
+            top: isMobile ? '50%' : mousePosition.y - 10,
+            transform: isMobile ? 'translate(-50%, -50%)' : 'translateY(-100%)'
           }}
         >
           <div className="flex flex-col gap-3">
@@ -586,8 +636,14 @@ export default function InteractiveFloorplan({
 
       {/* Focus Modal - Booth Details */}
       {focusedBooth && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setFocusedBooth(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-start">
               <div>
                 <h3 className="text-xl font-bold line-clamp-2 pr-4">{focusedBooth.title}</h3>
@@ -600,14 +656,16 @@ export default function InteractiveFloorplan({
               </button>
             </div>
 
-            <div className="p-4">
+            <div className="p-4 overflow-y-auto flex-1">
               {focusedBooth.images && focusedBooth.images.length > 0 && (
                 <div className="mb-4">
-                  <ImageCarousel
-                    images={focusedBooth.images}
-                    height="320px"
-                    className="w-full rounded-lg overflow-hidden"
-                  />
+                  <div className="w-full h-80 overflow-hidden rounded-lg">
+                    <ImageCarousel
+                      images={focusedBooth.images}
+                      height="320px"
+                      className="w-full h-full"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -651,12 +709,12 @@ export default function InteractiveFloorplan({
                 >
                   Thông tin chi tiết
                 </a>
-                <button
+                {/* <button
                   onClick={() => setFocusedBooth(null)}
                   className="px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Đóng
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -665,14 +723,24 @@ export default function InteractiveFloorplan({
 
       {/* Stamp Rally Modal */}
       {focusedStampRally && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={(e: React.MouseEvent) => {
+            if (e.target === e.currentTarget) {
+              handleCloseStampRallyModal();
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-start">
               <div>
                 <h3 className="text-xl font-bold text-gray-900">{focusedStampRally.name}</h3>
               </div>
               <button
-                onClick={() => setFocusedStampRally(null)}
+                onClick={handleCloseStampRallyModal}
                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold flex-shrink-0"
               >
                 ✕
@@ -694,7 +762,7 @@ export default function InteractiveFloorplan({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 underline"
                       >
-                        🔗 Xem bài viết gốc
+                        🔗 Xem bài đăng chính thức
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
@@ -709,8 +777,27 @@ export default function InteractiveFloorplan({
                   🏪 Các gian tham gia ({focusedStampRally.booths.length} gian):
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {expandBoothCodes(focusedStampRally.booths).map((boothCode) => {
+                  {expandBoothCodes(focusedStampRally.booths).map((boothCode, index) => {
                     const boothName = getBoothName(boothCode);
+                    const originalBoothIndex = focusedStampRally.booths.findIndex(originalBooth => {
+                      if (originalBooth.includes('-')) {
+                        const match = originalBooth.match(/([A-Z]+)(\d+)-(\d+)/);
+                        if (match) {
+                          const [, section, start, end] = match;
+                          const startNum = parseInt(start);
+                          const endNum = parseInt(end);
+                          const boothMatch = boothCode.match(/([A-Z]+)(\d+)/);
+                          if (boothMatch) {
+                            const [, boothSection, boothNumStr] = boothMatch;
+                            const boothNum = parseInt(boothNumStr);
+                            return boothSection === section && boothNum >= startNum && boothNum <= endNum;
+                          }
+                        }
+                      }
+                      return originalBooth === boothCode;
+                    });
+                    const artist = focusedStampRally.artists && originalBoothIndex >= 0 ? focusedStampRally.artists[originalBoothIndex] : null;
+                    
                     return (
                       <div
                         key={boothCode}
@@ -719,6 +806,9 @@ export default function InteractiveFloorplan({
                         {boothCode}
                         {boothName && (
                           <span className="text-blue-600 ml-1">- {boothName}</span>
+                        )}
+                        {artist && (
+                          <span className="text-blue-700 ml-1">({artist})</span>
                         )}
                       </div>
                     );
@@ -733,7 +823,7 @@ export default function InteractiveFloorplan({
       {/* Booth count summary */}
       <div className="mt-4 text-sm text-gray-600 text-center">
         {viewMode === 'booth' ? (
-          <>Tổng cộng: {booths.length} gian | Có sample: {uniqueEventTitleCount} gian</>
+          <>Tổng cộng: {booths.length} gian </>
         ) : (
           <>Số lượng Stamp Rally: {stampRallies.length} | Tổng hợp bởi: Vu Huyen Anh (Fb)</>
         )}

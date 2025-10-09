@@ -4,235 +4,274 @@
       "name": "Transformers",
       "rules": "1. Nhận Stamp Card ở mọi gian có tham gia Stampformers.\n2. Mua một món bất kỳ tại một circle để nhận một con dấu stamp.\n3. Thu nhập đủ 8 con dấu từ 8 circle và ghé gian \"Hạnh phúc của một tang gia\" để nhận quà.",
       "booths": ["G21", "G23-24", "F3", "G28", "G22", "G25-26", "G27", "G6"],
+      "artists": ["Kyon", "Mỳ Ý SốtKem", "Đen Rô", "Gastbie", "Kảo Dy", "matabeo70", "Xuân Quy Ý Mai", "Yoh Rùa"],
       "link": ""
     },
     {
       "name": "PhaiDei (Honkai: Star Rail)",
       "rules": "1. Mua hàng tag PhaiDei ở mỗi gian hàng, khi đạt số lượng nhất định sẽ nhận được 1 stamp.\n2. Thu nhập đủ số lượng stamp để đổi các phần quà độc quyền của hoạt động.",
       "booths": ["F33", "F32", "F30", "F27-28", "F31", "F5"],
+      "artists": ["Đình Vân, HàĐộn TiểuNgư", "Aster Catto", "Lê Bảo Ngọc", "Mee, An Đình", "Rờ Dờ, Thảo Đỗ", "Chiếu"],
       "link": ""
     }, 
-        {
-      "name": "Hatsune Miku (2)",
+    {
+      "name": "Hatsune Miku (RECORD OF THE SPACE)",
       "rules": "1. Đến trạm Kawaii Yo để nhận con dấu tích điểm.\n2. Mua đơn hàng từ 80k tại mỗi trạm để nhận 1 con dấu.\n3. Sau khi tích đủ 6 con dấu, cầm phiếu đã tích đủ điểm đến trạm của host Kawaii Yo để đổi quà.\n\nÁp dụng cho đơn mua trực tiếp và Pre-order trước sự kiện.\nMỗi bạn được tích nhiều phiếu nhưng phải tách đơn, không gộp đơn.\nMỗi phiếu đủ dấu sẽ được đổi quà 1 lần duy nhất.",
       "booths": ["H3-4", "H7", "H8", "H5-6", "H2", "H9"],
-      "link": ""
+      "artists": ["Kawaii Yo", "The Trespassors", "Diowowowo", "Tôm Hành Giá", "Tàu Ngầm Vàng", "AnMyu"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1062954326034445/"
     },
     {
       "name": "Pokémon",
       "rules": "1. Đăng ký tham gia tại circle Re:GREEN.\n2. Mỗi Gym Leader trên bản đồ, mỗi người chơi mua hàng với hóa đơn từ 50k trở lên (trong đó có ít nhất 1 sản phẩm liên quan đến Pokemon) sẽ nhận được 1 con dấu tương ứng.\n3. Khi nhận đủ con dấu từ các Gym Leader, người chơi quay lại gian hàng Re:GREEN xác nhận để nhận được phần thưởng cuối.",
       "booths": ["G7-8", "F9-10", "F25-26", "G9-10", "F24", "G11"],
+      "artists": [],
       "link": ""
     },
     {
       "name": "The Origin Stage Vol.2 (Original Character)",
       "rules": "1. Nhận thẻ săn dấu tại gian hàng bất kỳ trong các gian hàng tham gia.\n2. Ghé các gian hàng để thu nhập đủ 4 con dấu của 4 họa sĩ.\n3. Mang thẻ đã săn đủ 4 con dấu đến gian hàng \"Minnie Pussycat\" gặp họa sĩ Sergio để đổi quà.\n\nChỉ cần đến và thu nhập con dấu, không bắt buộc phải mua sản phẩm.\nCó thể tùy chọn 2 trong 4 set quà.\nBắt đầu từ 9h->16h, sau 16h không thể đổi quà.\nMỗi cá nhân chỉ nhận tối đa 1 thẻ săn dấu.",
       "booths": ["H11-12", "H13-14", "H10", "H15"],
+      "artists": ["Sergio", "UsaRi", "Hlee", "NObu Tah Cat"],
       "link": ""
     },
     {
       "name": "Space Anemo Bois (Genshin Impact)",
       "rules": "1. Lấy map thu nhập tem ở circle Cạp Cạp và sau đó thu nhập đủ 7 con dấu để nhận quà.\n2. Có 2 map nhận quà khác nhau (map free và map có phí).\n+ Map free: thu nhập đủ 7 con dấu tại 4 trạm để nhận quà free.\n+ Map có phí: mua map tại circle Cạp Cạp và thu nhập đủ 7 con dấu dể nhận quà limited.\n3. Thu nhập đủ 7 con dấu để nhận được phần quà theme Space Anemo Bois, nhận quà tại trạm cuối ghi trên map.\n\nSố lượng có hạn đối với map free.\nGiới hạn 1 slot/người (cả 2 map).\nNhận map tại circle Cạp Cạp và thu nhập con dấu sẽ bắt đầu từ 14h chiều đế hết ngày.",
       "booths": ["D44", "D39-40", "D41-42", "D43"],
-      "link": ""
+      "artists": ["Kikoto Aii, Miint", "Neetols, Overine", "Mã Hắc, Du Bủn", "Nhã"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1098268935836317/"
     },
     {
       "name": "Ẩm thực OC Xứ Còi (Original Character)",
       "rules": "1. Đến 1 trong 5 gian hàng thuộc Ẩm thực Xứ Còi để nhận phiếu stamp rally.\n2. Mua bất kì sản phẩm sẽ nhận được 1 con dấu.\n3. Khi đã thu nhập đủ 5 con dấu, ghé gian Mèo Đào quay gacha trúng thưởng.",
       "booths": ["B11-12", "B10", "B14", "B13"],
-      "link": ""
+      "artists": ["Bella, Fu", "Chóp Chóp", "Uni Orca", "Shuli"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1076253641371180/"
     },
     {
       "name": "Scaramouche (Genshin Impact)",
       "rules": "1. Ghé thăm các trạm trong danh sách và mua sản phẩm Wanderer bất kì sẽ nhận được tờ đóng dấu cùng với 1 dấu.\n2. Mốc tích lũy dấu:\n+ Mốc 3 dấu: Thu nhập 3/5 dấu, đổi được 1 xu kỷ niệm tại gian hàng mà bạn chọn.\n+ Mốc 5 dấu: Thu nhập 5/5 dấu, nhận được quà tặng tại gian hàng mà bạn chọn.\n\nSố lượng có hạn.\nKhách hàng mua trực tiếp hoặc pre-order nhận tại quầy sẽ nhận được con dấu tương ứng với mỗi họa sĩ.",
       "booths": ["B8", "B3-4", "B7", "B11-12", "B9"],
-      "link": ""
+      "artists": ["BLUE", "Cơm Nắm, Pumidolll", "Lộn xộn có tổ chức", "Bella, Fu", "0 ai chếc hết"],
+      "link": "https://www.facebook.com/colorfiestavn/posts/pfbid0wZg9Q2LyFZk12Y1YSkoUZAQ2358YtXjAuHsGc76YyxYh8nLM8uXLcQGzgV4BVp7Sl"
     },
     {
       "name": "Honkai: Star Rail",
       "rules": "1. Đến 1 trong 4 gian hàng để nhận phiếu đóng dấu.\n2. Mỗi khi mua từ 50k với sản phẩm thuộc fandom HSR, sẽ nhận được 1 con dấu từ gian hàng đó.\n3. Khi đã thu nhập đủ 4 con dấu, đến gian Enkatelier x Prime Mirage để nhận set quà đặc biệt.",
       "booths": ["B15-16", "B11-12", "B17", "B18"],
+      "artists": ["Pyuu", "Mimiru", "neyuqe11", "Sumichi"],
       "link": ""
     },
     {
       "name": "Hoyo Fanmerch",
       "rules": "1. Mua ít nhất 1 món tại gian bất kỳ thuộc stamp rally sẽ được phát 1 thẻ đóng dấu.\n2. Mua ít nhất 1 món tại mỗi gian hàng thuộc nhóm stamp rally Hoyo-fanmerch sẽ được đóng dấu từ gian hàng đó\n3. Sau khi tích đủ 6 dấu, quay lại nơi đầu tiên nhận thẻ để đổi quà\n\nMỗi gian hàng đã chuẩn bị 30 phần quà và chia thành 30 packs bao gồm đầy đủ phần quà từ 6 gian hàng. Mỗi gian hàng sẽ phát 5 thẻ tương ứng 5 packs quà cho người đã tích đủ 6 dấu.\nMỗi người chỉ được nhận 1 thẻ.",
       "booths": ["D21-22", "B30", "B19-20", "B21-22", "H3-4", "B29", "C15-16"],
-      "link": ""
+      "artists": ["Noahru, Saru Scimmia", "Hói Doggo, Ichinisanbaka", "Lannitae", "Lannitae", "Ame Nyanko", "Chéng Kur, Leo Chanh", "Thea Đang Hết Tiền"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1097687985894412/"
     },
     {
       "name": "Love & Deepspace",
       "rules": "1. Nhận phiếu stamp tại gian họa sĩ bất kì.\n2. Mua tối thiểu 50k fanmerch có liên quan đến Love & Deepspace của 1 trong các gian có tham gia để nhận con dấu tương ứng của gian hàng đó.\n3. Thu nhập đủ 6 con dấu để tham gia đổi set quà tặng bao gồm fullset card project tại gian artist bất kì.\n\nSố lượng set quà có hạn.\nPhiếu stamp chỉ cấp cho 1 khách 1 lần.",
-      "booths": ["F15-16", "F3", "F9-10", "F11-12-13-14", "P3", "F4"],
+      "booths": ["F15-16", "F3", "F9-10", "F11-14", "P3", "F4"],
+      "artists": ["Ami", "Matcha", "Ichimi", "Luspeony", "HanJun", "Lý Thảo Vân"],
       "link": ""
     },
     {
       "name": "The Devil Rail (Honkai: Star Rail)",
       "rules": "1. Nhận vé tàu miễn phí tại bất kỳ 1 trong 7 trạm tham gia.\n2. Mua hàng tại mỗi trạm tối thiểu 50k để nhận 1 dấu vào thẻ.\n\nMỗi khách chỉ được tham gia 1 lần và đổi quà ở mốc cao nhất đạt được.",
-      "booths": ["A1-2-3", "A7-8", "P1", "P2", "A5-6", "A9", "A4"],
-      "link": ""
+      "booths": ["A1-3", "A7-8", "P1", "P2", "A5-6", "A9", "A4"],
+      "artists": ["GAE", "Hoàng Cung", "0 là số chẵn", "Basakila", "Tạp Tạp", "Chunchumaru", "Vườn trẻ em"],
+      "link": "https://www.facebook.com/colorfiestavn/posts/pfbid02CMdnVmaYm1KNR23EPJnHoHd4DfYAZoTgbwtWkDtykx2Pr4pWL1pDmNpkv9DRK5iMl"
     },
     {
       "name": "IvanTill (Alien Stage)",
       "rules": "1. Nhận phiếu stamp tại gian hàng Dooki.\n2. Mua bất kì merch của IvanTill tại những gian hàng tham gia để nhận con dấu. Với mỗi đơn hàng trên 50k sẽ nhận được 1 con dấu.\n- Thu nhập 5 con dấu: nhận 1 set quà trong 2 set quà special.\n- Thu nhập 9 con dấu: nhận full 2 set quà.\n3. Sau khi thu nhập đủ con dấu, đến gian hàng Dooki để nhận quà.\n\nMột gian hàng có thể tích được 1-3 con dấu tùy số lượng.\nMỗi phiếu chỉ có giá trị sử dụng 1 lần.\nĐể nhận full quà cần phải đủ 9 con dấu của cả 9 họa sĩ trên cùng 1 postcard- không cộng gộp.",
-      "booths": ["F11-12-13-14", "G13-14", "G19-20", "F22", "F21"],
+      "booths": ["F11-14", "G13-14", "G19-20", "F22", "F21"],
+      "artists": ["Shii", "Ẳng Ry, Nguyên, Boo Đây", "Chom, Nguyễn Phụng", "Niku, Ky Vo", "Yuki"],
       "link": ""
     },
     {
       "name": "Haikyuu!!",
       "rules": "1. Nhận phiếu thu nhập từ họa sĩ.\n2. Mua ít nhất 1 vật phẩm thuộc fandom Haikyuu từ 3 họa sĩ tham gia stamp rally sẽ thu nhập được con dấu từ từng họa sĩ. Thu nhập đủ 3 con dấu có thể nhận lên đến 5 phần quà.\n- Với hóa đơn có giá trị từ 50k ở mỗi gian hàng, sẽ nhận được 1 phần quà collab độc quyền do 3 họa sĩ cùng thực hiện kèm theo 3 phần quà riêng từ 3 họa sĩ.\n- Với tổng hóa đơn có giá trị từ 100k từ mỗi họa sĩ, sẽ nhận được 2 phần quà collab độc quyền do cả 3 họa sĩ cùng thực hiện kèm theo 3 phần quà riêng từ 3 họa sĩ.\n3. Sau khi thu nhập đủ con dấu theo thể lệ, đem phiếu đến gian hàng bất kì trong 2 gian để nhận quà.\n\nSố lượng quà có hạn.",
       "booths": ["F35-36", "F34"],
+      "artists": ["Hein Ahn, Mai Chiến Thắng", "MUGWO"],
       "link": ""
     },
     {
       "name": "Into The Wild",
       "rules": "1. Nhận tờ pamphlet để thu nhập con dấu của các họa sĩ (có sẵn ở tất cả các gian hàng tham gia).\n2. Với mỗi đơn hàng đạt trị giá 50k trở lên sẽ nhận được 1 con dấu và 1 sticker freebie theo chủ đề tương ứng với mỗi họa sĩ.\n3. Sau khi thu nhập đủ số lượng con dấu, quay về gian hàng Hoa Nấm Mèo để nhận quà theo trạm.\n- Trạm 5 stamps: nhận 1 món merch random do staff bốc (có thể tiếp tục thu nhập để lấy quà ở trạm tiếp theo).\n- Trạm 9 stamps: Nhận 1 merch random + Set 9 tờ postcard A6 + Set 9 sticker 5cm + 1 túi mù có random 1-3 món.\n\nSố lượng quà và freebies có giới hạn.\nPamphlet kèm theo ô trống dành cho con dấu, thể lệ tham gia, số bàn và bản đồ hướng dẫn đi đến các gian hàng.",
-      "booths": ["P7", "A27-28", "A26", "F11-12-13-14", "A25", "A19-20", "A21-22"],
-      "link": ""
+      "booths": ["P7", "A27-28", "A26", "F11-14", "A25", "A19-20", "A21-22"],
+      "artists": ["Sing Kee", "Bunito", "Anh Ha", "Shirou Kira", "Toufuda", "Lánh, Yeng", "Sho-ii, Pu"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1059073069755904/"
     },
     {
       "name": "Hoyo Games",
       "rules": "1. Có tổng cộng 100 phiếu thu nhập con dấu được chia đều cho các họa sĩ (mỗi người giữ 25 phiếu) và sẽ phát theo hình thức first come first serve.\n2. Check-in tại gian hàng của từng họa sĩ -> Đăng bài lên Facebook/Fanpage của bạn -> Tag họa sĩ mà bạn muốn nhận con dấu và sau đó con dấu sẽ được đóng.\n3. Sau khi thu nhập đủ 4 con dấu sẽ đổi được 1 phần quà từ 1 họa sĩ bất kì.\n\nSố lượng phiếu thu nhập và quà tặng có hạn.\nSau khi đổi quà ở 1 họa sĩ thì sẽ không đổi thêm từ họa sĩ khác.",
       "booths": ["P5", "B8", "B1-2"],
+      "artists": ["UnoDay Studio", "Minh Minh", "Mokafi, Sái"],
       "link": ""
     },
     {
       "name": "Hallogreen (OC)",
       "rules": "1. Lấy stamp card tại 1 trong 4 quầy tham dự.\n2. Mua ở mỗi quầy tham dự ít nhất 50k để thu nhập con dấu.\n3. Thu nhập đủ 4 con dấu tại 4 quầy tham dự để nhận giải thưởng gồm 4 món merch độc quyền từ các họa sĩ vẽ riêng cho stamp rally.\n\nNhận giải thưởng tại gian Nikru.",
       "booths": ["C5", "C6", "C7", "C8"],
-      "link": ""
+      "artists": ["Kuno2480", "Kowania", "Catbishonen", "Nikru"],
+      "link": "https://www.facebook.com/share/p/1WkUaPc6sj/"
     },
     {
       "name": "OC & Animals",
       "rules": "1. Đến gian hàng Bốn Khứa Xa Nhà để nhận phiếu thu nhập stamp và mua sắm sản phẩm của các họa sĩ trong gian hàng.\n2. Khi mua hàng của họa sĩ với hóa đơn đạt mốc 30k thì sẽ nhận được 1 con dấu từ họa sĩ đó.\n3. Thu nhập đủ 4 con dấu và có tổng hóa đơn trên 200k thì sẽ nhận được 1 lượt quay gacha.\n\nBắt đầu từ 9h->16h30.\nMỗi người có 1 lượt tham gia.\nPhần quà gacha là sản phẩm ngẫu nhiên của 4 họa sĩ.",
       "booths": ["E1-2"],
-      "link": ""
+      "artists": ["Bánh Bao, Kui Han, Xấy, Nei Nei"],
+      "link": "https://www.facebook.com/gmombb/posts/pfbid0RLK5h1kYMRw8CeY3AJeCoixqcnTnHURUN44YU5EFZCoq2QA7kAdacCtsPVj3Am7fl"
     },
     {
       "name": "Twisted Wonderland (DTW)",
       "rules": "1. Nhận stamp tại circle Oceanys.\n2. Với hóa đơn từ 80k (chỉ tính merch DTW), sẽ nhận được 1 con dấu.\n3. Thu nhập đủ 5 con dấu từ 5 gian hàng tham gia.\n4. Sau khi thu nhập đủ con dấu, đến gian hàng Chill trên giàn thiêu để đổi stamp card và nhận quà.\n\nSố lượng quà có hạn.",
       "booths": ["F23", "F27-28", "G6", "G4", "F25-26"],
-      "link": ""
+      "artists": ["Oceanys", "Mee, An Đình", "Yoh Rùa", "Lunar Mun", "Chill trên giàn thiêu"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/permalink/1087949743534903"
     },
     {
       "name": "NU: Carnival",
       "rules": "1. Thu nhập con dấu Lụm Đá bằng cách mua fanmerch NuC tại các gian hàng Lụm Đá. Không yêu cầu giá trị đơn hàng tối thiểu, mua 1 món NuC bất kì là sẽ nhận được con dấu.\n2. Sau khi thu nhập đủ con dấu bảng A hoặc B, ghé gian hàng Vụ Nổ Quần để đổi quà Đủ Đá hoặc nếu chọn lấy quà Nửa Đá của họa sĩ nào thì đến gian hàng của họa sĩ đó để đổi trực tiếp.\n- Thu nhập 6/6 con dấu bảng A hoặc 5/5 con dấu bảng B sẽ nhận giỏ quà gồm các phần quà đến từ toàn bộ các gian hàng trong mỗi bảng.\n- Thu nhập 4/11 con dấu ngẫu nhiên sẽ được đổi lấy 1 phần quà Nửa Đá tại gian hàng mà bạn có giá trị hóa đơn mua hàng cao nhất.\n\nMỗi bảng sẽ có 10 giỏ quà cho 10 phiếu nhanh nhất.\nPhiếu đã đổi quà 1 bảng có thể tiếp tục thu nhập con dấu để đổi tiếp quà bảng còn lại hoặc quà Nửa Đá.",
       "booths": ["C3-4", "B5-6", "E22", "B31", "B27", "B32", "B28", "C1"],
+      "artists": ["aksel & Zzan [bảng A], Andrew Pastel & Cá Vàng Đi Bộ [bảng B]", "Jay Indigo [bảng A]", "Junny [bảng A]", "Sa nè [bảng A]", "Yuki [bảng A]", "Lemon [bảng B]", "Luo [bảng B]", "Tôm Sốt Kem Chua [bảng B]"],
       "link": ""
     },
     {
       "name": "Pandora Box",
       "rules": "1. Nhận tờ phiếu đóng tem ở gian Leonie (phiếu gồm thông tin vị trí các họa sĩ và luật chơi).\n2. Mua hàng của mỗi họa sĩ với hóa đơn tối thiểu 50k sẽ được nhận 1 con tem.\n3. Sau khi thu nhập đủ 7 con tem, đến gian hàng Optimusru để nhận quà.",
       "booths": ["C13", "C14", "C15-16", "C9", "C10", "C11-12"],
+      "artists": ["Meo Meo Mập Ú", "Linlye", "Đặng Tank, Dương Thiên Ân", "Leonie", "Optimusru11", "Snow Le Art"],
       "link": ""
     },
     {
       "name": "Mairimashita! Iruma-kun",
       "rules": "1. Nhận phiếu đóng dấu tại 1 trong 5 gian tham dự.\n2. Mua hàng của từng họa sĩ tham dự với hóa đơn từ 40k và có ít nhất 1 món thuộc fandom Iruma.\n3. Con dấu sẽ được đóng lên phiếu sau khi đã thanh toán tại từng gian hàng.\n4. Sau khi thu nhập đủ từ 3 con dấu trở lên thì trở về gian hàng AzarashiYuu để nhận quà.\n\nNếu mất phiếu đóng dấu muốn cấp lại thì cần có hình ảnh làm bằng chứng.\nGiới hạn 1 người được 1 phiếu và có giá trị đổi 1 lần.",
       "booths": ["J34", "E27", "C19", "E3-4", "F3"],
-      "link": ""
+      "artists": ["Katou Shinobu", "SaiThienDuong", "AzarashiYuu", "Bò Cầu Bay", "Đen Rô"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1099446975718513/"
     },
     {
       "name": "Fear & Hunger",
       "rules": "1. Nhận phiếu đóng dấu tại gian Thánh Thần Thiên Lý Ơi (phiếu đóng dấu bao gồm ô trống dành cho stamp, thể lệ, số vị trí gian có các nhân vật cần chiêu mộ).\n2. Với hóa đơn từ 40k trở lên (chỉ tính khi mua hàng F&H từ các gian hàng tham gia) thì sẽ nhận được 1 con dấu, tương ứng với việc đã chiêu mộ thành công nhân vật đó.\n3. Thu nhập đủ con dấu theo các mốc quy định để hoàn thành hành trình khám phá sau đó quay về gian Thánh Thần Thiên Lý Ơi để đổi thưởng.\nCác mốc nhận thưởng:\n+ LE'GARDE SAVED: Đổi thưởng khi sở hữu 3 con dấu.\n+ YELLOW KING: Đổi thưởng khi sở hữu 4 con dấu.\n+ GOD OF FEAR & HUNGER: Đổi thưởng khi sở hữu tất cả con dấu.\n\nCác mốc thưởng đều có giới hạn về số lượng quà.\nMỗi stamp card chỉ được đổi 1 mốc quà duy nhất.",
       "booths": ["K9", "K27-28", "P8", "H15"],
-      "link": ""
+      "artists": ["Vũ Phạm Minh Châu", "Khánh Vy, Kiwis Uwu", "Ran Nguyen", "Bạch Tuột Gei"],
+      "link": "https://www.facebook.com/share/p/1EWKoym4Px/"
     },
     {
       "name": "Phainon (Honkai: Star Rail)",
       "rules": "1. Đến gian hàng Rumandtea để lấy phiếu thu nhập con dấu.\n2. Với mỗi gian hàng tham gia, mua hàng với hóa đơn từ 70k sẽ nhận được 1 sticker Phaimoyed tương ứng.\n3. Khi đã thu nhập đủ 4 Phaimoyed, đến gian hàng 3Ds để đổi quà.\n\nSố lượng quà có hạn.\nMỗi phiếu chỉ có giá trị đổi quà 1 lần.\nMột phiếu đổi thưởng hợp lệ phải có đủ 4 sticker.",
       "booths": ["E23-24", "G33-34", "H10"],
+      "artists": ["Meow Vạc, Koko Dono", "Hitsuzi", "Hlee"],
       "link": ""
     },
     {
       "name": "Anaxa (Honkai: Star Rail)",
       "rules": "1. Đến 1 trong 7 gian hàng tham gia để nhận phiếu đóng dấu.\n2. Với mỗi đơn hàng từ 50k tại 1 trong 7 gian hàng thì sẽ nhận được 1 con dấu đóng từ gian hàng đấy.\n3. Sau khi thu nhập đủ con dấu, đến gian hàng Momotano để nhận quà.\n\nSố lượng quà có hạn.",
       "booths": ["A17-18", "C13", "G29-30", "H11-12", "H25", "K5-6", "K23"],
-      "link": ""
+      "artists": ["Tồ LTD", "Midori Nyanko", "Miu", "CPM", "Ngọ tạ", "Hà Khắm", "Pham Tiu"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1099445992385278/"
     },
     {
       "name": "Hetalia: Marukaite Chikyuu",
       "rules": "1. Đọc code \"Mình muốn tham gia stamp rally Hetalia\" để nhận thẻ rally tại một trong 5 gian họa sĩ tham dự bất kì.\n2. Mua merch Hetalia với tổng giá trị ít nhất 70k tại mỗi gian để nhận con dấu hoặc làm nhiệm vụ nhất định (nếu có) để nhận được con dấu.\n*Nếu đã làm nhiệm vụ thì sẽ không cần mua hàng để lấy con dấu.\n3. Có thể nhận quà khi đã sưu tập đủ con dấu ở mốc 3 gian hoặc mốc 5 gian.\n4. Đến gian MiniDuong để nhận quà nếu đã hoàn thành thu nhập tất cả con dấu.\n\nĐến gian MiniDuong trước 17h để nhận quà.\nMỗi thẻ rally chỉ được đổi quà 1 lần duy nhất ở 1 mốc quà.",
       "booths": ["A13", "E5-6", "D38", "K33", "J23"],
-      "link": ""
+      "artists": ["Fuji - Ổ già 1000 tuổi", "Vỏ cam xanh biển", "Reckko", "Cá Sáp", "Trần Dương"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1092090426454168/"
     },
-       {
+    {
       "name": "Ib x Omori",
       "rules": "1. Nhận phiếu sưu tầm dấu tại 1 trong các gian bất kì có tham gia.\n2. Với mỗi hóa đơn tối thiểu 50k (trong đó có ít nhất 1 merch Ib hoặc Omori) sẽ nhận được 1 con dấu của gian hàng tương ứng.\n3. Khi đã sưu tầm đủ mốc 3 hoặc 5 con dấu thì đến gian Tạp hóa ông Từ để nhận quà.\n- Mốc 3 con dấu: chọn 3 phần quà bốc random.\n- Mốc 5 con dấu: full combo quà từ các họa sĩ tham gia.\n\nStamp rally diễn ra cho đến khi hết quà.\nNhận quà trước 16h.\nMỗi phiếu sưu tầm con dấu chỉ được nhận quà 1 lần.",
       "booths": ["E40", "B7", "C1", "C40", "H35"],
-      "link": ""
+      "artists": ["Hoàng Yến", "Vợ Của Clopeh Sekka", "Tôm Sốt Kem Chua", "Kcomo Rebi", "Joelle Lamlaicuocdoi"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1100334305629780/"
     },
     {
       "name": "Deltarune",
       "rules": "1. Nhận thẻ thu nhập con dấu tại gian UFO Poke.\n2. Với mỗi hóa đơn trên 60k tại mỗi gian thì sẽ được nhận 1 con dấu ở gian tương ứng.\n3. Khi đã sưu tầm đủ dấu, quay lại gian hàng UFO Poke để nhận quà.\n\nMỗi phiếu chỉ được nhận 1 phần quà và mỗi cá nhân chỉ được tham gia 1 lần.\nSố lượng quà có hạn.",
       "booths": ["C5", "C29-30", "K24", "K43", "D34", "K7", "G11"],
-      "link": ""
+      "artists": ["Vũ Hoàng", "Milky Choco", "Huon Siro", "Chiến Vẽ Bậy", "An Yun, Piscy Fosheria", "Trúc Trương", "Lê Như Hảo"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1063761132620431/"
     },
     {
       "name": "BoBoiBoy",
       "rules": "1. Nhận giấy đóng dấu tại gian KRUUMATE.\n2. Tại mỗi gian hàng, mua hóa đơn từ 100k trở lên, trong đó có ít nhất 1 mặt hàng Boboiboy sẽ nhận được 1 con dấu.\n3. Khi thu nhập đủ 6 con dấu, đến gian hàng KRUUMATE để nhận quà.\n\nSố lượng phiếu đóng dấu và quà có hạn.\nGiới hạn 1 phiếu đóng dấu/người.",
       "booths": ["D4", "G4", "G5", "G6", "K37", "K55"],
+      "artists": ["Ch.Zy.M", "Lunar Mun", "KRUUMATE", "Yoh Rùa", "Excalibird", "Hyuga Tavern"],
       "link": ""
     },
     {
       "name": "Arknights",
       "rules": "1. Nhận thẻ đóng dấu tại gian hàng Rinrisa Roll.\n2. Mua ít nhất 1 vật phẩm liên quan đến A9 với tổng bill từ 50k trở lên của các họa sĩ ở những gian hàng trên thẻ sẽ được nhận 1 con dấu/sticker.\n3. Khi tích đủ số lượng 4 hoặc 8 con dấu sẽ đổi được các mốc quà limited từ họa sĩ.\n- Mốc 4 dấu: 1 set sticker tự chọn.\n- Mốc 8 dấu: full set quà của các họa sĩ.\n4. Sau khi đủ dấu, đến gian hàng Rinrisa Roll và liên hệ họa sĩ Juzoo để đổi quà.\n\nPhần quà được phát theo mốc số con dấu cao nhất. Các phần quà mốc 4 hoặc 8 dấu có số lượng mỗi mốc là 10 phần quà.",
       "booths": ["G29-30", "D20", "G33-34", "C41-42", "G17-18"],
-      "link": ""
+      "artists": ["chim sa cá độ", "Khoai tây", "Koteipengin", "Juzoo", "Haeki, KitKat Sakura, Machi Rainbow, Mayuu Hori"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1092390203090857/"
     },
     {
       "name": "Persona Series",
       "rules": "1. Nhận leaflet có sẵn ở gian hàng UFO Poke, trong leaflet bao gồm ô đóng dấu, cách thức tham gia và bản đồ vị trí gian hàng.\n2. Khách hàng mua tối thiểu 90k cho ấn phẩm của từng họa sĩ để thu nhập con dấu Velvet room tương ứng (5 màu khác nhau).\n3. Sau khi đã thu nhập đủ 5 con dấu, khách hàng sẽ có chìa khóa để bước vào Velvet room và thu phục các demon (Velvet room xuất hiện ở gian UFO Poke).\n\nMỗi leaflet thu nhập con dấu tính phí chỉ được nhận quà 1 lần. Nếu muốn nhận thêm phần quà khác thì lấy thêm 1 card sưu tầm để tham gia.",
       "booths": ["C29-30", "C33-34", "G17-18", "K29-30"],
+      "artists": ["Pong", "Gintci", "Haeki, KitKatSakura", "Digu"],
       "link": ""
     },
     {
       "name": "Vocaloid",
       "rules": "Quà tính phí:\n1. Nhận phiếu sưu tầm dấu tại gian UFO Poke.\n2. Với mỗi hóa đơn tối thiểu 60k (không giới hạn fandom của họa sĩ tham gia) sẽ nhận được 1 con dấu của gian hàng tương ứng.\n3. Khi sưu tầm đủ 8 con dấu, quay lại gian hàng UFO Poke để nhận quà.\n\nQuà miễn phí:\n1. Nhận card sưu tầm dấu tại gian UFO Poke (mỗi người chỉ được tham gia 1 lần)\n2. Với mỗi gian hàng ghé thăm sẽ nhận được 1 con dấu của gian hàng tương ứng.\n3. Khi sưu tầm đủ 8 con dấu, quay lại gian hàng UFO Poke để nhận quà.\n\nSố lượng quà có hạn (quà tính phí và miễn phí đều giới hạn mỗi bên 12 slot quà).\nĐến gian hàng nhận quà trước 16h.",
       "booths": ["C29-30", "G9-10", "G23-24", "G30", "H3-4", "H26", "K10", "K55"],
-      "link": ""
+      "artists": ["NLinh", "wphng.02", "Xiên Bẩn SIUUBẩn", "Chim sa cá độ", "DODO KUN", "Nẻro", "Chúi có Cú", "Chika"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1092907606372450/"
     },
     {
       "name": "Ensemble Stars",
-      "rules": "1. Nhận phiếu tại bất kì gian hàng nào tham gia.\n2. Tham gia các hoạt động sau để nhận con dấu:\n+ Mốc 1: ghé tham quan toàn bộ gian hàng trong danh sách tham gia để nhận con dấu -> nhận quà mốc 1.\n+ Mốc 2: mua hàng với hóa đơn từ 50k trở lên tại tất cả các gian hàng tham gia để nhận con dấu -> nhận quà mốc 2.\n3. Sau khi hoàn thành mốc tương ứng, đến gian hàng Bích cà bu để nhận quà.\n\nKhi tham gia mỗi mốc sẽ nhận được 1 phần quà (có thể nhận quà của cả 2 mốc).\nSố lượng quà của mỗi mốc có hạn (mỗi mốc giới hạn 20 phần quà, tổng 40 phần cho 2 mốc).",
-      "booths": ["B33-34", "E17", "F21", "G17-18", "H30", "J17"],
-      "link": ""
+      "rules": "1. Nhận phiếu tại bất kì gian hàng nào tham gia.\n2. Tham gia các hoạt động sau để nhận con dấu:\n+ Mốc 1: ghé tham quan toàn bộ gian hàng trong danh sách tham gia để nhận con dấu -> nhận quà mốc 1.\n+ Mốc 2: mua hàng với hóa đơn từ 50k trở lên tại tất cả các gian hàng tham gia để nhận con dấu -> nhận quà mốc 2.\n3. Sau khi hoàn thành mốc tương ứng, đến gian hàng Bích cà bu để nhận quà.\n\nKhi tham gia mỗi mốc sẽ nhận được 1 phần quà (có thể nhận quà của cả 2 mốc).\nSố lượng quà của mỗi mốc có hạn (mỗi mốc giới hạn 20 phần quà, tổng 40 phần cho 2 mốc)",
+      "booths": ["B33-34", "E17", "F21", "G17-18", "H30", "J17", "Lẻ"],
+      "artists": ["Nhea", "Ev_O_L", "Koi", "Haeki", "Muwanka", "Bepushii", "Nor, Jelly, Seiki"],
+      "link": "https://www.facebook.com/share/p/1BAcJo2sth/?mibextid=wwXIfr"
     },
     {
       "name": "Hatsune Miku",
       "rules": "1. Đến gian hàng của họa sĩ bất kì, mua tối thiểu 80k tiền hàng và trong đó có 60k là vật phẩm liên quan đến Miku để nhận postcard + con dấu đầu tiên.\n*Nếu có nhu cầu chơi nhiều lần thì yêu cầu staff gian hàng đưa thêm postcard với mỗi 80k tiền hàng cộng thêm.\n2. Kể từ gian thứ 2 trở đi, với mỗi đơn có giá trị tối thiểu là 80k và trong đó có ít nhất 40k là tiền hàng liên quan đến Miku sẽ nhận được 1 con dấu.\n3. Sau khi thu nhập đủ 7 con dấu trên 1 postcard thì đến gian hàng bất kì trong các gian hàng tham gia để đổi set quà tặng.\n\nYêu cầu phải có đủ 7 con dấu của 7 họa sĩ trên cùng 1 postcard mới được xem là hợp lệ, không áp dụng hình thức cộng gộp.",
       "booths": ["C42", "C27", "E16", "J1", "K51-52"],
-      "link": ""
+      "artists": ["Hanyi", "Azuriel", "Mó Mực", "ICHIGO", "Liley, Yunegi, Khánh Võ"],
+      "link": "https://m.facebook.com/groups/colorfiestacommunity/permalink/1097417875921423/"
     },
     {
       "name": "Dottore (Genshin Impact)",
       "rules": "1. Đến khu vực gian hàng họa sĩ (sảnh A1) và mua những món hàng liên quan đến Il Dottore (không tính couple).\n2. Đến Itabooth Dottore: Lobotomy Project để nhận postcard kèm con dấu tương ứng với số lượng merch đã mua.\n3. Sau khi thu nhập đủ 10 con dấu sẽ được nhận set quà từ Itabooth.\n*Đặc quyền partner: Khi mua hàng từ gian hàng The Coons sẽ được tương ứng 2 con dấu cho mỗi món hàng.\n\nSố lượng quà có hạn và có thay đổi theo số lượng hàng.\nKhông áp dụng cho hàng mang tính couple (vẫn chấp nhận hàng non-couple có sự xuất hiện của nhân vật khác).\nNhận postcard và con dấu tại Itabooth Dottore (booth I5 tại sảnh A2).",
       "booths": ["I5", "D9-10"],
-      "link": ""
+      "artists": ["Itabooth Dottore", "The Coons"],
+      "link": "https://www.facebook.com/permalink.php?story_fbid=pfbid02mxGfsyKDf1LMFya2ouKiQ6jcLX72XrAevJoqTr96vnUdzNXVtcyTgHnSdKsojBF6l&id=100083279291959"
     },
     {
       "name": "Elden Ring",
       "rules": "1. Nhận card sưu tầm dấu tại 1 trong các gian bất kì có tham gia.\n2. Với mỗi hóa đơn tối thiểu 50k và trong đó có ít nhất 1 món hàng của Elden Ring, sẽ nhận được 1 con dấu của gian hàng tương ứng.\n3. Sau khi sưu tầm đủ 3 con dấu, quay lại gian hàng Tạp hóa ông Từ để nhận quà.\n\nSố lượng quà có hạn (12 slot).\nNhận quà trước 16h.\nMỗi card sưu tầm con dấu chỉ nhận quà 1 lần. Để nhận thêm 1 phần quà khác thì phải lấy thêm 1 card sưu tầm để tham gia.",
       "booths": ["E40", "H26", "K10"],
-      "link": ""
+      "artists": ["Hoàng Yến", "Hà Thương", "Koala Bánh Chúi"],
+      "link": "https://www.facebook.com/share/p/1GFHs7su5F/"
     },
     {
       "name": "Identity V",
       "rules": "1. Đến gian hàng 0 Lười Đời 0 Nể để nhận phiếu đóng dấu và bắt đầu thu nhập con dấu.\n2. Mua hàng với hóa đơn từ 50-80k ở mỗi gian hàng tham gia (chỉ tính hàng IDV) thì sẽ được nhận 1 con dấu.\n3. Sau khi thu nhập đủ 6 con dấu từ các gian hàng tham gia, mang phiếu đóng dấu đến gian hàng 0 Lười Đời 0 Nể để nhận quà.",
       "booths": ["B37-38", "K12", "K31", "C44", "H16"],
+      "artists": ["Chôu Chóo", "ChameLeon", "Laila Ai", "Thymerdo", "Kumoriee, Yumi-kito"],
       "link": ""
     },
     {
       "name": "Crafter",
       "rules": "1. Nhận phiếu tích điểm tại gian hàng Bốt Củ Chuối Lorem Ipsum (gặp host Sứa Đá để nhận phiếu).\n2. Mua hàng của các crafter/họa sĩ có tham gia, với hóa đơn từ 80k sẽ nhận được con dấu hoặc chữ ký.\n3. Sau khi tích đủ dấu, quay lại gian hàng Bốt Củ Chuối Lorem Ipsum để nhận quà.\n\nSố lượng quà có hạn (20 phần quà).\nYêu cầu mua đúng hàng của họa sĩ tham gia hoạt động để nhận được con dấu.\nCó thể giữ lại phiếu tích điểm nếu có nhu cầu.",
       "booths": ["A21-22", "F15-16", "A15", "B14", "H33-34", "H7", "H27"],
-      "link": ""
+      "artists": ["Sứa Đá", "Daisy", "Toki", "Happy Bat", "Nhea", "After Midnight", "Mơ.diy"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1102932688703275/"
     },
     {
       "name": "Attack On Titan",
       "rules": "1. Nhận phiếu đóng dấu ở 1 trong 3 gian hàng tham gia.\n2. Mua hàng tại các gian hàng tham gia, với mỗi gian hàng khi mua hóa đơn từ 50k thì sẽ nhận được 1 con dấu.\nMỗi con dấu ở mỗi gian sẽ đi kèm cùng 1 card bo góc của họa sĩ thuộc gian hàng đó.\n+ Card Levi Ackerman tại gian hàng Cơm nắm & Pumidolll.\n+ Card Eren Yeager tại gian hàng Chúi có Cú.\n+ Card Zeke Yeager tại gian hàng Nhai đề thi Toán.\n3. Sau khi thu nhập đủ 3 con dấu từ 3 gian hàng, đến gian hàng Chúi có Cú để nhận phần thưởng cuối (quà collab từ 3 họa sĩ).\n\nSố lượng quà tặng có hạn.",
       "booths": ["B3-4", "K10", "E8"],
-      "link": ""
+      "artists": ["Pumidoll", "Koala Bánh Chúi", "Mint Catty"],
+      "link": "https://www.facebook.com/groups/colorfiestacommunity/posts/1081701900826354/"
     }
   ]
 }

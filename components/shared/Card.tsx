@@ -99,10 +99,20 @@ export default async function Card({
                 ? event.artists.map((artist) => artist.name).join(', ')
                 : event.artists?.name || 'No artist information'}
             </p>
-            {event.hasPreorder === "Yes" && event.url && isValidUrl(event.url) && (
-              <a href={event.url} className="text-primary-500 font-semibold text-xs md:text-sm truncate max-w-[120px]" target="_blank" rel="noopener noreferrer">
-                Preorder Link
-              </a>
+            {event.hasPreorder === "Yes" && (
+              <>
+                {new Date(event.endDateTime) < new Date() ? (
+                  <span className="text-gray-500 font-semibold text-[11px] md:text-xs truncate max-w-[105px] leading-tight">
+                    Đã đóng
+                  </span>
+                ) : (
+                  event.url && isValidUrl(event.url) && (
+                    <a href={event.url} className="text-primary-500 font-semibold text-[11px] md:text-xs truncate max-w-[105px] leading-tight" target="_blank" rel="noopener noreferrer">
+                      Preorder
+                    </a>
+                  )
+                )}
+              </>
             )}
           </div>
           {hasOrderLink && (

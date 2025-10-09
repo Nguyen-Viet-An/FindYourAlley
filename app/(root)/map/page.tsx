@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 
 export default async function FloorplanPage() {
   const boothMap = await getBoothEventMap();
-  const uniqueEventTitleCount = await getUniqueEventTitleCount();
 
   // Load the XML floor map data
   let xmlContent = '';
@@ -79,7 +78,6 @@ export default async function FloorplanPage() {
           <InteractiveFloorplan
             boothMap={boothMap}
             xmlContent={xmlContent}
-            uniqueEventTitleCount={uniqueEventTitleCount}
             boothNames={boothNamesData}
             stampRallies={stampRallyData.stampRallies}
           />
