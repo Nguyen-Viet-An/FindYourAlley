@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import { getLowResUrl } from '@/lib/utils';
+import { X } from 'lucide-react';
 
 type CardLightboxProps = {
   imageUrl: string;
@@ -231,14 +232,14 @@ export default function CardLightbox({
         >
           <button 
             onClick={closeLightbox}
-            className="absolute top-4 right-4 bg-white rounded-full p-2 text-black z-10"
-            style={{ zIndex: 20 }} // Ensure the button appears above other content
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-2 rounded-full z-[1001] transition-colors"
+            aria-label="Close lightbox"
           >
-            ×
+            <X className="h-6 w-6 text-white" />
           </button>
           <div 
             ref={containerRef}
-            className="relative overflow-hidden max-w-full max-h-full"
+            className="relative max-w-full max-h-full"
             onClick={(e) => e.stopPropagation()}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
@@ -248,14 +249,14 @@ export default function CardLightbox({
             style={containerStyle}
           >
             <div className="flex items-center justify-center h-full">
-              <img 
-                ref={imageRef}
-                src={imageUrl}
-                alt={alt}
-                className="no-drag"
-                style={imageStyle}
+            <img 
+              ref={imageRef}
+              src={imageUrl}
+              alt={alt}
+              className="no-drag"
+              style={imageStyle}
                 draggable="false" // Prevent default drag behavior
-              />
+            />
             </div>
           </div>
         </div>

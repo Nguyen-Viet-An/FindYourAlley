@@ -92,9 +92,10 @@ export default async function Card({
             {displayTitle}
           </p>
         </Link>
-        <div className="flex flex-col gap-1">{/* removed mt-auto so content sits right under title */}
-          <div className="flex justify-between items-center gap-2">
-            <p className="p-medium-14 md:p-medium-16 text-grey-600 line-clamp-1 min-h-[20px]">
+        <div className="flex flex-col gap-2"> {/* Increase gap for better spacing */}
+          <div className="flex justify-between items-center">
+            {/* Artist Names Column */}
+            <p className="p-medium-14 md:p-medium-16 text-grey-600">
               {Array.isArray(event.artists) && event.artists.length > 0
                 ? event.artists.map((artist) => artist.name).join(', ')
                 : event.artists?.name || 'No artist information'}
@@ -102,12 +103,12 @@ export default async function Card({
             {event.hasPreorder === "Yes" && (
               <>
                 {new Date(event.endDateTime) < new Date() ? (
-                  <span className="text-gray-500 font-semibold text-[11px] md:text-xs truncate max-w-[105px] leading-tight">
+                  <span className="text-gray-500 font-semibold">
                     Đã đóng
                   </span>
                 ) : (
                   event.url && isValidUrl(event.url) && (
-                    <a href={event.url} className="text-primary-500 font-semibold text-[11px] md:text-xs truncate max-w-[105px] leading-tight" target="_blank" rel="noopener noreferrer">
+                    <a href={event.url} className="text-primary-500 font-semibold" target="_blank" rel="noopener noreferrer">
                       Preorder
                     </a>
                   )

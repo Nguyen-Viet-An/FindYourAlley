@@ -85,12 +85,12 @@ const Bookmark = ({
     <div className="flex items-center gap-2">
       {/* Primary action button */}
       {!isBookmarked && (
-        <Button onClick={openAddDialog} size="default" className="button sm:w-fit text-sm" disabled={loadingOrder}>
+        <Button onClick={openAddDialog} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" disabled={loadingOrder}>
           Lưu
         </Button>
       )}
       {isBookmarked && (
-        <Button onClick={handleDelete} size="default" className="button sm:w-fit text-sm" variant="destructive" disabled={loadingOrder}>
+        <Button onClick={handleDelete} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" variant="destructive" disabled={loadingOrder}>
           Xóa
         </Button>
       )}
