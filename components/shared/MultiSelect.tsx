@@ -1,6 +1,6 @@
 "use client"
-  import { ICategory } from "@/lib/database/models/category.model"
-  import { startTransition, useEffect, useState } from "react"
+import { ICategory } from "@/lib/database/models/category.model"
+import { startTransition, useEffect, useState } from "react"
 import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
@@ -12,9 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  } from "@/components/ui/alert-dialog"
-  import { Input } from "../ui/input"
-  import { createCategory, getAllCategories } from "@/lib/actions/category.actions"
+} from "@/components/ui/alert-dialog"
+import { Input } from "../ui/input"
+import { createCategory, getAllCategories } from "@/lib/actions/category.actions"
 import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
 
 type MultiSelectProps = {

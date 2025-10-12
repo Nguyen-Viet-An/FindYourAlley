@@ -379,7 +379,7 @@ export default function InteractiveFloorplan({
       <svg
         ref={svgRef}
         viewBox="0 0 7100 2700"
-        className="border rounded-lg bg-gray-50 w-full max-w-[1200px] mx-auto"
+        className="border rounded-lg bg-gray-50 w-full max-w-none mx-auto"
         preserveAspectRatio="xMidYMid meet"
         onClick={handleBackgroundClick}
       >
@@ -509,7 +509,7 @@ export default function InteractiveFloorplan({
                     strokeWidth={(isActive || isHovered) ? "10" : "6"}
                     fill="none"
                     strokeDasharray={(isActive || isHovered) ? "0" : "12,8"}
-                    opacity={shouldDim ? "0.2" : ((isActive || isHovered) ? "0.9" : "0.6")}
+                    opacity={shouldDim ? "0.3" : ((isActive || isHovered) ? "0.9" : "0.6")}
                     className="pointer-events-none transition-all duration-200"
                     style={{ filter: (isActive || isHovered) ? 'url(#shadow)' : 'none' }}
                   />
@@ -727,7 +727,7 @@ export default function InteractiveFloorplan({
                 )}
               </div>
 
-              {!focusedBooth.isEmptyBooth && (
+              {!focusedBooth.isEmptyBooth && focusedBooth.allEvents?.length===1 && (
                 <div className="mt-6 flex gap-3">
                   <a
                     href={`/events/${focusedBooth.eventId}`}

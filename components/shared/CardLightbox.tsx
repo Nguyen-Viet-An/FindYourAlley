@@ -249,14 +249,14 @@ export default function CardLightbox({
             style={containerStyle}
           >
             <div className="flex items-center justify-center h-full">
-            <img 
-              ref={imageRef}
-              src={imageUrl}
-              alt={alt}
-              className="no-drag"
-              style={imageStyle}
+              <img 
+                ref={imageRef}
+                src={imageUrl}
+                alt={alt}
+                className="no-drag"
+                style={imageStyle}
                 draggable="false" // Prevent default drag behavior
-            />
+              />
             </div>
           </div>
         </div>

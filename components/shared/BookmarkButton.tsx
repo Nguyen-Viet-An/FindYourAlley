@@ -26,7 +26,7 @@ const BookmarkButton = ({
     <div className="flex items-center gap-0.5"> {/* Reduced gap for a smaller layout */}
       <>
         <SignedOut>
-          <Button asChild className="button sm:w-fit text-sm" size="default">
+          <Button asChild className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" size="default">
             <Link href="/sign-in">
               Lưu
             </Link>
