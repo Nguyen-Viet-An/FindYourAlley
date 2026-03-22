@@ -72,7 +72,7 @@ export default function OcCardItem({
             </div>
             <p className="text-white/80 text-xs truncate">OC thuộc về {card.ownerName}</p>
             <p className="text-white/70 text-xs mt-1">
-              {tradeCount.total} muốn đổi
+              {tradeCount.total} người muốn đổi
             </p>
           </div>
         </div>

@@ -54,9 +54,9 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="h2-bold">{card.images?.[0]?.ocName || 'OC Card'}</h2>
-                <p className="text-muted-foreground">Chủ: {card.ownerName}</p>
+                <p className="text-muted-foreground">OC thuộc về {card.ownerName}</p>
                 {card.images?.[0]?.artistName && (
-                  <p className="text-sm text-muted-foreground">Artist thực hiện: {card.images[0].artistName}</p>
+                  <p className="text-sm text-muted-foreground">🎨 Artist thực hiện: {card.images[0].artistName}</p>
                 )}
               </div>
               {isOwner && (
@@ -85,7 +85,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
                   {f.code || f.name}
                 </Badge>
               ))}
-              <span className="text-sm text-muted-foreground">{tradeCount.total} muốn đổi</span>
+              <span className="text-sm text-muted-foreground">{tradeCount.total} người muốn đổi</span>
               {isOwner && (
                 <OcCardAvailabilityToggle cardId={card._id} userId={userId} initialAvailable={card.available} />
               )}
@@ -167,7 +167,7 @@ async function TradeRequestsList({ cardId, userId }: { cardId: string; userId: s
 
   return (
     <div className="border rounded-lg p-4">
-      <h3 className="font-semibold mb-3">Danh sách muốn đổi ({requests.length})</h3>
+      <h3 className="font-semibold mb-3">Danh sách người muốn đổi card ({requests.length})</h3>
       <div className="flex flex-col gap-3">
         {requests.map((req: any) => (
           <TradeRequestItem key={req._id} request={req} userId={userId} />

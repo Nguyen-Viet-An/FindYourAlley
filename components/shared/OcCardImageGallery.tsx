@@ -33,7 +33,7 @@ export default function OcCardImageGallery({ image, ownerName }: Props) {
         <h4 className="font-semibold">{image.ocName}</h4>
       )}
       {image.artistName && (
-        <p className="text-sm text-muted-foreground">Artist thực hiện: {image.artistName}</p>
+        <p className="text-sm text-muted-foreground">🎨 Artist thực hiện: {image.artistName}</p>
       )}
       {image.description && (
         <p className="text-sm text-muted-foreground">{image.description}</p>

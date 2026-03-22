@@ -10,8 +10,10 @@ import { Pencil, MapPin, User } from "lucide-react";
 import OcCardImageGallery from "./OcCardImageGallery";
 import CardLightbox from "./CardLightbox";
 import TradeRequestButton from "./TradeRequestButton";
+import TradeRequestAction from "./TradeRequestAction";
 import OcCardAvailabilityToggle from "./OcCardAvailabilityToggle";
 import DeleteOcCard from "./DeleteOcCard";
+import { getTradeRequestsForCard } from "@/lib/actions/tradeRequest.actions";
 import type { OcCard } from "@/types";
 
 type Props = {
@@ -51,7 +53,9 @@ export default function OcCardDetailModal({
             {/* OC name + owner + actions */}
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold">{image?.ocName || 'OC Card'}</h2>
+                <Link href={`/oc-cards/${card._id}`} className="text-xl font-bold hover:text-primary-500 transition-colors">
+                  {image?.ocName || 'OC Card'}
+                </Link>
                 <p className="text-muted-foreground text-sm">OC thuộc về {card.ownerName}</p>
                 {/* {image?.artistName && (
                   <p className="text-xs text-muted-foreground">Artist: {image.artistName}</p>
@@ -83,7 +87,7 @@ export default function OcCardDetailModal({
                   {f.code || f.name}
                 </Badge>
               ))}
-              <span className="text-xs text-muted-foreground">{tradeCount.total} muốn đổi</span>
+              <span className="text-xs text-muted-foreground">{tradeCount.total} người muốn đổi</span>
               {isOwner && (
                 <OcCardAvailabilityToggle cardId={card._id} userId={userId!} initialAvailable={card.available} />
               )}
@@ -141,9 +145,78 @@ export default function OcCardDetailModal({
                 available={card.available}
               />
             )}
+
+            {/* Trade requests list (owner only) */}
+            {isOwner && userId && (
+              <OwnerTradeRequests cardId={card._id} userId={userId} open={open} />
+            )}
           </div>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function OwnerTradeRequests({ cardId, userId, open }: { cardId: string; userId: string; open: boolean }) {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      getTradeRequestsForCard(cardId)
+        .then((data) => setRequests(data || []))
+        .catch(() => setRequests([]))
+        .finally(() => setLoading(false));
+    }
+  }, [open, cardId]);
+
+  if (loading) {
+    return <p className="text-xs text-muted-foreground">Đang tải...</p>;
+  }
+
+  if (!requests.length) {
+    return (
+      <div className="border rounded-lg p-3 text-xs text-muted-foreground">
+        Chưa có ai muốn đổi card này.
+      </div>
+    );
+  }
+
+  return (
+    <div className="border rounded-lg p-3">
+      <h4 className="font-semibold text-sm mb-2">Danh sách muốn đổi ({requests.length})</h4>
+      <div className="flex flex-col gap-2">
+        {requests.map((req: any) => {
+          const name = req.requester
+            ? `${req.requester.firstName || ""} ${req.requester.lastName || ""}`.trim()
+            : "Unknown";
+          return (
+            <div key={req._id} className="flex flex-col gap-1 p-2 border rounded-md bg-grey-50 dark:bg-gray-800">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  {req.requester?.photo && (
+                    <Image src={req.requester.photo} alt={name} width={24} height={24} className="rounded-full" />
+                  )}
+                  <span className="text-sm font-medium">{name}</span>
+                </div>
+                <TradeRequestAction requestId={req._id} userId={userId} status={req.status} />
+              </div>
+              {req.message && (
+                <p className="text-xs text-muted-foreground">{req.message}</p>
+              )}
+              {req.linkedCard && (
+                <Link
+                  href={`/oc-cards/${req.linkedCard._id}`}
+                  className="text-xs text-primary-500 hover:underline"
+                >
+                  🔗 Xem card của họ: {req.linkedCard.ownerName}
+                </Link>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
