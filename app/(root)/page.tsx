@@ -21,7 +21,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
   const page = Number(params?.page) || 1;
   const searchText = (params?.query as string) || '';
   const sortBy = (params?.sortBy as string) || 'newest';
-  const uniqueEventTitleCount = await getUniqueEventTitleCount();
+  // uniqueEventTitleCount is fetched below after selectedFestivalIds is determined
 
   const fandom = Array.isArray(params?.fandom)
     ? params.fandom
@@ -65,7 +65,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
     ? (Array.isArray(rawFestivalParam) ? rawFestivalParam : String(rawFestivalParam).split(',').filter(Boolean))
     : (festivals[0]?._id ? [festivals[0]._id] : []);
 
-  const [eventIdsOrdered, events, suggestions] = await Promise.all([
+  const [eventIdsOrdered, events, suggestions, uniqueEventTitleCount] = await Promise.all([
     getEventIdsOrderedByUser({ userId }),
     getAllEvents({
       query: searchText,
@@ -81,6 +81,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
       sortBy: sortBy as any,
     }),
     getSearchSuggestions(),
+    getUniqueEventTitleCount(selectedFestivalIds),
   ]);
 
   const selectedFestivalParam = selectedFestivalIds[0] ? `?festivalId=${selectedFestivalIds[0]}` : '';
@@ -155,11 +156,11 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <SearchAutocomplete suggestions={suggestions as any} />
             </div>
             <div>
-              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✓ chọn, ✕ loại trừ)</span></div>
+              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
               <CategoryMultiFilter categoryFilterType="fandom" excludeParamKey="excludeFandom" />
             </div>
             <div>
-              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✓/✕)</span></div>
+              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
               <CategoryMultiFilter
                 categoryFilterType="itemType"
                 excludeParamKey="excludeItemType"

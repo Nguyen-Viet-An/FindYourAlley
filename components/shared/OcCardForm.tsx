@@ -153,19 +153,14 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
   };
 
   async function uploadFile(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
     const res = await fetch("/api/upload", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fileName: file.name, fileType: file.type }),
+      body: formData,
     });
-    if (!res.ok) throw new Error("Failed to get signed URL");
-    const { uploadUrl, fileUrl } = await res.json();
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-    if (!uploadRes.ok) throw new Error("Failed to upload");
+    if (!res.ok) throw new Error("Failed to upload file");
+    const { fileUrl } = await res.json();
     return fileUrl;
   }
 

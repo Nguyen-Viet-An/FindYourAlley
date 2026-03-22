@@ -23,7 +23,7 @@ import {
 } from '@/types'
 import { getSubscribersForCategories } from './notification.actions'
 import { sendEmail, buildBatchSampleEmail, canSendEmail } from '@/lib/utils/email'
-import NotificationQueue from '../database/models/notificationQueue';
+import NotificationQueue from '@/lib/database/models/notificationQueue.model'
 
 const r2 = new S3Client({
   region: "auto",
@@ -584,9 +584,13 @@ export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUs
   }
 }
 
-export async function getUniqueEventTitleCount() {
+export async function getUniqueEventTitleCount(festivalIds?: string[]) {
   await connectToDatabase();
-  const events = await Event.find({}, 'title').lean();
+  const filter: any = {};
+  if (festivalIds?.length) {
+    filter.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+  }
+  const events = await Event.find(filter, 'title').lean();
 
   const codeRegex = /([A-Z]+\d+)/i;
 
