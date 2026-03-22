@@ -5,11 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, MapPin, Clock, User, MessageCircle } from "lucide-react";
+import { Pencil, MapPin, User } from "lucide-react";
 import TradeRequestButton from "@/components/shared/TradeRequestButton";
 import OcCardAvailabilityToggle from "@/components/shared/OcCardAvailabilityToggle";
 import DeleteOcCard from "@/components/shared/DeleteOcCard";
 import OcCardImageGallery from "@/components/shared/OcCardImageGallery";
+import CardLightbox from "@/components/shared/CardLightbox";
 
 type OcCardDetailProps = {
   params: Promise<{ id: string }>;
@@ -44,7 +45,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left: Images */}
           <div>
-            <OcCardImageGallery images={card.images} ownerName={card.ownerName} />
+            <OcCardImageGallery image={card.images?.[0]} ownerName={card.ownerName} />
           </div>
 
           {/* Right: Info */}
@@ -72,9 +73,13 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
 
             {/* Status */}
             <div className="flex gap-2 items-center flex-wrap">
-              <Badge variant={card.available ? "default" : "destructive"}>
+              <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                card.available
+                  ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
+                  : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
+              }`}>
                 {card.available ? "Còn đổi" : "Hết card"}
-              </Badge>
+              </span>
               {card.festival?.map((f: any) => (
                 <Badge key={f._id} variant="outline">
                   {f.code || f.name}
@@ -106,22 +111,25 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
                 </h3>
                 {card.appearance.text && <p className="mb-2">{card.appearance.text}</p>}
                 {card.appearance.imageUrl && (
-                  <Image
-                    src={card.appearance.imageUrl}
-                    alt="Ảnh nhận dạng"
-                    width={200}
-                    height={200}
-                    className="rounded-lg object-cover"
-                  />
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
+                    <Image
+                      src={card.appearance.imageUrl}
+                      alt="Ảnh nhận dạng"
+                      width={200}
+                      height={200}
+                      className="rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      unoptimized
+                    />
+                  </CardLightbox>
                 )}
               </div>
             )}
 
             {/* Contact */}
             {card.contactMethod && (
-              <div className="flex items-start gap-2">
-                <MessageCircle className="w-5 h-5 text-primary-500 mt-0.5 shrink-0" />
-                <p className="break-all">{card.contactMethod}</p>
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Phương thức liên lạc</p>
+                <p className="break-all text-muted-foreground">{card.contactMethod}</p>
               </div>
             )}
 

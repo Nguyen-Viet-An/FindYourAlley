@@ -17,6 +17,7 @@ import { Heart, Check } from "lucide-react";
 type Props = {
   cardId: string;
   userId: string;
+  imageIndex?: number;
   alreadyRequested: boolean;
   available: boolean;
 };
@@ -24,6 +25,7 @@ type Props = {
 export default function TradeRequestButton({
   cardId,
   userId,
+  imageIndex = 0,
   alreadyRequested,
   available,
 }: Props) {
@@ -46,6 +48,7 @@ export default function TradeRequestButton({
       await createTradeRequest({
         cardId,
         userId,
+        imageIndex,
         message: message.trim() || undefined,
         linkedCardId: linkedCardId || undefined,
       });

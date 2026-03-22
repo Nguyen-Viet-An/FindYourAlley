@@ -349,16 +349,28 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
 
       if (imageWithCategories.file && !imageUrl.includes(process.env.NEXT_PUBLIC_R2_PUBLIC_URL!)) {
         try {
-          const formData = new FormData();
-          formData.append('file', imageWithCategories.file);
+          // 1️⃣ Request a signed URL from your Next.js API
           const res = await fetch('/api/upload', {
             method: 'POST',
-            body: formData,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: imageWithCategories.file.name,
+              fileType: imageWithCategories.file.type,
+            }),
           });
 
-          if (!res.ok) throw new Error('Failed to upload file to R2');
+          if (!res.ok) throw new Error('Failed to get signed URL for R2');
 
-          const { fileUrl } = await res.json();
+          const { uploadUrl, fileUrl } = await res.json();
+
+          // 2️⃣ Upload file directly to R2
+          const uploadRes = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': imageWithCategories.file.type },
+            body: imageWithCategories.file,
+          });
+
+          if (!uploadRes.ok) throw new Error('Failed to upload file to R2');
 
           imageUrl = fileUrl; // ✅ final URL served via your Worker + caching
         } catch (error) {
@@ -413,15 +425,19 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
       let featuredImgUrl = values.featuredProductImageUrl || '';
       if (featuredFile) {
         try {
-          const formData = new FormData();
-          formData.append('file', featuredFile);
           const res = await fetch('/api/upload', {
             method: 'POST',
-            body: formData,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: featuredFile.name, fileType: featuredFile.type }),
           });
           if (res.ok) {
-            const { fileUrl } = await res.json();
-            featuredImgUrl = fileUrl;
+            const { uploadUrl, fileUrl } = await res.json();
+            const uploadRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': featuredFile.type },
+              body: featuredFile,
+            });
+            if (uploadRes.ok) featuredImgUrl = fileUrl;
           }
         } catch (err) { console.error('Featured image upload error:', err); }
       }

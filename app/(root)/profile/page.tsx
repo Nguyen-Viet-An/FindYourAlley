@@ -4,11 +4,14 @@ import NotificationSettings from '@/components/shared/NotificationSettings'
 import { Button } from '@/components/ui/button'
 import { getEventsByUser } from '@/lib/actions/event.actions'
 import { getOrdersByUser, getEventIdsOrderedByUser, getAllBookmarksByUser } from '@/lib/actions/order.actions'
+import { getOcCardsByUser } from '@/lib/actions/ocCard.actions'
+import { getTradeCountForCard } from '@/lib/actions/tradeRequest.actions'
 import { IOrder } from '@/lib/database/models/order.model'
 import { SearchParamProps } from '@/types'
 import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import React from 'react'
+import OcCardItem from '@/components/shared/OcCardItem'
 
 const ProfilePage = async (props: SearchParamProps) => {
   const searchParams = await props.searchParams;
@@ -18,11 +21,31 @@ const ProfilePage = async (props: SearchParamProps) => {
   const ordersPage = Number(searchParams?.ordersPage) || 1;
   const eventsPage = Number(searchParams?.eventsPage) || 1;
 
-  const [orders, organizedEvents, allBookmarks] = await Promise.all([
+  const [orders, organizedEvents, allBookmarks, myOcCards] = await Promise.all([
     getOrdersByUser({ userId, page: ordersPage }),
     getEventsByUser({ userId, page: eventsPage }),
     getAllBookmarksByUser(userId),
+    getOcCardsByUser(userId),
   ]);
+
+  // Flatten OC cards into per-image items with per-image trade counts
+  const ocFlatItems: { card: any; imageIndex: number }[] = [];
+  (myOcCards || []).forEach((card: any) => {
+    if (card.images && card.images.length > 0) {
+      card.images.forEach((_: any, ii: number) => {
+        ocFlatItems.push({ card, imageIndex: ii });
+      });
+    } else {
+      ocFlatItems.push({ card, imageIndex: 0 });
+    }
+  });
+
+  const ocCardExtras = await Promise.all(
+    ocFlatItems.map(async (item) => {
+      const tradeCount = await getTradeCountForCard(item.card._id, item.imageIndex);
+      return { tradeCount };
+    })
+  );
 
   const eventIdsOrdered = await getEventIdsOrderedByUser({ userId })
 
@@ -79,6 +102,42 @@ const ProfilePage = async (props: SearchParamProps) => {
           urlParamName="eventsPage"
           totalPages={organizedEvents?.totalPages}
         />
+      </section>
+
+      {/* OC Cards */}
+      <section className="bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
+        <div className="wrapper flex items-center justify-center sm:justify-between">
+          <h3 className='h3-bold text-center sm:text-left'>OC Cards của bạn</h3>
+          <Button asChild size="lg" className="button hidden sm:flex">
+            <Link href="/oc-cards/create">
+              Đăng OC Card
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      <section className="wrapper my-8">
+        {ocFlatItems.length > 0 ? (
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+            {ocFlatItems.map((item, index) => (
+              <div key={`${item.card._id}-${item.imageIndex}`} className="break-inside-avoid">
+                <OcCardItem
+                  card={item.card}
+                  imageIndex={item.imageIndex}
+                  tradeCount={ocCardExtras[index].tradeCount}
+                  userId={userId}
+                  isOwner={true}
+                  alreadyRequested={false}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex-center min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-grey-50 dark:bg-muted py-28 text-center">
+            <h3 className="p-bold-20 md:h5-bold">Bạn chưa có OC card nào</h3>
+            <p className="p-regular-14">Hãy đăng OC card đầu tiên!</p>
+          </div>
+        )}
       </section>
 
       {/* Notification Settings */}

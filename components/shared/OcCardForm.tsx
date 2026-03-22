@@ -119,11 +119,13 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
   const handleFileChange = (index: number, file: File | null, url?: string) => {
     setImages((prev) => {
       const next = [...prev];
-      next[index] = {
-        ...next[index],
-        file,
-        imageUrl: file ? "" : url || next[index].imageUrl,
-      };
+      if (url) {
+        // FileUploader finished uploading — store the final URL, clear the file
+        next[index] = { ...next[index], file: null, imageUrl: url };
+      } else {
+        // FileUploader picked a file — store it for preview, URL will come later
+        next[index] = { ...next[index], file, imageUrl: "" };
+      }
       return next;
     });
   };

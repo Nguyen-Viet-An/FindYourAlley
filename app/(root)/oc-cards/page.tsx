@@ -27,15 +27,28 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
     getFestivals(),
   ]);
 
-  const cardExtras = await Promise.all(
-    cards.map(async (card: any) => {
+  // Flatten cards into per-image items (filter out invalid cards)
+  const flatItems: { card: any; imageIndex: number; cardIndex: number }[] = [];
+  cards.filter(Boolean).forEach((card: any, ci: number) => {
+    if (card.images && card.images.length > 0) {
+      card.images.forEach((_: any, ii: number) => {
+        flatItems.push({ card, imageIndex: ii, cardIndex: ci });
+      });
+    } else {
+      flatItems.push({ card, imageIndex: 0, cardIndex: ci });
+    }
+  });
+
+  // Fetch per-image trade counts and request status
+  const flatExtras = await Promise.all(
+    flatItems.map(async (item) => {
       const [tradeCount, requested] = await Promise.all([
-        getTradeCountForCard(card._id),
-        userId ? hasUserRequestedCard(userId, card._id) : Promise.resolve(null),
+        getTradeCountForCard(item.card._id, item.imageIndex),
+        userId ? hasUserRequestedCard(userId, item.card._id, item.imageIndex) : Promise.resolve(null),
       ]);
       return {
         tradeCount,
-        isOwner: userId === card.owner?._id?.toString(),
+        isOwner: userId === item.card.owner?._id?.toString(),
         alreadyRequested: !!requested,
       };
     })
@@ -63,21 +76,22 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
           <OcCardSortSelect />
         </div>
 
-        {cards.length === 0 ? (
+        {flatItems.length === 0 ? (
           <div className="flex-center min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-grey-50 dark:bg-muted py-28 text-center">
             <h3 className="p-bold-20 md:h5-bold">Chưa có OC card nào</h3>
             <p className="p-regular-14">Hãy là người đầu tiên đăng OC card!</p>
           </div>
         ) : (
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-            {cards.map((card: any, index: number) => (
-              <div key={card._id} className="break-inside-avoid">
+            {flatItems.map((item, index) => (
+              <div key={`${item.card._id}-${item.imageIndex}`} className="break-inside-avoid">
                 <OcCardItem
-                  card={card}
-                  tradeCount={cardExtras[index].tradeCount}
+                  card={item.card}
+                  imageIndex={item.imageIndex}
+                  tradeCount={flatExtras[index].tradeCount}
                   userId={userId}
-                  isOwner={cardExtras[index].isOwner}
-                  alreadyRequested={cardExtras[index].alreadyRequested}
+                  isOwner={flatExtras[index].isOwner}
+                  alreadyRequested={flatExtras[index].alreadyRequested}
                 />
               </div>
             ))}

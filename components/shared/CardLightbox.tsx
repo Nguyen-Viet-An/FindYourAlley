@@ -238,7 +238,7 @@ export default function CardLightbox({
           </button>
           <div
             ref={containerRef}
-            className="relative max-w-full max-h-full"
+            className="relative p-4"
             onClick={(e) => e.stopPropagation()}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}

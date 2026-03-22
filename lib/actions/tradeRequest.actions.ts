@@ -1,7 +1,7 @@
 "use server";
 
 import { connectToDatabase } from "@/lib/database";
-import TradeRequest from "@/lib/database/models/tradeRequest.model"
+import TradeRequest from "@/lib/database/models/tradeRequest.model";
 import OcCard from "@/lib/database/models/ocCard.model";
 import User from "@/lib/database/models/user.model";
 import { handleError } from "@/lib/utils";
@@ -17,11 +17,13 @@ const populateRequest = (query: any) =>
 export async function createTradeRequest({
   userId,
   cardId,
+  imageIndex,
   message,
   linkedCardId,
 }: {
   userId: string;
   cardId: string;
+  imageIndex?: number;
   message?: string;
   linkedCardId?: string;
 }) {
@@ -38,6 +40,7 @@ export async function createTradeRequest({
     const req = await TradeRequest.create({
       card: cardId,
       requester: userId,
+      imageIndex: imageIndex ?? 0,
       message: message || "",
       linkedCard: linkedCardId || undefined,
       status: "pending",
@@ -129,12 +132,14 @@ export async function updateTradeRequestStatus({
   }
 }
 
-// GET TRADE COUNT FOR A CARD
-export async function getTradeCountForCard(cardId: string) {
+// GET TRADE COUNT FOR A CARD (per image)
+export async function getTradeCountForCard(cardId: string, imageIndex?: number) {
   try {
     await connectToDatabase();
-    const total = await TradeRequest.countDocuments({ card: cardId });
-    const accepted = await TradeRequest.countDocuments({ card: cardId, status: "accepted" });
+    const filter: any = { card: cardId };
+    if (imageIndex !== undefined) filter.imageIndex = imageIndex;
+    const total = await TradeRequest.countDocuments(filter);
+    const accepted = await TradeRequest.countDocuments({ ...filter, status: "accepted" });
     return { total, accepted };
   } catch (error) {
     handleError(error);
@@ -142,11 +147,13 @@ export async function getTradeCountForCard(cardId: string) {
   }
 }
 
-// CHECK IF USER ALREADY REQUESTED A CARD
-export async function hasUserRequestedCard(userId: string, cardId: string) {
+// CHECK IF USER ALREADY REQUESTED A CARD (per image)
+export async function hasUserRequestedCard(userId: string, cardId: string, imageIndex?: number) {
   try {
     await connectToDatabase();
-    const existing = await TradeRequest.findOne({ card: cardId, requester: userId });
+    const filter: any = { card: cardId, requester: userId };
+    if (imageIndex !== undefined) filter.imageIndex = imageIndex;
+    const existing = await TradeRequest.findOne(filter);
     return existing ? JSON.parse(JSON.stringify(existing)) : null;
   } catch (error) {
     handleError(error);

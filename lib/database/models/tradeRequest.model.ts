@@ -13,6 +13,7 @@ export interface ITradeRequest extends Document {
 const TradeRequestSchema = new Schema({
   card: { type: Schema.Types.ObjectId, ref: "OcCard", required: true },
   requester: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  imageIndex: { type: Number, default: 0 },
   message: { type: String, maxlength: 500 },
   linkedCard: { type: Schema.Types.ObjectId, ref: "OcCard" },
   status: {
@@ -25,8 +26,8 @@ const TradeRequestSchema = new Schema({
 
 TradeRequestSchema.index({ card: 1, createdAt: -1 });
 TradeRequestSchema.index({ requester: 1 });
-// Prevent duplicate requests: one requester per card
-TradeRequestSchema.index({ card: 1, requester: 1 }, { unique: true });
+// Prevent duplicate requests: one requester per card per image
+TradeRequestSchema.index({ card: 1, requester: 1, imageIndex: 1 }, { unique: true });
 
 const TradeRequest =
   models.TradeRequest || model("TradeRequest", TradeRequestSchema);
