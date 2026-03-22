@@ -56,7 +56,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
                 <h2 className="h2-bold">{card.images?.[0]?.ocName || 'OC Card'}</h2>
                 <p className="text-muted-foreground">Chủ: {card.ownerName}</p>
                 {card.images?.[0]?.artistName && (
-                  <p className="text-sm text-muted-foreground">🎨 Artist: {card.images[0].artistName}</p>
+                  <p className="text-sm text-muted-foreground">Artist thực hiện: {card.images[0].artistName}</p>
                 )}
               </div>
               {isOwner && (

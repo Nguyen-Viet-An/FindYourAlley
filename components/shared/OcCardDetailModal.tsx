@@ -52,10 +52,10 @@ export default function OcCardDetailModal({
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-xl font-bold">{image?.ocName || 'OC Card'}</h2>
-                <p className="text-muted-foreground text-sm">Chủ: {card.ownerName}</p>
-                {image?.artistName && (
-                  <p className="text-xs text-muted-foreground">🎨 Artist: {image.artistName}</p>
-                )}
+                <p className="text-muted-foreground text-sm">OC thuộc về {card.ownerName}</p>
+                {/* {image?.artistName && (
+                  <p className="text-xs text-muted-foreground">Artist: {image.artistName}</p>
+                )} */}
               </div>
               {isOwner && (
                 <div className="flex gap-1.5 shrink-0">
