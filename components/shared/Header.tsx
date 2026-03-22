@@ -9,29 +9,37 @@ import {
   } from '@clerk/nextjs'
 import NavItems from "./NavItems"
 import MobileNav from "./MobileNav"
+import ThemeToggle from "./ThemeToggle"
+import { auth } from '@clerk/nextjs/server'
 
+const ADMIN_USER_ID = '67db65cdd14104a0c014576d';
 
-const Header = () => {
+const Header = async () => {
+    const { sessionClaims } = await auth();
+    const userId = sessionClaims?.userId as string;
+    const isAdmin = userId === ADMIN_USER_ID;
+
     return (
-      <header className="w-full border-b">
+      <header className="w-full border-b bg-background">
         <div className="wrapper flex items-center justify-between">
           <Link href="/" className="w-36">
-            <Image 
+            <Image
               src="/assets/images/squid.png" width={60} height={5}
-              alt="FindYourAlley logo" 
+              alt="FindYourAlley logo"
             />
           </Link>
-  
+
           <SignedIn>
             <nav className="md:flex-between hidden w-full max-w-xs">
-              <NavItems />
+              <NavItems isAdmin={isAdmin} />
             </nav>
           </SignedIn>
-  
-          <div className="flex w-32 justify-end gap-3">
+
+          <div className="flex w-32 justify-end gap-3 items-center">
+            <ThemeToggle />
             <SignedIn>
               <UserButton />
-              <MobileNav />
+              <MobileNav isAdmin={isAdmin} />
             </SignedIn>
             <SignedOut>
               <Button asChild className="rounded-full" size="lg">
@@ -45,5 +53,5 @@ const Header = () => {
       </header>
     )
   }
-  
+
   export default Header

@@ -48,8 +48,16 @@ export default async function Card({
     ? imageToDisplay.category[0]
     : null;
 
+  // Derive deal badge: explicit dealBadge field OR auto-detect from Freebie category
+  const hasFreebie = event.images?.some((img: any) =>
+    img.category?.some((cat: any) =>
+      typeof cat === 'object' && /freebie/i.test(cat.name)
+    )
+  );
+  const effectiveDealBadge = (event as any).dealBadge || (hasFreebie ? 'Freebie' : '');
+
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white dark:bg-card shadow-md transition-all hover:shadow-lg">
        {/* Single fixed-height image wrapper to avoid double padding gap */}
        <div className="relative w-full h-64 overflow-hidden">{/* consistent image height */}
          <CardLightbox imageUrl={imageToDisplay.imageUrl || '/assets/images/broken-image.png'} alt={event.title}>
@@ -77,7 +85,7 @@ export default async function Card({
            </div>
          )}
          {isEventCreator && !hideEdit && (
-           <div className="absolute right-2 top-2 flex flex-col gap-4 rounded-xl bg-white p-3 shadow-sm transition-all">
+           <div className="absolute right-2 top-2 flex flex-col gap-4 rounded-xl bg-white dark:bg-card p-3 shadow-sm transition-all">
              <Link href={`/events/${event._id}/update`}>
                <Image src="/assets/icons/edit.svg" alt="edit" width={20} height={20} />
              </Link>
@@ -87,23 +95,28 @@ export default async function Card({
        </div>
 
       <div className="flex flex-col gap-2 p-4 md:p-5 flex-grow">{/* reduced gap & padding */}
+        {effectiveDealBadge && (
+          <span className="inline-block w-fit text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-2 py-0.5 rounded-full whitespace-nowrap">
+            🏷️ {effectiveDealBadge}
+          </span>
+        )}
         <Link href={`/events/${event._id}`}>
-          <p className="p-medium-16 md:p-medium-20 line-clamp-2 min-h-[40px] text-black">{/* slightly smaller reserved space */}
+          <p className="p-medium-16 md:p-medium-20 line-clamp-2 min-h-[40px] text-black dark:text-foreground">{/* slightly smaller reserved space */}
             {displayTitle}
           </p>
         </Link>
         <div className="flex flex-col gap-2"> {/* Increase gap for better spacing */}
           <div className="flex justify-between items-center">
             {/* Artist Names Column */}
-            <p className="p-medium-14 md:p-medium-16 text-grey-600">
+            <p className="p-medium-14 md:p-medium-16 text-grey-600 dark:text-muted-foreground">
               {Array.isArray(event.artists) && event.artists.length > 0
                 ? event.artists.map((artist) => artist.name).join(', ')
                 : event.artists?.name || 'No artist information'}
             </p>
-            {event.hasPreorder === "Yes" && (
+              {event.hasPreorder === "Yes" && (
               <>
                 {new Date(event.endDateTime) < new Date() ? (
-                  <span className="text-gray-500 font-semibold">
+                  <span className="text-gray-500 dark:text-muted-foreground font-semibold">
                     Đã đóng
                   </span>
                 ) : (

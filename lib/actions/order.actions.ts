@@ -197,3 +197,27 @@ export async function getBuyerCountForEvent(eventId: string): Promise<number> {
     return 0;
   }
 }
+
+// GET ALL BOOKMARKS FOR EXPORT (no pagination)
+export async function getAllBookmarksByUser(userId: string) {
+  try {
+    await connectToDatabase();
+    const orders = await Order.find({ buyer: userId })
+      .sort({ createdAt: 'desc' })
+      .populate({
+        path: 'event',
+        model: Event,
+        select: 'title artists hasPreorder',
+      });
+
+    return JSON.parse(JSON.stringify(orders.map((o: any) => ({
+      title: o.event?.title || '',
+      artists: o.event?.artists?.map((a: any) => a.name).join(', ') || '',
+      hasPreorder: o.event?.hasPreorder || 'No',
+      note: o.note || '',
+    }))));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}

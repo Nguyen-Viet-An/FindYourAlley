@@ -1,6 +1,6 @@
 import { getBoothEventMap, getUniqueEventTitleCount } from '@/lib/actions/event.actions';
+import { getFestivals, getFestivalById } from '@/lib/actions/festival.actions';
 import InteractiveFloorplan from '@/components/shared/InteractiveFloorplan';
-// import BoothSearch from '@/components/shared/BoothSearch';
 import { Metadata } from 'next';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -10,13 +10,27 @@ export const metadata: Metadata = {
   description: 'Sơ đồ tương tác các gian hàng tại sự kiện',
 };
 
-export default async function FloorplanPage() {
+type MapPageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function FloorplanPage({ searchParams }: MapPageProps) {
+  const params = await searchParams;
+  const festivals = await getFestivals(true);
+  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
+  const festival = festivalId ? await getFestivalById(festivalId) : null;
+
+  // Use festival-specific files or defaults
+  const floorMapFile = festival?.floorMapFile || 'Cofi floor map.drawio.xml';
+  const boothFile = festival?.boothFile || 'booth.json';
+  const stampRallyFile = festival?.stampRallyFile || 'stamprally.json';
+
   const boothMap = await getBoothEventMap();
 
   // Load the XML floor map data
   let xmlContent = '';
   try {
-    const xmlPath = path.join(process.cwd(), 'Cofi floor map.drawio.xml');
+    const xmlPath = path.join(process.cwd(), floorMapFile);
     xmlContent = await fs.readFile(xmlPath, 'utf-8');
   } catch (error) {
     console.error('Error loading XML floor map:', error);
@@ -25,74 +39,52 @@ export default async function FloorplanPage() {
   // Load booth names from JSON file
   let boothNamesData: { [key: string]: string } = {};
   try {
-    const boothNamesPath = path.join(process.cwd(), 'booth.json');
+    const boothNamesPath = path.join(process.cwd(), boothFile);
     const boothNamesContent = await fs.readFile(boothNamesPath, 'utf-8');
     boothNamesData = JSON.parse(boothNamesContent);
   } catch (error) {
     console.error('Error loading booth names:', error);
   }
 
-  // Load stamp rally data from JSON file
+  // Load stamp rally data from JSON file (only if file is specified)
   let stampRallyData: any = { stampRallies: [] };
-  try {
-    const stampRallyPath = path.join(process.cwd(), 'stamprally.json');
-    const stampRallyContent = await fs.readFile(stampRallyPath, 'utf-8');
-    stampRallyData = JSON.parse(stampRallyContent);
-  } catch (error) {
-    console.error('Error loading stamp rally data:', error);
+  if (stampRallyFile) {
+    try {
+      const stampRallyPath = path.join(process.cwd(), stampRallyFile);
+      const stampRallyContent = await fs.readFile(stampRallyPath, 'utf-8');
+      stampRallyData = JSON.parse(stampRallyContent);
+    } catch (error) {
+      // No stamp rally for this festival - that's fine
+    }
   }
 
-  const handleBoothSearch = (code: string) => {
-    // This will be handled by the client-side component
-    console.log('Searching for booth:', code);
-  };
+  const festivalName = festival?.code || festival?.name || '';
 
   return (
     <div className="wrapper my-8">
       <div className="flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="h2-bold">🗺️ Sơ đồ gian hàng</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="h2-bold">🗺️ Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
+          <p className="text-gray-600 dark:text-muted-foreground mt-2">
             Di chuột qua các gian để xem sample, click để xem chi tiết
           </p>
         </div>
 
-        {/* Statistics
-        <div className="flex justify-center gap-8 text-sm text-gray-600">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary-500">
-              {Object.keys(boothMap).length}
-            </div>
-            <div>Gian có event</div>
+        {xmlContent ? (
+          <div className="bg-white dark:bg-card rounded-lg shadow-sm border p-4">
+            <InteractiveFloorplan
+              boothMap={boothMap}
+              xmlContent={xmlContent}
+              boothNames={boothNamesData}
+              stampRallies={stampRallyData.stampRallies}
+            />
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-400">
-              {406 - Object.keys(boothMap).length}
-            </div>
-            <div>Gian trống</div>
+        ) : (
+          <div className="flex-center min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-grey-50 dark:bg-muted py-28 text-center">
+            <h3 className="p-bold-20 md:h5-bold">Chưa có sơ đồ cho festival này</h3>
+            <p className="p-regular-14">Sơ đồ gian hàng sẽ được cập nhật sau.</p>
           </div>
-        </div> */}
-
-        {/* Floorplan Component */}
-        <div className="bg-white rounded-lg shadow-sm border p-4">
-          <InteractiveFloorplan
-            boothMap={boothMap}
-            xmlContent={xmlContent}
-            boothNames={boothNamesData}
-            stampRallies={stampRallyData.stampRallies}
-          />
-        </div>
-
-        {/* Instructions
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-          <h3 className="font-medium text-blue-800 mb-2">💡 Hướng dẫn sử dụng:</h3>
-          <ul className="text-blue-700 space-y-1">
-            <li>• <strong>Di chuột</strong> qua các gian để xem preview sample</li>
-            <li>• <strong>Click</strong> vào gian để xem thông tin chi tiết</li>
-            <li>• <strong>Tìm kiếm</strong> theo số gian ở ô tìm kiếm phía trên</li>
-            <li>• Gian màu <span className="text-blue-600 font-medium">xanh</span> có sample, gian màu xám là trống</li>
-          </ul>
-        </div> */}
+        )}
       </div>
     </div>
   );

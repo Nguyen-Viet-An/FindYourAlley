@@ -7,6 +7,12 @@ const isPublicRoute = createRouteMatcher([
     '/map',
     '/tags/:tag',
     '/events/:id',
+    '/oc-cards',
+    '/oc-cards/:id',
+    '/artists(.*)',
+    '/gallery',
+    '/featured',
+    '/stamprally',
     '/api/webhooks(.*)',
     '/sign-in(.*)', '/sign-up(.*)'])
 

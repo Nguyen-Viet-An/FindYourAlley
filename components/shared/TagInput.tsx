@@ -61,7 +61,7 @@ export function TagInput({ value, onChange, placeholder, className }: TagInputPr
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="flex-1 bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+        className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
       />
     </div>
   );

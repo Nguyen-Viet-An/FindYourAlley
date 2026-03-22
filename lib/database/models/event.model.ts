@@ -24,6 +24,9 @@ export interface IEvent extends Document {
   extraTag?: string[];
   url?: string;
   hasPreorder: "Yes" | "No" | undefined;
+  featuredProduct?: { imageUrl: string; description: string };
+  dealBadge?: string;
+  dealDescription?: string;
   organizer: { _id: string, firstName: string, lastName: string };
   festival?: { _id: string; name: string; code?: string }[]; // now an array of festivals
 }
@@ -48,6 +51,12 @@ const EventSchema = new Schema(
     extraTag: { type: [String], default: [] },
     url: { type: String },
     hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
+    featuredProduct: {
+      imageUrl: { type: String },
+      description: { type: String, maxlength: 200 },
+    },
+    dealBadge: { type: String, maxlength: 30 },
+    dealDescription: { type: String, maxlength: 500 },
     organizer: { type: Schema.Types.ObjectId, ref: "User" },
     festival: [{ type: Schema.Types.ObjectId, ref: 'Festival' }], // now array
   }

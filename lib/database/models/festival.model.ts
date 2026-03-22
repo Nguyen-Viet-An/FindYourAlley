@@ -5,7 +5,11 @@ export interface IFestival extends Document {
   code?: string; // short code like COFI15
   startDate?: Date;
   endDate?: Date;
+  expiresAt?: Date; // festival hidden from filter after this date
   isActive: boolean;
+  floorMapFile?: string; // filename of the .drawio.xml floor map
+  boothFile?: string; // filename of the booth.json
+  stampRallyFile?: string; // filename of the stamprally.json
 }
 
 const FestivalSchema = new Schema<IFestival>({
@@ -13,7 +17,11 @@ const FestivalSchema = new Schema<IFestival>({
   code: { type: String, trim: true },
   startDate: { type: Date },
   endDate: { type: Date },
+  expiresAt: { type: Date },
   isActive: { type: Boolean, default: true },
+  floorMapFile: { type: String },
+  boothFile: { type: String },
+  stampRallyFile: { type: String },
 }, { timestamps: true });
 
 FestivalSchema.index({ name: 1 });

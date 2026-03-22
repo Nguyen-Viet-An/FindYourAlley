@@ -133,7 +133,7 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
   return (
     <div 
       {...getRootProps()} 
-      className="flex-center bg-dark-3 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50"
+      className="flex-center bg-dark-3 flex h-full min-h-[12rem] cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50 dark:bg-muted"
     >
       <input {...getInputProps()} className="cursor-pointer" />
       
@@ -153,11 +153,11 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
           )}
         </div>
       ) : (
-        <div className="flex-center flex-col py-5 text-grey-500">
-          <img src="/assets/icons/upload.svg" width={77} height={77} alt="file upload" />
-          <h3 className="mb-2 mt-2">Thả ảnh vào đây</h3>
-          <p className="p-medium-12 mb-4">Loại file được hỗ trợ: PNG, JPG</p>
-          <Button type="button" className="rounded-full" disabled={isUploading}>
+        <div className="flex-center flex-col py-3 text-grey-500 dark:text-muted-foreground">
+          <img src="/assets/icons/upload.svg" width={48} height={48} alt="file upload" />
+          <h3 className="mb-1 mt-1 text-sm">Thả ảnh vào đây</h3>
+          <p className="text-xs mb-2">PNG, JPG</p>
+          <Button type="button" size="sm" className="rounded-full" disabled={isUploading}>
             {isUploading ? 'Đang upload..' : 'Chọn ảnh từ máy tính'}
           </Button>
         </div>

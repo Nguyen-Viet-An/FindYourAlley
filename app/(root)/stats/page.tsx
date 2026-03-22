@@ -1,14 +1,27 @@
 import { getPopularFandoms, getPopularItemTypes, getPopularExtraTags, getRarestFandoms, getRarestItemTypes, getMostBookmarkedEvents } from "@/lib/actions/event.actions";
+import { getFestivals } from "@/lib/actions/festival.actions";
 import StatsCharts from "@/components/shared/StatsCharts";
 import Link from "next/link";
 
-export default async function StatsPage() {
-  const fandoms = await getPopularFandoms(10);
-  const itemTypes = await getPopularItemTypes(10);
-  let tags = await getPopularExtraTags(20);
-  const rareFandoms = await getRarestFandoms(10);
-  const rareItemTypes = await getRarestItemTypes(10);
-  const mostBookmarked = await getMostBookmarkedEvents(10);
+type StatsPageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function StatsPage({ searchParams }: StatsPageProps) {
+  const params = await searchParams;
+  const festivals = await getFestivals(true);
+  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
+  const festivalIds = festivalId ? [festivalId] : undefined;
+  const festivalName = festivals.find((f: any) => f._id === festivalId)?.code || festivals.find((f: any) => f._id === festivalId)?.name || '';
+
+  const [fandoms, itemTypes, rawTags, rareFandoms, rareItemTypes, mostBookmarked] = await Promise.all([
+    getPopularFandoms(10, festivalIds),
+    getPopularItemTypes(10, festivalIds),
+    getPopularExtraTags(20, festivalIds),
+    getRarestFandoms(10, festivalIds),
+    getRarestItemTypes(10, festivalIds),
+    getMostBookmarkedEvents(10, festivalIds),
+  ]);
   // const topArtists = await getTopArtists(10);
   // const emergingTags = await getEmergingTags(8, 14);
 
@@ -16,7 +29,7 @@ export default async function StatsPage() {
   type BookmarkStat = { id: string; title: string; count: number; imageUrl?: string };
 
   // Filter out empty or null tags (with typing)
-  tags = tags.filter((tag: StatDatum) => tag.name && tag.name.trim() !== "");
+  const tags = rawTags.filter((tag: StatDatum) => tag.name && tag.name.trim() !== "");
 
   const sortedPopularTags: StatDatum[] = tags
     .filter((tag: StatDatum) => tag.name)
@@ -24,7 +37,7 @@ export default async function StatsPage() {
 
   return (
     <section className="wrapper my-8 flex flex-col gap-12">
-      <h2 className="h2-bold mb-6">📊 Thống kê COFI#15</h2>
+      <h2 className="h2-bold mb-6">📊 Thống kê {festivalName}</h2>
 
       {/* Fandom chart */}
       <div className="w-full h-96 md:h-112">
@@ -60,10 +73,10 @@ export default async function StatsPage() {
         <h3 className="h3-bold mb-2">Fandom hiếm </h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rareFandoms.map((rf: StatDatum) => (
-            <Link key={rf.name} href={rf.eventId ? `/events/${rf.eventId}` : '#'} className="p-3 rounded-lg border bg-white hover:shadow transition flex flex-col">
+            <Link key={rf.name} href={rf.eventId ? `/events/${rf.eventId}` : '#'} className="p-3 rounded-lg border bg-white dark:bg-card hover:shadow transition flex flex-col">
               <span className="font-medium">{rf.name}</span>
-              <span className="text-xs text-gray-500 mt-1">Gian bán: {rf.value} </span>
-              {rf.eventTitle && <span className="text-[11px] text-gray-600 mt-1 line-clamp-2">{rf.eventTitle}</span>}
+              <span className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Gian bán: {rf.value} </span>
+              {rf.eventTitle && <span className="text-[11px] text-gray-600 dark:text-muted-foreground mt-1 line-clamp-2">{rf.eventTitle}</span>}
             </Link>
           ))}
         </div>
@@ -74,10 +87,10 @@ export default async function StatsPage() {
         <h3 className="h3-bold mb-2">Mặt hàng hiếm </h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rareItemTypes.map((ri: StatDatum) => (
-            <Link key={ri.name} href={ri.eventId ? `/events/${ri.eventId}` : '#'} className="p-3 rounded-lg border bg-white hover:shadow transition flex flex-col">
+            <Link key={ri.name} href={ri.eventId ? `/events/${ri.eventId}` : '#'} className="p-3 rounded-lg border bg-white dark:bg-card hover:shadow transition flex flex-col">
               <span className="font-medium">{ri.name}</span>
-              <span className="text-xs text-gray-500 mt-1">Gian bán: {ri.value}</span>
-              {ri.eventTitle && <span className="text-[11px] text-gray-600 mt-1 line-clamp-2">{ri.eventTitle}</span>}
+              <span className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Gian bán: {ri.value}</span>
+              {ri.eventTitle && <span className="text-[11px] text-gray-600 dark:text-muted-foreground mt-1 line-clamp-2">{ri.eventTitle}</span>}
             </Link>
           ))}
         </div>
@@ -117,7 +130,7 @@ export default async function StatsPage() {
             </Link>
           ))}
         </div>
-      </div> */} 
+      </div> */}
     </section>
   );
 }

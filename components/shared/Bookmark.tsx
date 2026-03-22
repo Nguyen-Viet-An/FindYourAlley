@@ -85,7 +85,7 @@ const Bookmark = ({
     <div className="flex items-center gap-2">
       {/* Primary action button */}
       {!isBookmarked && (
-        <Button onClick={openAddDialog} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" disabled={loadingOrder}>
+        <Button onClick={openAddDialog} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150 text-white" disabled={loadingOrder}>
           Lưu
         </Button>
       )}
@@ -105,7 +105,7 @@ const Bookmark = ({
       {/* Dialog for adding/editing note */}
       <Dialog open={open} onOpenChange={setOpen}>
         {open && (
-          <DialogContent className="bg-white">
+          <DialogContent className="bg-white dark:bg-card">
             <DialogHeader>
               <DialogTitle>Ghi chú</DialogTitle>
             </DialogHeader>

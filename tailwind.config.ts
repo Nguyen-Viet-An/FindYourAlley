@@ -38,6 +38,7 @@ module.exports = withUt({
         },
         black: '#000000',
         white: '#FFFFFF',
+        background: 'hsl(var(--background))',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

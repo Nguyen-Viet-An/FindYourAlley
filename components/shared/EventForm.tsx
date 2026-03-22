@@ -21,11 +21,11 @@ import { TagInput } from "./TagInput"
 import { useRouter } from "next/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
 import { IEvent } from "@/lib/database/models/event.model"
-import { Plus, Trash2, PlusCircle, XCircle} from "lucide-react"
+import { Plus, Trash2, PlusCircle, XCircle, Star, Tag} from "lucide-react"
 import { storage } from '@/lib/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
-// import FestivalSelect from './FestivalSelect';
+import FestivalMultiSelect from './FestivalMultiSelect';
 
 // festivals now passed from server components to avoid calling server action directly in client
 
@@ -59,6 +59,10 @@ const mapOptionsToCategories = (options: { value: string; label: string }[]) =>
 const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormProps) => {
   // State for images with categories
   const [imagesWithCategories, setImagesWithCategories] = useState<ImageWithCategories[]>([]);
+  const [featuredFile, setFeaturedFile] = useState<File | null>(null);
+  const [featuredPreview, setFeaturedPreview] = useState<string>(
+    (event as any)?.featuredProduct?.imageUrl || ''
+  );
   const [festivalIds, setFestivalIds] = useState<string[]>(() => {
     if (event && (event as any).festival) {
       const fest = (event as any).festival;
@@ -176,6 +180,10 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
             ),
           };
         }) || [],
+        featuredProductImageUrl: (event as any).featuredProduct?.imageUrl || '',
+        featuredProductDescription: (event as any).featuredProduct?.description || '',
+        dealBadge: (event as any).dealBadge || '',
+        dealDescription: (event as any).dealDescription || '',
       }
     : {
         ...eventDefaultValues,
@@ -413,12 +421,38 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
       // Log processed data
       console.log("Processed images data for submission:", imagesData);
 
+      // Upload featured product image if needed
+      let featuredImgUrl = values.featuredProductImageUrl || '';
+      if (featuredFile) {
+        try {
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: featuredFile.name, fileType: featuredFile.type }),
+          });
+          if (res.ok) {
+            const { uploadUrl, fileUrl } = await res.json();
+            const uploadRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': featuredFile.type },
+              body: featuredFile,
+            });
+            if (uploadRes.ok) featuredImgUrl = fileUrl;
+          }
+        } catch (err) { console.error('Featured image upload error:', err); }
+      }
+
       // Create a new event object with the structure expected by the API
       const eventData = {
         ...values,
         images: imagesData as any, // Use type assertion to bypass TypeScript check
         hasPreorder: values.hasPreorder || "No",
         festival: festivalIds,
+        featuredProduct: featuredImgUrl && values.featuredProductDescription
+          ? { imageUrl: featuredImgUrl, description: values.featuredProductDescription }
+          : undefined,
+        dealBadge: values.dealBadge || undefined,
+        dealDescription: values.dealDescription || undefined,
       };
 
       // Log final data
@@ -494,6 +528,21 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         </div>
 
         <div className="flex flex-col gap-5 md:flex-row">
+          <div className="w-full">
+            <FormLabel>Festival</FormLabel>
+            <FestivalMultiSelect
+              value={selectedFestivalOptions}
+              onChange={(opts: Option[]) => {
+                handleFestivalChange(opts);
+                form.setValue("festival", opts.map(o => o.value));
+              }}
+              festivals={festivals}
+              promptText="Festival gian hàng tham gia"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
             name="description"
@@ -509,28 +558,28 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         </div>
         <div className="flex flex-col gap-5">
                 {artists.map((artist, index) => (
-                  <div key={index} className="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg">
+                  <div key={index} className="flex flex-col gap-3 p-4 border border-gray-200 dark:border-border rounded-lg">
                     <div className="flex justify-between items-center">
                       <h4 className="text-sm font-medium">Artist {index + 1}</h4>
                       {index > 0 && (
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => removeArtist(index)}
                         >
                           <XCircle className="h-5 w-5 text-red-500" />
                         </Button>
                       )}
                     </div>
-                    
+
                     <FormField
                       control={form.control}
                       name={`artists.${index}.name`}
                       render={({ field }) => (
                         <FormItem className="w-full">
                           <FormControl>
-                            <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                            <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
                               <Input placeholder="Tên artist" {...field} className="input-field" />
                             </div>
                           </FormControl>
@@ -538,14 +587,14 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name={`artists.${index}.link`}
                       render={({ field }) => (
                         <FormItem className="w-full">
                           <FormControl>
-                            <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                            <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
                               <Input placeholder="Link tới trang cá nhân/blog của artist" {...field} value={field.value || ""} className="input-field" />
                             </div>
                           </FormControl>
@@ -555,7 +604,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                     />
                   </div>
                 ))}
-                
+
                 <Button
                   type="button"
                   variant="outline"
@@ -643,7 +692,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex items-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                  <div className="flex items-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
                     <TagInput
                       value={field.value || []}
                       onChange={field.onChange}
@@ -675,7 +724,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         onChange={() => field.onChange("Yes")}
                         className="peer hidden"
                       />
-                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "Yes" ? "bg-primary-500 text-white" : "bg-gray-200"}`}>
+                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "Yes" ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-muted"}`}>
                         Có
                       </div>
                     </label>
@@ -687,7 +736,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         onChange={() => field.onChange("No")}
                         className="peer hidden"
                       />
-                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "No" ? "bg-primary-500 text-white" : "bg-gray-200"}`}>
+                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "No" ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-muted"}`}>
                         Không
                       </div>
                     </label>
@@ -705,15 +754,15 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormControl>
-                    <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                    <div className="flex-center h-[40px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-3 py-1 text-sm">
                       <Image
                         src="/assets/icons/calendar.svg"
                         alt="calendar"
-                        width={24}
-                        height={24}
+                        width={18}
+                        height={18}
                         className="filter-grey"
                       />
-                      <p className="ml-3 whitespace-nowrap text-grey-600">Ngày mở đơn:</p>
+                      <p className="ml-2 whitespace-nowrap text-grey-600 dark:text-muted-foreground text-sm">Mở đơn:</p>
                       <DatePicker
                         selected={field.value}
                         onChange={(date: Date | null) => field.onChange(date)}
@@ -736,15 +785,15 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormControl>
-                    <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                    <div className="flex-center h-[40px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-3 py-1 text-sm">
                       <Image
                         src="/assets/icons/calendar.svg"
                         alt="calendar"
-                        width={24}
-                        height={24}
+                        width={18}
+                        height={18}
                         className="filter-grey"
                       />
-                      <p className="ml-3 whitespace-nowrap text-grey-600">Ngày đóng đơn:</p>
+                      <p className="ml-2 whitespace-nowrap text-grey-600 dark:text-muted-foreground text-sm">Đóng đơn:</p>
                       <DatePicker
                         selected={field.value}
                         onChange={(date: Date | null) => field.onChange(date)}
@@ -769,7 +818,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormControl>
-                    <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                    <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
                       <Input placeholder="Link preorder" {...field} value={field.value || ""} className="input-field" />
                     </div>
                   </FormControl>
@@ -778,6 +827,100 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               )}
             />
         </div>
+        {/* Featured Product Section */}
+        <div className="border rounded-lg p-4 mt-4">
+          <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            Mặt hàng nổi bật <span className="text-xs text-muted-foreground font-normal">(không bắt buộc)</span>
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">Chọn 1 mặt hàng tâm đắc nhất để giới thiệu riêng.</p>
+
+          <div className="mb-4">
+            <FormLabel>Ảnh mặt hàng</FormLabel>
+            <div className="w-full h-48">
+              <FileUploader
+                onFieldChange={(url) => {
+                  setFeaturedPreview(url);
+                  form.setValue('featuredProductImageUrl', url);
+                }}
+                imageUrl={featuredPreview}
+                setFiles={(files) => {
+                  if (files && files.length > 0) {
+                    setFeaturedFile(files[0]);
+                    setFeaturedPreview(URL.createObjectURL(files[0]));
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="featuredProductDescription"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Mô tả ngắn mặt hàng nổi bật</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input placeholder="VD: Acrylic standee Arlecchino 15cm - limited edition" {...field} value={field.value || ''} className="input-field" maxLength={200} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                      {(field.value || '').length}/200
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Deal / Promotion Section */}
+        <div className="border rounded-lg p-4 mt-4">
+          <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+            <Tag className="h-5 w-5 text-green-500" />
+            Ưu đãi / Khuyến mãi <span className="text-xs text-muted-foreground font-normal">(không bắt buộc)</span>
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">Thêm badge ưu đãi ngắn gọn (hiện trên card) và mô tả chi tiết.</p>
+
+          <FormField
+            control={form.control}
+            name="dealBadge"
+            render={({ field }) => (
+              <FormItem className="w-full mb-4">
+                <FormLabel>Badge ưu đãi (hiện trên card)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input placeholder="VD: Mua 3 tặng 1 / Bundle 200k" {...field} value={field.value || ''} className="input-field" maxLength={30} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                      {(field.value || '').length}/30
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="dealDescription"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Mô tả chi tiết ưu đãi</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Textarea placeholder="Mô tả chi tiết về combo, bundle, freebie, giảm giá... (hiện ở trang chi tiết)" {...field} value={field.value || ''} className="textarea rounded-2xl h-24" maxLength={500} />
+                    <span className="absolute right-3 bottom-3 text-xs text-muted-foreground">
+                      {(field.value || '').length}/500
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         {hasInvalidImages && (
           <p className="text-red-500 text-sm mb-2">
             Vui lòng chờ ảnh được upload thành công trước khi đăng hoặc thử đăng lại ảnh.

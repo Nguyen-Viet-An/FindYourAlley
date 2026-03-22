@@ -21,6 +21,9 @@ import {
   GetRelatedEventsByCategoryParams,
   BoothEventMap,
 } from '@/types'
+import { getSubscribersForCategories } from './notification.actions'
+import { sendEmail, buildBatchSampleEmail, canSendEmail } from '@/lib/utils/email'
+import NotificationQueue from '../database/models/notificationQueue';
 
 const r2 = new S3Client({
   region: "auto",
@@ -52,6 +55,86 @@ export const convertToObjectIdArray = async (stringIds: string[]): Promise<mongo
   return stringIds.map(id => new mongoose.Types.ObjectId(id));
 }
 
+const BATCH_THRESHOLD = 3;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+async function shouldFlushQueue(queue: any): Promise<boolean> {
+  const count = queue.pendingEvents.length;
+  if (count === 0) return false;
+
+  const now = new Date();
+  const lastSent = queue.lastSentAt ? new Date(queue.lastSentAt).getTime() : 0;
+  const daysSinceLastSend = now.getTime() - lastSent;
+
+  // Check if any event starts within 1 day → urgent flush
+  const hasUrgent = queue.pendingEvents.some((e: any) => {
+    if (!e.eventStartDate) return false;
+    const startTime = new Date(e.eventStartDate).getTime();
+    return startTime - now.getTime() <= ONE_DAY_MS && startTime > now.getTime();
+  });
+
+  if (hasUrgent) return true;
+
+  // Normal threshold: >= 3 events AND at least 1 day since last email
+  return count >= BATCH_THRESHOLD && daysSinceLastSend >= ONE_DAY_MS;
+}
+
+// Queue notification for a subscriber; send batched email when conditions met
+async function notifySubscribers(eventId: mongoose.Types.ObjectId, eventTitle: string) {
+  try {
+    const populated = await populateEvent(Event.findById(eventId));
+    if (!populated) return;
+
+    const categoryNames = populated.images
+      .flatMap((img: any) => img.category?.map((c: any) => c.name) || []);
+
+    if (!categoryNames.length) return;
+
+    const eventStartDate = populated.startDateTime || null;
+    const subscribers = await getSubscribersForCategories(categoryNames);
+    if (!subscribers.length) return;
+
+    for (const sub of subscribers) {
+      const matched = [
+        ...categoryNames.filter((n: string) => sub.fandoms?.includes(n)),
+        ...categoryNames.filter((n: string) => sub.itemTypes?.includes(n)),
+      ];
+      const unique = [...new Set(matched)] as string[];
+      if (!unique.length) continue;
+
+      // Push this event into the user's queue
+      const queue = await NotificationQueue.findOneAndUpdate(
+        { userId: sub.userId },
+        {
+          $setOnInsert: { email: sub.email, lastSentAt: null },
+          $push: { pendingEvents: {
+            eventId: eventId.toString(),
+            eventTitle,
+            eventStartDate,
+            matchedCategories: unique,
+          } },
+        },
+        { upsert: true, new: true }
+      );
+
+      // Check if we should flush (send) this queue
+      if (await shouldFlushQueue(queue)) {
+        if (await canSendEmail()) {
+          const { subject, html } = buildBatchSampleEmail(queue.pendingEvents);
+          await sendEmail({ to: sub.email, subject, html });
+        }
+        // Clear queue and record send time
+        await NotificationQueue.findOneAndUpdate(
+          { userId: sub.userId },
+          { $set: { pendingEvents: [], lastSentAt: new Date() } }
+        );
+      }
+    }
+  } catch (error) {
+    console.error("[Notify] notifySubscribers error:", error);
+  }
+}
+
 // CREATE
 export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
@@ -68,6 +151,9 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       extraTag,
       url,
       festival,
+      featuredProduct,
+      dealBadge,
+      dealDescription,
     } = event;
 
     const formattedImages = await Promise.all(
@@ -104,8 +190,18 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
     };
 
     if (festivalIds.length) eventData.festival = festivalIds;
+    if (featuredProduct?.imageUrl && featuredProduct?.description) {
+      eventData.featuredProduct = featuredProduct;
+    }
+    if (dealBadge) eventData.dealBadge = dealBadge;
+    if (dealDescription) eventData.dealDescription = dealDescription;
 
     const newEvent = await Event.create(eventData);
+
+    // Fire email notifications asynchronously (non-blocking)
+    notifySubscribers(newEvent._id, title).catch((err) =>
+      console.error("[Notify] Error sending notifications:", err)
+    );
 
     revalidatePath(path);
     return JSON.parse(JSON.stringify(newEvent));
@@ -154,6 +250,13 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     };
 
     if (festivalIds.length) updatePayload.festival = festivalIds; else updatePayload.festival = [];
+    if (event.featuredProduct?.imageUrl && event.featuredProduct?.description) {
+      updatePayload.featuredProduct = event.featuredProduct;
+    } else {
+      updatePayload.featuredProduct = undefined;
+    }
+    updatePayload.dealBadge = event.dealBadge || undefined;
+    updatePayload.dealDescription = event.dealDescription || undefined;
 
     const updatedEvent = await Event.findByIdAndUpdate(
       event._id,
@@ -215,8 +318,45 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
   }
 }
 
+// GET SEARCH SUGGESTIONS (booth titles, artist names, extra tags)
+export async function getSearchSuggestions() {
+  try {
+    await connectToDatabase();
+    const events = await Event.find({}, 'title artists extraTag').lean();
+    const suggestions: { type: string; value: string }[] = [];
+    const seen = new Set<string>();
+
+    for (const e of events) {
+      const titleKey = `booth:${e.title}`;
+      if (!seen.has(titleKey)) { seen.add(titleKey); suggestions.push({ type: 'booth', value: e.title }); }
+
+      if (Array.isArray(e.artists)) {
+        for (const a of e.artists) {
+          if (a.name) {
+            const key = `artist:${a.name.toLowerCase()}`;
+            if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'artist', value: a.name }); }
+          }
+        }
+      }
+
+      if (Array.isArray(e.extraTag)) {
+        for (const t of e.extraTag) {
+          if (t) {
+            const key = `tag:${t.toLowerCase()}`;
+            if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'tag', value: t }); }
+          }
+        }
+      }
+    }
+    return suggestions;
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
 // GET ALL EVENTS
-export async function getAllEvents({ query, limit = 6, page, fandom, itemType, hasPreorder, festivalId }: GetAllEventsParams) {
+export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
@@ -238,6 +378,31 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
       baseQuery.hasPreorder = hasPreorder; // "Yes" | "No"
     }
 
+    // Deal filter: events with dealBadge OR freebie category
+    if (hasDeal) {
+      const freebieCategories = await Category.find({ name: { $regex: /freebie/i } });
+      const freebieCatIds = freebieCategories.map((c: any) => c._id);
+      baseQuery.$and = [
+        ...(baseQuery.$and || []),
+        {
+          $or: [
+            { dealBadge: { $exists: true, $ne: '' } },
+            ...(freebieCatIds.length ? [{ 'images.category': { $in: freebieCatIds } }] : []),
+          ],
+        },
+      ];
+    }
+
+    // Blacklist/exclude categories
+    if ((excludeFandom && excludeFandom.length > 0) || (excludeItemType && excludeItemType.length > 0)) {
+      const excludeNames = [...(excludeFandom || []), ...(excludeItemType || [])];
+      const excludeCats = await getCategoriesByNames(excludeNames);
+      if (excludeCats.length) {
+        const excludeIds = excludeCats.map((c: any) => new mongoose.Types.ObjectId(c._id));
+        baseQuery['images.category'] = { ...baseQuery['images.category'], $nin: excludeIds };
+      }
+    }
+
     if (festivalId) {
       if (Array.isArray(festivalId)) {
         baseQuery.festival = { $in: festivalId.map(id => { try { return new mongoose.Types.ObjectId(id); } catch { return null } }).filter(Boolean) };
@@ -256,8 +421,8 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
       if (categories.length) {
         categoryIds = categories.map((c: any) => new mongoose.Types.ObjectId(c._id));
         requestedCategoryIds = categories.map((c: any) => c._id.toString());
-        // Event must have at least one image including ALL selected categories to be considered
-        baseQuery['images.category'] = { $all: categoryIds };
+        // Event must have at least one image matching ANY of the selected categories (OR logic)
+        baseQuery['images.category'] = { $in: categoryIds };
       } else {
         // No matching categories -> return empty result early
         return { data: [], totalPages: 1, requestedCategoryIds: [] };
@@ -277,52 +442,102 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
 
     // CATEGORY FILTER PATH (paginate by matching images only)
     if (hasCategoryFilter && categoryIds.length > 0) {
-      // Aggregate per-event matching image counts (respecting createdAt sort desc)
-      const matchingCounts = await Event.aggregate([
+      // Aggregate per-event matching image counts
+      const sortStage = sortBy === 'alphabetical' ? { $sort: { title: 1 } as any }
+        : sortBy === 'random' ? { $addFields: { _rand: { $rand: {} } } }
+        : { $sort: { createdAt: -1 } as any };
+
+      const pipeline: any[] = [
         { $match: baseQuery },
         {
           $project: {
             createdAt: 1,
+            title: 1,
             matchingImages: {
               $filter: {
                 input: '$images',
                 as: 'img',
-                cond: { $setIsSubset: [categoryIds, '$$img.category'] } // image must contain ALL selected categories
+                cond: { $setIsSubset: [categoryIds, '$$img.category'] }
               }
             }
           }
         },
         { $addFields: { imgCount: { $size: '$matchingImages' } } },
         { $match: { imgCount: { $gt: 0 } } },
-        { $sort: { createdAt: -1 } },
-        { $project: { imgCount: 1 } }
-      ]);
+      ];
+
+      if (sortBy === 'mostBookmarked') {
+        pipeline.push(
+          { $lookup: { from: 'orders', localField: '_id', foreignField: 'event', as: '_orders' } },
+          { $addFields: { _bookmarkCount: { $size: '$_orders' } } },
+          { $sort: { _bookmarkCount: -1 } },
+          { $project: { imgCount: 1 } }
+        );
+      } else if (sortBy === 'random') {
+        pipeline.push(
+          { $addFields: { _rand: { $rand: {} } } },
+          { $sort: { _rand: 1 } },
+          { $project: { imgCount: 1 } }
+        );
+      } else if (sortBy === 'alphabetical') {
+        pipeline.push(
+          { $sort: { title: 1 } },
+          { $project: { imgCount: 1 } }
+        );
+      } else {
+        pipeline.push(
+          { $sort: { createdAt: -1 } },
+          { $project: { imgCount: 1 } }
+        );
+      }
+
+      const matchingCounts = await Event.aggregate(pipeline);
 
       const totalMatchingImages = matchingCounts.reduce((sum: number, d: any) => sum + (d.imgCount || 0), 0);
       const totalPages = Math.max(1, Math.ceil(totalMatchingImages / imagesPerPage));
 
-      // Determine required events to cover pages up to current page
       const neededImages = pageNumber * imagesPerPage;
       const eventIdsToFetch = determineEventIdsForPage(matchingCounts, neededImages);
 
-      const events = await populateEvent(
-        Event.find({ _id: { $in: eventIdsToFetch } }).sort({ createdAt: -1 })
+      // Preserve the sort order from aggregation
+      const idOrder = eventIdsToFetch.map((id: any) => id.toString());
+      const eventsUnsorted = await populateEvent(
+        Event.find({ _id: { $in: eventIdsToFetch } })
       );
+      const eventsArr = JSON.parse(JSON.stringify(eventsUnsorted));
+      const events = eventsArr.sort((a: any, b: any) => idOrder.indexOf(a._id) - idOrder.indexOf(b._id));
 
       return {
-        data: JSON.parse(JSON.stringify(events)),
+        data: events,
         totalPages,
         requestedCategoryIds
       };
     }
 
     // NO CATEGORY FILTER: paginate across ALL images of matching events
-    // Aggregate counts of images per event (sorted desc by createdAt)
-    const counts = await Event.aggregate([
+    const noCatPipeline: any[] = [
       { $match: baseQuery },
-      { $project: { createdAt: 1, imgCount: { $size: '$images' } } },
-      { $sort: { createdAt: -1 } }
-    ]);
+      { $project: { createdAt: 1, title: 1, imgCount: { $size: '$images' } } },
+    ];
+
+    if (sortBy === 'mostBookmarked') {
+      noCatPipeline.push(
+        { $lookup: { from: 'orders', localField: '_id', foreignField: 'event', as: '_orders' } },
+        { $addFields: { _bookmarkCount: { $size: '$_orders' } } },
+        { $sort: { _bookmarkCount: -1 } }
+      );
+    } else if (sortBy === 'random') {
+      noCatPipeline.push(
+        { $addFields: { _rand: { $rand: {} } } },
+        { $sort: { _rand: 1 } }
+      );
+    } else if (sortBy === 'alphabetical') {
+      noCatPipeline.push({ $sort: { title: 1 } });
+    } else {
+      noCatPipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    const counts = await Event.aggregate(noCatPipeline);
 
     const totalImages = counts.reduce((sum: number, d: any) => sum + (d.imgCount || 0), 0);
     const totalPages = Math.max(1, Math.ceil(totalImages / imagesPerPage));
@@ -330,9 +545,12 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, h
     const neededImages = pageNumber * imagesPerPage;
     const eventIdsToFetch = determineEventIdsForPage(counts, neededImages);
 
-    const events = await populateEvent(
-      Event.find({ _id: { $in: eventIdsToFetch } }).sort({ createdAt: -1 })
+    const idOrder = eventIdsToFetch.map((id: any) => id.toString());
+    const eventsUnsorted = await populateEvent(
+      Event.find({ _id: { $in: eventIdsToFetch } })
     );
+    const eventsArr = JSON.parse(JSON.stringify(eventsUnsorted));
+    const events = eventsArr.sort((a: any, b: any) => idOrder.indexOf(a._id) - idOrder.indexOf(b._id));
 
     return {
       data: JSON.parse(JSON.stringify(events)),
@@ -382,10 +600,14 @@ export async function getUniqueEventTitleCount() {
   return uniqueCodes.size;
 }
 
-export async function getPopularFandoms(limit = 5) {
+export async function getPopularFandoms(limit = 5, festivalIds?: string[]) {
   await connectToDatabase();
 
-  const results = await Event.aggregate([
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
     { $unwind: "$images" },
     { $unwind: "$images.category" },
     {
@@ -406,15 +628,20 @@ export async function getPopularFandoms(limit = 5) {
     },
     { $sort: { count: -1 } },
     { $limit: limit }
-  ]);
+  );
 
+  const results = await Event.aggregate(pipeline);
   return results.map((r: any) => ({ name: r._id, value: r.count }));
 }
 
-export async function getPopularItemTypes(limit = 5) {
+export async function getPopularItemTypes(limit = 5, festivalIds?: string[]) {
   await connectToDatabase();
 
-  const results = await Event.aggregate([
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
     { $unwind: "$images" },
     { $unwind: "$images.category" },
     {
@@ -435,14 +662,19 @@ export async function getPopularItemTypes(limit = 5) {
     },
     { $sort: { count: -1 } },
     { $limit: limit }
-  ]);
+  );
 
+  const results = await Event.aggregate(pipeline);
   return results.map((r: any) => ({ name: r._id, value: r.count }));
 }
 
-export async function getAllExtraTags() {
+export async function getAllExtraTags(festivalIds?: string[]) {
   await connectToDatabase();
-  const tags = await Event.distinct("extraTag"); // get raw values
+  const filter: any = {};
+  if (festivalIds?.length) {
+    filter.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+  }
+  const tags = await Event.distinct("extraTag", filter);
   const normalized = Array.from(new Set(tags.filter(Boolean).map((t: string) => t.trim().toLowerCase())));
   (normalized as string[]).sort((a: string, b: string) => a.localeCompare(b, 'en'));
   return normalized;
@@ -456,17 +688,22 @@ export async function getEventsByTag(tag: string) {
   return JSON.parse(JSON.stringify(events));
 }
 
-export async function getPopularExtraTags(limit = 10) {
+export async function getPopularExtraTags(limit = 10, festivalIds?: string[]) {
   await connectToDatabase();
 
-  const results = await Event.aggregate([
-    { $unwind: "$extraTag" }, // Make sure extraTag is stored as an array
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
+    { $unwind: "$extraTag" },
     { $match: { extraTag: { $ne: null } } },
     { $group: { _id: "$extraTag", count: { $sum: 1 } } },
     { $sort: { count: -1 } },
     { $limit: limit }
-  ]);
+  );
 
+  const results = await Event.aggregate(pipeline);
   return results.map((r: any) => ({ name: r._id, value: r.count }));
 }
 
@@ -518,9 +755,13 @@ export async function getRelatedEventsByCategories({
   }
 }
 
-export async function getRarestFandoms(limit = 5) {
+export async function getRarestFandoms(limit = 5, festivalIds?: string[]) {
   await connectToDatabase();
-  const results = await Event.aggregate([
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
     { $unwind: '$images' },
     { $unwind: '$images.category' },
     { $lookup: { from: 'categories', localField: 'images.category', foreignField: '_id', as: 'categoryDoc' } },
@@ -532,13 +773,18 @@ export async function getRarestFandoms(limit = 5) {
     { $addFields: { randomValue: { $rand: {} } } },
     { $sort: { count: 1, randomValue: 1 } },
     { $limit: limit }
-  ]);
+  );
+  const results = await Event.aggregate(pipeline);
   return results.map((r: any) => ({ name: r.name, value: r.count, eventId: r.eventId?.toString(), eventTitle: r.eventTitle }));
 }
 
-export async function getRarestItemTypes(limit = 5) {
+export async function getRarestItemTypes(limit = 5, festivalIds?: string[]) {
   await connectToDatabase();
-  const results = await Event.aggregate([
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
     { $unwind: '$images' },
     { $unwind: '$images.category' },
     { $lookup: { from: 'categories', localField: 'images.category', foreignField: '_id', as: 'categoryDoc' } },
@@ -550,20 +796,155 @@ export async function getRarestItemTypes(limit = 5) {
     { $addFields: { randomValue: { $rand: {} } } },
     { $sort: { count: 1, randomValue: 1 } },
     { $limit: limit }
-  ]);
+  );
+  const results = await Event.aggregate(pipeline);
   return results.map((r: any) => ({ name: r.name, value: r.count, eventId: r.eventId?.toString(), eventTitle: r.eventTitle }));
 }
 
-export async function getMostBookmarkedEvents(limit = 5) {
+export async function getMostBookmarkedEvents(limit = 5, festivalIds?: string[]) {
   await connectToDatabase();
-  const results = await Event.aggregate([
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
     { $lookup: { from: 'orders', localField: '_id', foreignField: 'event', as: 'orders' } },
     { $addFields: { bookmarkCount: { $size: '$orders' } } },
     { $sort: { bookmarkCount: -1 } },
     { $limit: limit },
     { $project: { _id: 1, title: 1, bookmarkCount: 1, images: { $slice: ['$images', 1] } } }
-  ]);
+  );
+  const results = await Event.aggregate(pipeline);
   return results.map((e: any) => ({ id: e._id.toString(), title: e.title, count: e.bookmarkCount, imageUrl: e.images?.[0]?.imageUrl || '' }));
+}
+
+// GET FEATURED PRODUCTS (events that have a featuredProduct set)
+export async function getFeaturedProducts(festivalIds?: string[]) {
+  try {
+    await connectToDatabase();
+    const query: any = {
+      'featuredProduct.imageUrl': { $exists: true, $ne: '' },
+      'featuredProduct.description': { $exists: true, $ne: '' },
+    };
+    if (festivalIds?.length) {
+      query.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+    }
+    const events = await populateEvent(
+      Event.find(query).sort({ createdAt: -1 }).limit(12)
+    );
+    return JSON.parse(JSON.stringify(events));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+// GET EVENTS WITH DEALS (events that have dealBadge set)
+export async function getDealsEvents(festivalIds?: string[]) {
+  try {
+    await connectToDatabase();
+
+    // Find category IDs that match "freebie" (case-insensitive)
+    const freebieCategories = await Category.find({ name: { $regex: /freebie/i } });
+    const freebieCatIds = freebieCategories.map((c: any) => c._id);
+
+    const query: any = {
+      $or: [
+        { dealBadge: { $exists: true, $ne: '' } },
+        ...(freebieCatIds.length ? [{ 'images.category': { $in: freebieCatIds } }] : []),
+      ],
+    };
+    if (festivalIds?.length) {
+      query.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+    }
+    const events = await populateEvent(
+      Event.find(query).sort({ createdAt: -1 }).limit(12)
+    );
+    return JSON.parse(JSON.stringify(events));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+// GET ALL ARTISTS (deduplicated, with event count)
+export async function getAllArtists(festivalIds?: string[]) {
+  try {
+    await connectToDatabase();
+    const pipeline: any[] = [];
+    if (festivalIds?.length) {
+      pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+    }
+    pipeline.push(
+      { $unwind: '$artists' },
+      { $match: { 'artists.name': { $nin: [null, ''] } } },
+      {
+        $group: {
+          _id: { $toLower: '$artists.name' },
+          name: { $first: '$artists.name' },
+          link: { $first: '$artists.link' },
+          eventCount: { $sum: 1 },
+          eventIds: { $push: '$_id' },
+        }
+      },
+      { $sort: { name: 1 } }
+    );
+    const results = await Event.aggregate(pipeline);
+    return results.map((r: any) => ({
+      name: r.name,
+      link: r.link || '',
+      eventCount: r.eventCount,
+    }));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+// GET EVENTS BY ARTIST NAME
+export async function getEventsByArtist(artistName: string) {
+  try {
+    await connectToDatabase();
+    const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`^${escapeRegExp(artistName)}$`, 'i');
+    const events = await populateEvent(
+      Event.find({ 'artists.name': regex }).sort({ createdAt: -1 })
+    );
+    return JSON.parse(JSON.stringify(events));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+// GET BOOTH NEIGHBORS
+export async function getBoothNeighbors(boothCode: string, range = 2) {
+  try {
+    await connectToDatabase();
+    const match = boothCode.match(/^([A-Z]+)(\d+)$/i);
+    if (!match) return [];
+
+    const prefix = match[1].toUpperCase();
+    const num = parseInt(match[2], 10);
+    const neighborCodes: string[] = [];
+    for (let i = num - range; i <= num + range; i++) {
+      if (i > 0 && i !== num) neighborCodes.push(`${prefix}${i}`);
+    }
+
+    // Find events whose title starts with any neighbor code
+    const orConditions = neighborCodes.map(code => ({
+      title: { $regex: `^${code}\\b`, $options: 'i' }
+    }));
+
+    if (!orConditions.length) return [];
+    const events = await populateEvent(
+      Event.find({ $or: orConditions }).limit(10)
+    );
+    return JSON.parse(JSON.stringify(events));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
 }
 
 export async function getBoothEventMap(): Promise<BoothEventMap> {

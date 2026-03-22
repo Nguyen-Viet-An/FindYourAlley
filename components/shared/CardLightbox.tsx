@@ -12,12 +12,12 @@ type CardLightboxProps = {
   children?: React.ReactNode;
 };
 
-export default function CardLightbox({ 
-  imageUrl, 
-  alt, 
-  onLoad, 
+export default function CardLightbox({
+  imageUrl,
+  alt,
+  onLoad,
   renderImage = true, // Default to true for backward compatibility
-  children 
+  children
 }: CardLightboxProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -26,7 +26,7 @@ export default function CardLightbox({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsLightboxOpen(true);
@@ -44,34 +44,34 @@ export default function CardLightbox({
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
-    
+
     if (!imageRef.current) return;
-    
+
     // Reduce zoom sensitivity
     const delta = e.deltaY * -0.001; // Reduced sensitivity
     const newZoom = Math.max(1, Math.min(5, zoomLevel + delta));
-    
+
     if (newZoom === 1) {
       // Reset position when fully zoomed out
       setPosition({ x: 0, y: 0 });
     }
-    
+
     setZoomLevel(newZoom);
   };
 
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (zoomLevel <= 1) return;
-    
+
     // Prevent default browser behavior that might cause selection
     e.preventDefault();
-    
+
     setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
       y: e.clientY - position.y
     });
-    
+
     // Change cursor style
     if (containerRef.current) {
       containerRef.current.style.cursor = 'grabbing';
@@ -81,14 +81,14 @@ export default function CardLightbox({
   // Handle mouse move for dragging
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || zoomLevel <= 1) return;
-    
+
     // Prevent default browser behavior during drag
     e.preventDefault();
-    
+
     // Calculate new position
     const newX = e.clientX - dragStart.x;
     const newY = e.clientY - dragStart.y;
-    
+
     // Apply the new position
     setPosition({ x: newX, y: newY });
   };
@@ -98,9 +98,9 @@ export default function CardLightbox({
     if (isDragging) {
       e.preventDefault(); // Prevent any default behavior
     }
-    
+
     setIsDragging(false);
-    
+
     // Reset cursor style
     if (containerRef.current) {
       containerRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
@@ -112,7 +112,7 @@ export default function CardLightbox({
     if (isDragging) {
       e.preventDefault();
       setIsDragging(false);
-      
+
       // Reset cursor style
       if (containerRef.current) {
         containerRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
@@ -125,14 +125,14 @@ export default function CardLightbox({
     const handleGlobalMouseUp = () => {
       if (isDragging) {
         setIsDragging(false);
-        
+
         // Reset cursor style
         if (containerRef.current) {
           containerRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
         }
       }
     };
-    
+
     // Add CSS to prevent text selection during dragging
     const addNoSelectCSS = () => {
       if (isDragging) {
@@ -141,11 +141,11 @@ export default function CardLightbox({
         document.body.classList.remove('no-select');
       }
     };
-    
+
     addNoSelectCSS(); // Apply immediately when isDragging changes
-    
+
     window.addEventListener('mouseup', handleGlobalMouseUp);
-    
+
     return () => {
       window.removeEventListener('mouseup', handleGlobalMouseUp);
       document.body.classList.remove('no-select'); // Clean up on unmount
@@ -163,7 +163,7 @@ export default function CardLightbox({
         -moz-user-select: none !important;
         -ms-user-select: none !important;
       }
-      
+
       .no-drag {
         -webkit-user-drag: none;
         -khtml-user-drag: none;
@@ -173,7 +173,7 @@ export default function CardLightbox({
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       document.head.removeChild(style);
     };
@@ -208,13 +208,12 @@ export default function CardLightbox({
 
   return (
     <>
-      <div 
+      <div
         onClick={handleImageClick}
-        className="cursor-zoom-in w-full overflow-hidden relative"
-        style={aspectRatioStyle}
+        className="cursor-zoom-in w-full h-full overflow-hidden relative"
       >
         {renderImage && (
-          <img 
+          <img
             src={getLowResUrl(imageUrl)}
             alt={alt}
             className="absolute inset-0 w-full h-full object-cover"
@@ -226,18 +225,18 @@ export default function CardLightbox({
 
       {/* Lightbox */}
       {isLightboxOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center"
           onClick={closeLightbox}
         >
-          <button 
+          <button
             onClick={closeLightbox}
             className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-2 rounded-full z-[1001] transition-colors"
             aria-label="Close lightbox"
           >
             <X className="h-6 w-6 text-white" />
           </button>
-          <div 
+          <div
             ref={containerRef}
             className="relative max-w-full max-h-full"
             onClick={(e) => e.stopPropagation()}
@@ -249,7 +248,7 @@ export default function CardLightbox({
             style={containerStyle}
           >
             <div className="flex items-center justify-center h-full">
-              <img 
+              <img
                 ref={imageRef}
                 src={imageUrl}
                 alt={alt}

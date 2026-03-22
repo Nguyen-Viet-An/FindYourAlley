@@ -1,6 +1,7 @@
 import EventForm from "@/components/shared/EventForm"
 import { auth } from "@clerk/nextjs/server"
 import { getEventById } from "@/lib/actions/event.actions"
+import { getFestivals } from "@/lib/actions/festival.actions"
 
 
 type UpdateEventProps = {
@@ -20,10 +21,11 @@ const UpdateEvent = async (props: UpdateEventProps) => {
 
   const userId = sessionClaims?.userId as string;
   const event = await getEventById(id)
+  const festivals = await getFestivals(true);
 
   return (
     <>
-      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
+      <section className="bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
         <h3 className="wrapper h3-bold text-center sm:text-left">Cập nhật sample</h3>
       </section>
 
@@ -33,6 +35,7 @@ const UpdateEvent = async (props: UpdateEventProps) => {
           event={event} 
           eventId={event._id} 
           userId={userId} 
+          festivals={festivals}
         />
       </div>
     </>

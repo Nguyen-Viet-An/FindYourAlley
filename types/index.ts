@@ -29,6 +29,9 @@ export type CreateUserParams = {
       extraTag?: string[];
       url?: string;
       festival?: string[]; // multi-festival support
+      featuredProduct?: { imageUrl: string; description: string };
+      dealBadge?: string;
+      dealDescription?: string;
     };
     path: string;
   };
@@ -47,6 +50,9 @@ export type CreateUserParams = {
       extraTag?: string[];
       url?: string;
       festival?: string[]; // multi-festival support
+      featuredProduct?: { imageUrl: string; description: string };
+      dealBadge?: string;
+      dealDescription?: string;
     };
     path: string;
   };
@@ -59,10 +65,14 @@ export type CreateUserParams = {
     query: string
     fandom: string[]
     itemType: string[]
+    excludeFandom?: string[]
+    excludeItemType?: string[]
     hasPreorder?: "Yes" | "No";
+    hasDeal?: boolean;
     limit: number
     page: number
-    festivalId?: string | string[] // allow multiple when filtering
+    festivalId?: string | string[]
+    sortBy?: 'newest' | 'alphabetical' | 'mostBookmarked' | 'random'
   }
 
   export type GetEventsByUserParams = {
@@ -201,3 +211,47 @@ export type CreateUserParams = {
 
   export type GetBoothEventMapParams = {}
 
+  // ====== OC CARD PARAMS
+  export type OcCardImage = {
+    ocName: string;
+    artistName?: string;
+    imageUrl: string;
+    description?: string;
+  }
+
+  export type OcCard = {
+    _id: string;
+    owner: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      photo: string;
+    };
+    ownerName: string;
+    images: OcCardImage[];
+    festival?: { _id: string; name: string }[];
+    eventTime?: string;
+    location?: string;
+    appearance?: {
+      text?: string;
+      imageUrl?: string;
+    };
+    contactMethod?: string;
+    available: boolean;
+    createdAt: string;
+  }
+
+  export type TradeRequest = {
+    _id: string;
+    card: OcCard;
+    requester: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      photo: string;
+    };
+    message?: string;
+    linkedCard?: OcCard;
+    status: 'pending' | 'accepted' | 'declined';
+    createdAt: string;
+  }

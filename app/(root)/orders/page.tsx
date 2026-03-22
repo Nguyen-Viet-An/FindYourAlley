@@ -13,7 +13,7 @@ const Orders = async (props: SearchParamProps) => {
 
   return (
     <>
-      <section className=" bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
+      <section className=" bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
         <h3 className="wrapper h3-bold text-center sm:text-left ">Bookmark</h3>
       </section>
 
@@ -24,7 +24,7 @@ const Orders = async (props: SearchParamProps) => {
       <section className="wrapper overflow-x-auto">
         <table className="w-full border-collapse border-t">
           <thead>
-            <tr className="p-medium-14 border-b text-grey-500">
+            <tr className="p-medium-14 border-b text-grey-500 dark:text-muted-foreground">
               <th className="min-w-[250px] py-3 text-left">ID</th>
               <th className="min-w-[200px] flex-1 py-3 pr-4 text-left">Tên sample</th>
               <th className="min-w-[150px] py-3 text-left">Người bookmark</th>

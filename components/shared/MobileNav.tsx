@@ -9,14 +9,14 @@ import {
   import Image from "next/image"
   import { Separator } from "../ui/separator"
   import NavItems from "./NavItems"
-  
-  
-  const MobileNav = () => {
+
+
+  const MobileNav = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     return (
       <nav className="md:hidden">
         <Sheet>
           <SheetTrigger className="align-middle">
-            <Image 
+            <Image
               src="/assets/icons/menu.svg"
               alt="menu"
               width={24}
@@ -24,19 +24,19 @@ import {
               className="cursor-pointer"
             />
           </SheetTrigger>
-          <SheetContent className="flex flex-col gap-6 bg-white md:hidden">
-            <Image 
+          <SheetContent className="flex flex-col gap-6 bg-white dark:bg-card md:hidden">
+            <Image
               src="/assets/images/squid.png"
               alt="logo"
               width={60}
               height={10}
             />
             <Separator className="border border-gray-50" />
-            <NavItems />
+            <NavItems isAdmin={isAdmin} />
           </SheetContent>
         </Sheet>
       </nav>
     )
   }
-  
+
   export default MobileNav

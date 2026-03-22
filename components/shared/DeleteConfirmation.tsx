@@ -28,10 +28,10 @@ export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
         <Image src="/assets/icons/delete.svg" alt="edit" width={20} height={20} />
       </AlertDialogTrigger>
 
-      <AlertDialogContent className="bg-white">
+      <AlertDialogContent className="bg-white dark:bg-card">
         <AlertDialogHeader>
           <AlertDialogTitle>Bạn có chắc muốn xóa sample?</AlertDialogTitle>
-          <AlertDialogDescription className="p-regular-16 text-grey-600">
+          <AlertDialogDescription className="p-regular-16 text-grey-600 dark:text-muted-foreground">
             Hành động này sẽ xóa sample vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
