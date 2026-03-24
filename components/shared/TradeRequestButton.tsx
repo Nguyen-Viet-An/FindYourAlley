@@ -36,6 +36,7 @@ export default function TradeRequestButton({
   const [myCards, setMyCards] = useState<any[]>([]);
   const [submitted, setSubmitted] = useState(alreadyRequested);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (open && !myCards.length) {
@@ -45,16 +46,21 @@ export default function TradeRequestButton({
 
   const handleSubmit = async () => {
     setLoading(true);
+    setError("");
     try {
-      await createTradeRequest({
+      const result = await createTradeRequest({
         cardId,
         userId,
         imageIndex,
         message: message.trim() || undefined,
         linkedCardId: linkedCardId || undefined,
       });
-      setSubmitted(true);
-      setOpen(false);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setSubmitted(true);
+        setOpen(false);
+      }
     } catch {
       // error handled silently
     } finally {
@@ -163,6 +169,10 @@ export default function TradeRequestButton({
               rows={3}
             />
           </div>
+
+          {error && (
+            <p className="text-sm text-red-500 bg-red-50 dark:bg-red-500/10 rounded-lg p-3">{error}</p>
+          )}
 
           <Button
             onClick={handleSubmit}

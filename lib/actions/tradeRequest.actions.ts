@@ -37,6 +37,22 @@ export async function createTradeRequest({
       throw new Error("Không thể đổi card của chính mình");
     }
 
+    // Check for reverse duplicate: the other person already requested the linked card
+    if (linkedCardId) {
+      const reverse = await TradeRequest.findOne({
+        card: linkedCardId,
+        linkedCard: cardId,
+      });
+      if (reverse) {
+        if (reverse.status === "accepted") {
+          return { error: "Yêu cầu đổi card này đã được chấp nhận từ phía đối phương." };
+        } else if (reverse.status === "declined") {
+          return { error: "Yêu cầu đổi card này đã bị từ chối từ phía đối phương." };
+        }
+        return { error: "Đối phương đã gửi yêu cầu đổi card này rồi. Hãy chấp nhận yêu cầu của họ thay vì tạo yêu cầu mới." };
+      }
+    }
+
     const req = await TradeRequest.create({
       card: cardId,
       requester: userId,
