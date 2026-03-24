@@ -1,5 +1,6 @@
 import Collection from '@/components/shared/Collection'
 import ExportBookmarks from '@/components/shared/ExportBookmarks'
+import ExportTrades from '@/components/shared/ExportTrades'
 import NotificationSettings from '@/components/shared/NotificationSettings'
 import { Button } from '@/components/ui/button'
 import { getEventsByUser } from '@/lib/actions/event.actions'
@@ -150,8 +151,11 @@ const ProfilePage = async (props: SearchParamProps) => {
       {(acceptedTrades.asRequester.length > 0 || acceptedTrades.asOwner.length > 0) && (
         <>
           <section className="bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
-            <div className="wrapper">
+            <div className="wrapper flex items-center justify-center sm:justify-between">
               <h3 className='h3-bold text-center sm:text-left'>Card đã đổi được</h3>
+              <div className="hidden sm:flex">
+                <ExportTrades asRequester={acceptedTrades.asRequester} asOwner={acceptedTrades.asOwner} />
+              </div>
             </div>
           </section>
 

@@ -978,10 +978,14 @@ export async function getBoothNeighbors(boothCode: string, range = 2) {
   }
 }
 
-export async function getBoothEventMap(): Promise<BoothEventMap> {
+export async function getBoothEventMap(festivalId?: string): Promise<BoothEventMap> {
   try {
     await connectToDatabase();
-    const events = await Event.find({}, 'title images startDateTime endDateTime hasPreorder').lean();
+    const filter: any = {};
+    if (festivalId) {
+      filter.festival = festivalId;
+    }
+    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder').lean();
 
     const boothEvents: { [boothCode: string]: any[] } = {};
 

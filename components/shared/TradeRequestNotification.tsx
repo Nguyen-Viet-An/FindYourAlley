@@ -35,27 +35,31 @@ export default function TradeRequestNotification({ userId }: Props) {
       return;
     }
 
-    Promise.all([
-      getTradeRequestsForUser(userId),
-      getMyTradeRequests(userId),
-    ]).then(([incoming, outgoing]) => {
-      const pending = (incoming || []).filter((r: any) => r.status === "pending").length;
-      const updates = (outgoing || []).filter(
-        (r: any) => r.status === "accepted" || r.status === "declined"
-      );
+    (async () => {
+      try {
+        const [incoming, outgoing] = await Promise.all([
+          getTradeRequestsForUser(userId),
+          getMyTradeRequests(userId),
+        ]);
 
-      setPendingIncoming(pending);
-      setRecentUpdates(updates);
+        const pending = (incoming || []).filter((r: any) => r.status === "pending").length;
+        const updates = (outgoing || []).filter(
+          (r: any) => r.status === "accepted" || r.status === "declined"
+        );
 
-      if (pending > 0 || updates.length > 0) {
-        setOpen(true);
+        setPendingIncoming(pending);
+        setRecentUpdates(updates);
+
+        if (pending > 0 || updates.length > 0) {
+          setOpen(true);
+        }
+      } catch (e) {
+        console.error("Trade notification error:", e);
+      } finally {
+        sessionStorage.setItem(sessionKey, "1");
+        setChecked(true);
       }
-
-      sessionStorage.setItem(sessionKey, "1");
-      setChecked(true);
-    }).catch(() => {
-      setChecked(true);
-    });
+    })();
   }, [userId, checked]);
 
   if (!open) return null;

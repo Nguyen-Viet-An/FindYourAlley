@@ -22,15 +22,15 @@ export default function FestivalFilter({ festivals }: FestivalFilterProps) {
   const selectedFestivalId = searchParams.get('festivalId') || (festivals[0]?._id || '');
 
   const selectedFestival = festivals.find(f => f._id === selectedFestivalId);
-  const displayValue = selectedFestival ? (selectedFestival.code || selectedFestival.name) : 'Bất kì';
+  const displayValue = selectedFestival ? (selectedFestival.code || selectedFestival.name) : (festivals[0]?.code || festivals[0]?.name || '');
 
-  const onSelect = (id: string | 'All') => {
+  const onSelect = (id: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (id === 'All') params.delete('festivalId'); else params.set('festivalId', id);
+    params.set('festivalId', id);
     params.delete('page');
     setIsLoading(true);
     router.push(`?${params.toString()}`, { scroll: false });
-    setTimeout(() => setIsLoading(false), 300); // minimal loading UX
+    setTimeout(() => setIsLoading(false), 300);
     setOpen(false);
   };
 
@@ -55,16 +55,6 @@ export default function FestivalFilter({ festivals }: FestivalFilterProps) {
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <div className="max-h-72 overflow-y-auto">
-          <div
-            className={cn(
-              'relative flex cursor-default select-none items-center gap-1 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
-              !selectedFestivalId ? 'bg-accent text-accent-foreground' : ''
-            )}
-            onClick={() => onSelect('All')}
-          >
-            <Check className={cn('h-4 w-4', !selectedFestivalId ? 'opacity-100' : 'opacity-0')} />
-            <span>Bất kì</span>
-          </div>
           {filteredFestivals.map(f => {
             const active = selectedFestivalId === f._id;
             return (

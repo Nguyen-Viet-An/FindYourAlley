@@ -58,11 +58,17 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
   return (
     <>
       <section className="bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
-        <div className="wrapper flex items-center justify-between">
-          <h3 className="h3-bold">OC Trading Cards</h3>
-          <Button asChild className="bg-primary-500 hover:bg-primary-400 text-white">
-            <Link href="/oc-cards/create">Đăng OC Card</Link>
-          </Button>
+        <div className="wrapper flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h3 className="h3-bold">OC Trading Cards</h3>
+            <Button asChild className="bg-primary-500 hover:bg-primary-400 text-white">
+              <Link href="/oc-cards/create">Đăng OC Card</Link>
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground max-w-2xl">
+            Đăng OC card của bạn và tìm người đổi card tại các sự kiện! Bạn có thể đề xuất card muốn đổi, gửi lời nhắn, và quản lý các yêu cầu đổi card.
+            <span className="block mt-1 text-xs">Hoạt động được phổ biến bởi <span className="font-semibold">Trần Dương (Fb)</span>.</span>
+          </p>
         </div>
       </section>
 

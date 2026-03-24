@@ -20,12 +20,11 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
   const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
   const festival = festivalId ? await getFestivalById(festivalId) : null;
 
-  // Use festival-specific files or defaults
-  const floorMapFile = festival?.floorMapFile || 'Cofi floor map.drawio.xml';
-  const boothFile = festival?.boothFile || 'booth.json';
-  const stampRallyFile = festival?.stampRallyFile || 'stamprally.json';
+  // Use festival-specific files; no fallback so festivals without a map show "no map" message
+  const floorMapFile = festival?.floorMapFile || '';
+  const boothFile = festival?.boothFile || '';
 
-  const boothMap = await getBoothEventMap();
+  const boothMap = floorMapFile ? await getBoothEventMap(festivalId) : {};
 
   // Load the XML floor map data
   let xmlContent = '';
@@ -38,19 +37,21 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
 
   // Load booth names from JSON file
   let boothNamesData: { [key: string]: string } = {};
-  try {
-    const boothNamesPath = path.join(process.cwd(), boothFile);
-    const boothNamesContent = await fs.readFile(boothNamesPath, 'utf-8');
-    boothNamesData = JSON.parse(boothNamesContent);
-  } catch (error) {
-    console.error('Error loading booth names:', error);
+  if (boothFile) {
+    try {
+      const boothNamesPath = path.join(process.cwd(), boothFile);
+      const boothNamesContent = await fs.readFile(boothNamesPath, 'utf-8');
+      boothNamesData = JSON.parse(boothNamesContent);
+    } catch (error) {
+      console.error('Error loading booth names:', error);
+    }
   }
 
-  // Load stamp rally data from JSON file (only if file is specified)
+  // Load stamp rally data only if the festival has its own file
   let stampRallyData: any = { stampRallies: [] };
-  if (stampRallyFile) {
+  if (festival?.stampRallyFile) {
     try {
-      const stampRallyPath = path.join(process.cwd(), stampRallyFile);
+      const stampRallyPath = path.join(process.cwd(), festival.stampRallyFile);
       const stampRallyContent = await fs.readFile(stampRallyPath, 'utf-8');
       stampRallyData = JSON.parse(stampRallyContent);
     } catch (error) {
