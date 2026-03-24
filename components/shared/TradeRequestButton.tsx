@@ -53,7 +53,7 @@ export default function TradeRequestButton({
         userId,
         imageIndex,
         message: message.trim() || undefined,
-        linkedCardId: linkedCardId || undefined,
+        linkedCardId: linkedCardId ? linkedCardId.split("-")[0] : undefined,
       });
       if (result?.error) {
         setError(result.error);
@@ -68,7 +68,7 @@ export default function TradeRequestButton({
     }
   };
 
-  // Flatten user's cards into per-image items for selection
+  // One tile per image, selection key includes imageIndex for uniqueness
   const myCardItems: { card: any; imgIndex: number; imageUrl: string; ocName: string }[] = [];
   myCards.forEach((card: any) => {
     if (card.images && card.images.length > 0) {
@@ -121,11 +121,11 @@ export default function TradeRequestButton({
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto p-1">
                 {myCardItems.map((item) => {
-                  const key = `${item.card._id}`;
+                  const key = `${item.card._id}-${item.imgIndex}`;
                   const isSelected = linkedCardId === key;
                   return (
                     <button
-                      key={`${item.card._id}-${item.imgIndex}`}
+                      key={key}
                       type="button"
                       onClick={() => setLinkedCardId(isSelected ? "" : key)}
                       className={`relative rounded-lg overflow-hidden border-2 transition-all ${

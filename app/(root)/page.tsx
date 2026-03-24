@@ -138,7 +138,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <Link href={`/featured${selectedFestivalParam}`}>Mặt hàng nổi bật</Link>
             </Button>
             <Button size="sm" asChild className="bg-pink-500 hover:bg-pink-400 text-white">
-              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Cards</Link>
+              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Trading Cards</Link>
             </Button>
           </div>
 
