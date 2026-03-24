@@ -109,7 +109,7 @@ const Collection = ({
         <div className="flex flex-col items-center gap-10">
           <ul className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-min">
             {pagedEvents.map(({ event, imageIndex, hasOrdered }) => (
-              <li key={`${event._id}-${imageIndex ?? 'default'}`} className="flex justify-center flex-col max-w-xs w-full">
+              <li key={`${event._id}-${imageIndex ?? 'default'}`} className="flex justify-center flex-col w-full">
                 <Card
                   event={event}
                   hasOrderLink={collectionType === 'Events_Organized'}

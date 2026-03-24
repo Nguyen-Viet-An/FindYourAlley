@@ -156,7 +156,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <Link href={`/featured${selectedFestivalParam}`}>Mặt hàng nổi bật</Link>
             </Button>
             <Button size="sm" asChild className="bg-pink-500 hover:bg-pink-400 text-white">
-              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Cards</Link>
+              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Trading Cards</Link>
             </Button>
           </div>
 
@@ -168,7 +168,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
         </div>
 
         <div className="flex flex-col gap-3 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 items-end">
             <div>
               <div className="font-semibold mb-1">Tìm kiếm</div>
               <SearchAutocomplete suggestions={suggestions as any} />
@@ -185,13 +185,11 @@ export default async function Home({ searchParams }: SearchParamProps) {
                 pinnedItems={[{ id: "__deal", name: "Ưu đãi / Freebie", emoji: "🏷️" }]}
               />
             </div>
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <div className="font-semibold mb-1">Mở preorder</div>
-                <HasPreorderFilter />
-              </div>
-              <SortSelect />
+            <div>
+              <div className="font-semibold mb-1">Mở preorder</div>
+              <HasPreorderFilter />
             </div>
+            <SortSelect />
           </div>
         </div>
 
