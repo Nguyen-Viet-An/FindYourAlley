@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { getEventsByUser } from '@/lib/actions/event.actions'
 import { getOrdersByUser, getEventIdsOrderedByUser, getAllBookmarksByUser } from '@/lib/actions/order.actions'
 import { getOcCardsByUser } from '@/lib/actions/ocCard.actions'
-import { getTradeCountForCard } from '@/lib/actions/tradeRequest.actions'
+import { getTradeCountForCard, getAcceptedTradesForUser } from '@/lib/actions/tradeRequest.actions'
 import { IOrder } from '@/lib/database/models/order.model'
 import { SearchParamProps } from '@/types'
 import { auth } from '@clerk/nextjs/server'
@@ -21,11 +21,12 @@ const ProfilePage = async (props: SearchParamProps) => {
   const ordersPage = Number(searchParams?.ordersPage) || 1;
   const eventsPage = Number(searchParams?.eventsPage) || 1;
 
-  const [orders, organizedEvents, allBookmarks, myOcCards] = await Promise.all([
+  const [orders, organizedEvents, allBookmarks, myOcCards, acceptedTrades] = await Promise.all([
     getOrdersByUser({ userId, page: ordersPage }),
     getEventsByUser({ userId, page: eventsPage }),
     getAllBookmarksByUser(userId),
     getOcCardsByUser(userId),
+    getAcceptedTradesForUser(userId),
   ]);
 
   // Flatten OC cards into per-image items with per-image trade counts
@@ -108,11 +109,16 @@ const ProfilePage = async (props: SearchParamProps) => {
       <section className="bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
         <div className="wrapper flex items-center justify-center sm:justify-between">
           <h3 className='h3-bold text-center sm:text-left'>OC Cards của bạn</h3>
-          <Button asChild size="lg" className="button hidden sm:flex">
-            <Link href="/oc-cards/create">
-              Đăng OC Card
+          <div className="hidden sm:flex gap-3 items-center">
+            <Link href="/profile/trade-requests" className="text-sm text-primary-500 hover:underline font-medium">
+              Quản lý yêu cầu đổi card →
             </Link>
-          </Button>
+            <Button asChild size="lg" className="button">
+              <Link href="/oc-cards/create">
+                Đăng OC Card
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -139,6 +145,55 @@ const ProfilePage = async (props: SearchParamProps) => {
           </div>
         )}
       </section>
+
+      {/* Accepted Trades */}
+      {(acceptedTrades.asRequester.length > 0 || acceptedTrades.asOwner.length > 0) && (
+        <>
+          <section className="bg-primary-50 dark:bg-muted bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
+            <div className="wrapper">
+              <h3 className='h3-bold text-center sm:text-left'>Card đã đổi được</h3>
+            </div>
+          </section>
+
+          <section className="wrapper my-8">
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+              {/* Cards you requested and got accepted */}
+              {acceptedTrades.asRequester.map((trade: any) => {
+                const cardImage = trade.card?.images?.[trade.imageIndex ?? 0];
+                return cardImage?.imageUrl ? (
+                  <div key={`req-${trade._id}`} className="break-inside-avoid">
+                    <OcCardItem
+                      card={trade.card}
+                      imageIndex={trade.imageIndex ?? 0}
+                      tradeCount={{ total: 0, accepted: 0 }}
+                      userId={userId}
+                      isOwner={false}
+                      alreadyRequested={true}
+                      requestStatus="accepted"
+                    />
+                  </div>
+                ) : null;
+              })}
+              {/* Cards offered to you (as owner) via linkedCard */}
+              {acceptedTrades.asOwner.map((trade: any) => {
+                if (!trade.linkedCard?.images?.[0]?.imageUrl) return null;
+                return (
+                  <div key={`own-${trade._id}`} className="break-inside-avoid">
+                    <OcCardItem
+                      card={trade.linkedCard}
+                      imageIndex={0}
+                      tradeCount={{ total: 0, accepted: 0 }}
+                      userId={userId}
+                      isOwner={false}
+                      alreadyRequested={false}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
 
       {/* Notification Settings */}
       <section className="wrapper my-8">

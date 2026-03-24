@@ -13,8 +13,8 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: 'Find Your Alley',
-  description: 'Find Your Alley is a platform for event management.',
+  title: 'Find Your Alleys',
+  description: 'Find Your Alleys is a platform for event management.',
   icons: {
     icon: '/assets/images/squid.png'
   }
@@ -27,8 +27,15 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={poppins.variable}>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var d=document.documentElement,t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){d.classList.add('dark')}else{d.classList.remove('dark')}}catch(e){}})()`,
+            }}
+          />
+        </head>
+        <body className={`${poppins.variable} bg-background text-foreground`}>
           {children}
         </body>
       </html>

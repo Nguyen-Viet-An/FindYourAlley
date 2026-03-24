@@ -160,3 +160,38 @@ export async function hasUserRequestedCard(userId: string, cardId: string, image
     return null;
   }
 }
+
+// GET ACCEPTED TRADES FOR A USER (cards they successfully got)
+// - As requester: the card they requested (trade.card)
+// - As owner: the linked card offered to them (trade.linkedCard)
+export async function getAcceptedTradesForUser(userId: string) {
+  try {
+    await connectToDatabase();
+
+    // Cards the user requested and got accepted
+    const asRequester = await populateRequest(
+      TradeRequest.find({ requester: userId, status: "accepted" }).sort({ createdAt: -1 })
+    );
+
+    // Cards offered to the user (as card owner) via linkedCard
+    const userCards = await OcCard.find({ owner: userId }).select("_id");
+    const cardIds = userCards.map((c: any) => c._id);
+    const asOwner = cardIds.length
+      ? await populateRequest(
+          TradeRequest.find({
+            card: { $in: cardIds },
+            status: "accepted",
+            linkedCard: { $ne: null },
+          }).sort({ createdAt: -1 })
+        )
+      : [];
+
+    return {
+      asRequester: JSON.parse(JSON.stringify(asRequester)),
+      asOwner: JSON.parse(JSON.stringify(asOwner)),
+    };
+  } catch (error) {
+    handleError(error);
+    return { asRequester: [], asOwner: [] };
+  }
+}

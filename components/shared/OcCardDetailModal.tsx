@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, MapPin, User } from "lucide-react";
 import OcCardImageGallery from "./OcCardImageGallery";
 import CardLightbox from "./CardLightbox";
+import ShareButton from "./ShareButton";
 import TradeRequestButton from "./TradeRequestButton";
 import TradeRequestAction from "./TradeRequestAction";
 import OcCardAvailabilityToggle from "./OcCardAvailabilityToggle";
@@ -23,6 +24,7 @@ type Props = {
   userId?: string;
   isOwner: boolean;
   alreadyRequested: boolean;
+  requestStatus?: "pending" | "accepted" | "declined" | null;
   open: boolean;
   onClose: () => void;
 };
@@ -34,6 +36,7 @@ export default function OcCardDetailModal({
   userId,
   isOwner,
   alreadyRequested,
+  requestStatus,
   open,
   onClose,
 }: Props) {
@@ -61,16 +64,19 @@ export default function OcCardDetailModal({
                   <p className="text-xs text-muted-foreground">Artist: {image.artistName}</p>
                 )} */}
               </div>
-              {isOwner && (
-                <div className="flex gap-1.5 shrink-0">
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={`/oc-cards/${card._id}/update`}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Link>
-                  </Button>
-                  <DeleteOcCard cardId={card._id} userId={userId!} />
-                </div>
-              )}
+              <div className="flex gap-1.5 shrink-0">
+                <ShareButton title={image?.ocName || card.ownerName} />
+                {isOwner && (
+                  <>
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/oc-cards/${card._id}/update`}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Link>
+                    </Button>
+                    <DeleteOcCard cardId={card._id} userId={userId!} />
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Status */}
@@ -88,6 +94,16 @@ export default function OcCardDetailModal({
                 </Badge>
               ))}
               <span className="text-xs text-muted-foreground">{tradeCount.total} người muốn đổi</span>
+              {/* Requester's request status */}
+              {!isOwner && alreadyRequested && requestStatus === "accepted" && (
+                <Badge className="bg-green-500 text-white text-xs">Đã chấp nhận</Badge>
+              )}
+              {!isOwner && alreadyRequested && requestStatus === "declined" && (
+                <Badge variant="secondary" className="text-xs">Đã từ chối</Badge>
+              )}
+              {!isOwner && alreadyRequested && requestStatus === "pending" && (
+                <Badge variant="outline" className="text-xs">Đang chờ</Badge>
+              )}
               {isOwner && (
                 <OcCardAvailabilityToggle cardId={card._id} userId={userId!} initialAvailable={card.available} />
               )}
@@ -185,8 +201,8 @@ function OwnerTradeRequests({ cardId, userId, open }: { cardId: string; userId: 
 
   return (
     <div className="border rounded-lg p-3">
-      <h4 className="font-semibold text-sm mb-2">Danh sách muốn đổi ({requests.length})</h4>
-      <div className="flex flex-col gap-2">
+      <h4 className="font-semibold text-sm mb-2">Danh sách người muốn đổi ({requests.length})</h4>
+      <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
         {requests.map((req: any) => {
           const name = req.requester
             ? `${req.requester.firstName || ""} ${req.requester.lastName || ""}`.trim()
@@ -194,12 +210,7 @@ function OwnerTradeRequests({ cardId, userId, open }: { cardId: string; userId: 
           return (
             <div key={req._id} className="flex flex-col gap-1 p-2 border rounded-md bg-grey-50 dark:bg-gray-800">
               <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  {req.requester?.photo && (
-                    <Image src={req.requester.photo} alt={name} width={24} height={24} className="rounded-full" />
-                  )}
-                  <span className="text-sm font-medium">{name}</span>
-                </div>
+                <span className="text-sm font-medium">{name}</span>
                 <TradeRequestAction requestId={req._id} userId={userId} status={req.status} />
               </div>
               {req.message && (
@@ -208,9 +219,24 @@ function OwnerTradeRequests({ cardId, userId, open }: { cardId: string; userId: 
               {req.linkedCard && (
                 <Link
                   href={`/oc-cards/${req.linkedCard._id}`}
-                  className="text-xs text-primary-500 hover:underline"
+                  className="flex items-center gap-2 mt-1 p-1.5 rounded-md bg-white dark:bg-gray-700 border hover:border-primary-500 transition-colors"
                 >
-                  🔗 Xem card của họ: {req.linkedCard.ownerName}
+                  {req.linkedCard.images?.[0]?.imageUrl && (
+                    <Image
+                      src={req.linkedCard.images[0].imageUrl}
+                      alt={req.linkedCard.images[0]?.ocName || req.linkedCard.ownerName}
+                      width={40}
+                      height={52}
+                      className="rounded object-cover w-[40px] h-[52px] shrink-0"
+                      unoptimized
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">
+                      {req.linkedCard.images?.[0]?.ocName || req.linkedCard.ownerName}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Card đề xuất đổi</p>
+                  </div>
                 </Link>
               )}
             </div>

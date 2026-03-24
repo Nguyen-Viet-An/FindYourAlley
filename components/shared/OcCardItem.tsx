@@ -13,6 +13,7 @@ type OcCardItemProps = {
   userId?: string;
   isOwner: boolean;
   alreadyRequested: boolean;
+  requestStatus?: "pending" | "accepted" | "declined" | null;
 };
 
 export default function OcCardItem({
@@ -22,6 +23,7 @@ export default function OcCardItem({
   userId,
   isOwner,
   alreadyRequested,
+  requestStatus,
 }: OcCardItemProps) {
   const [imgError, setImgError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -70,7 +72,10 @@ export default function OcCardItem({
                 {card.available ? "Còn đổi" : "Hết card"}
               </span>
             </div>
-            <p className="text-white/80 text-xs truncate">OC thuộc về {card.ownerName}</p>
+            <p className="text-white/80 text-xs truncate">{card.ownerName}</p>
+            {image?.artistName && (
+              <p className="text-white/60 text-xs truncate">🎨 {image.artistName}</p>
+            )}
             <p className="text-white/70 text-xs mt-1">
               {tradeCount.total} người muốn đổi
             </p>
@@ -85,6 +90,7 @@ export default function OcCardItem({
         userId={userId}
         isOwner={isOwner}
         alreadyRequested={alreadyRequested}
+        requestStatus={requestStatus}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
       />

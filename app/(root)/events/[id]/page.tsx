@@ -94,9 +94,9 @@ const EventDetails = async (props: {
     return (
       <>
         <section className="flex justify-center bg-primary-50 dark:bg-muted bg-dotted-pattern bg-contain">
-          <div className="grid grid-cols-1 md:grid-cols-2 2xl:max-w-7xl w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:max-w-7xl w-full border rounded-xl bg-white dark:bg-card shadow-sm m-4 md:m-8 overflow-hidden">
             {/* Image Carousel - enlarged & centered */}
-            <div className="w-full flex items-center justify-center md:pr-4 group">
+            <div className="w-full flex items-center justify-center p-4 md:p-6 md:pr-4 group">
               <div className="relative w-full max-w-[720px] min-h-[420px] md:min-h-[520px] lg:min-h-[560px] max-h-[700px] 2xl:max-h-[760px] overflow-hidden flex items-center justify-center rounded-md transition-colors duration-200 group-hover:bg-neutral-900/5">
                 <div className="relative w-full h-full">
                   <ImageCarousel images={imageUrls} />
@@ -136,7 +136,7 @@ const EventDetails = async (props: {
               {/* Conditionally render the "Profile artist" and "Link preorder" */}
               {event.artists && event.artists.length > 0 && (
               <div className="mt-4">
-                <h4 className="p-bold-20 text-grey-600 dark:text-muted-foreground">Artists:</h4>
+                <h4 className="text-base font-semibold text-grey-600 dark:text-muted-foreground">Artists:</h4>
                 <ul className="list-disc pl-5">
                   {event.artists.map((artist: Artist, index: number) => (
                     <li key={index}>
@@ -165,12 +165,12 @@ const EventDetails = async (props: {
                     href={event.url.startsWith('http') ? event.url : `https://${event.url}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-bold-20 text-blue-500"
+                    className="text-base font-semibold text-blue-500"
                   >
                     Link preorder
                   </a>
                 ) : (
-                  <p className="p-bold-20">
+                  <p className="text-base font-semibold">
                     Link preorder: {event.url}
                   </p>
                 )}
@@ -201,14 +201,14 @@ const EventDetails = async (props: {
             )}
 
               <div className="flex flex-col gap-2">
-                <p className="p-bold-20 text-grey-600 dark:text-muted-foreground">Giới thiệu về gian hàng:</p>
-                <p className="p-medium-16 lg:p-regular-18 whitespace-pre-line">{event.description}</p>
+                <p className="text-base font-semibold text-grey-600 dark:text-muted-foreground">Giới thiệu về gian hàng:</p>
+                <p className="text-sm whitespace-pre-line">{event.description}</p>
               </div>
 
               {/* Featured Product */}
               {event.featuredProduct?.imageUrl && event.featuredProduct?.description && (
                 <div className="flex flex-col gap-3 mt-2 p-4 rounded-xl border border-yellow-300 dark:border-yellow-500/30 bg-yellow-50 dark:bg-yellow-500/10">
-                  <p className="p-bold-20 flex items-center gap-2">⭐ Mặt hàng nổi bật</p>
+                  <p className="text-base font-semibold flex items-center gap-2">⭐ Mặt hàng nổi bật</p>
                   <div className="relative w-full max-w-xs h-48 rounded-lg overflow-hidden">
                     <Image
                       src={event.featuredProduct.imageUrl}
@@ -218,21 +218,21 @@ const EventDetails = async (props: {
                       unoptimized
                     />
                   </div>
-                  <p className="p-medium-16">{event.featuredProduct.description}</p>
+                  <p className="text-sm">{event.featuredProduct.description}</p>
                 </div>
               )}
 
               {/* Deal / Promotion */}
               {(event.dealBadge || event.dealDescription) && (
                 <div className="flex flex-col gap-2 mt-2 p-4 rounded-xl border border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10">
-                  <p className="p-bold-20 flex items-center gap-2">🏷️ Ưu đãi</p>
+                  <p className="text-base font-semibold flex items-center gap-2">🏷️ Ưu đãi</p>
                   {event.dealBadge && (
                     <span className="inline-block w-fit text-sm font-semibold bg-green-200 text-green-800 dark:bg-green-500/30 dark:text-green-300 px-3 py-1 rounded-full">
                       {event.dealBadge}
                     </span>
                   )}
                   {event.dealDescription && (
-                    <p className="p-medium-16 whitespace-pre-line">{event.dealDescription}</p>
+                    <p className="text-sm whitespace-pre-line">{event.dealDescription}</p>
                   )}
                 </div>
               )}
@@ -243,7 +243,7 @@ const EventDetails = async (props: {
                     <Link
                       key={`${cat.type}-${cat.name}`}
                       href={`/?${encodeURIComponent(cat.type)}=${encodeURIComponent(cat.name)}`}
-                      className="p-medium-16 rounded-full bg-grey-500/10 dark:bg-muted px-4 py-2.5 text-grey-500 dark:text-muted-foreground hover:bg-primary-500/10 hover:text-primary-600 transition-colors"
+                      className="text-sm rounded-full bg-grey-500/10 dark:bg-muted px-4 py-2.5 text-grey-500 dark:text-muted-foreground hover:bg-primary-500/10 hover:text-primary-600 transition-colors"
                     >
                       {cat.name}
                     </Link>

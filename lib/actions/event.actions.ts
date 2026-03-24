@@ -415,14 +415,23 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, e
     const hasCategoryFilter = (fandom && fandom.length > 0) || (itemType && itemType.length > 0);
     let requestedCategoryIds: string[] = [];
     let categoryIds: mongoose.Types.ObjectId[] = [];
+    let fandomIds: mongoose.Types.ObjectId[] = [];
+    let itemTypeIds: mongoose.Types.ObjectId[] = [];
 
     if (hasCategoryFilter) {
-      const categories = await getCategoriesByNames([...(fandom || []), ...(itemType || [])]);
-      if (categories.length) {
-        categoryIds = categories.map((c: any) => new mongoose.Types.ObjectId(c._id));
-        requestedCategoryIds = categories.map((c: any) => c._id.toString());
-        // Event must have at least one image matching ANY of the selected categories (OR logic)
-        baseQuery['images.category'] = { $in: categoryIds };
+      // Look up fandom and itemType categories separately
+      const [fandomCats, itemTypeCats] = await Promise.all([
+        fandom && fandom.length > 0 ? getCategoriesByNames(fandom) : Promise.resolve([]),
+        itemType && itemType.length > 0 ? getCategoriesByNames(itemType) : Promise.resolve([]),
+      ]);
+      fandomIds = fandomCats.map((c: any) => new mongoose.Types.ObjectId(c._id));
+      itemTypeIds = itemTypeCats.map((c: any) => new mongoose.Types.ObjectId(c._id));
+      const allCats = [...fandomCats, ...itemTypeCats];
+      if (allCats.length) {
+        categoryIds = allCats.map((c: any) => new mongoose.Types.ObjectId(c._id));
+        requestedCategoryIds = allCats.map((c: any) => c._id.toString());
+        // Event must have at least one image matching ANY of the selected categories (OR logic at event level)
+        baseQuery['images.category'] = { ...baseQuery['images.category'], $in: categoryIds };
       } else {
         // No matching categories -> return empty result early
         return { data: [], totalPages: 1, requestedCategoryIds: [] };
@@ -457,7 +466,25 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, e
               $filter: {
                 input: '$images',
                 as: 'img',
-                cond: { $setIsSubset: [categoryIds, '$$img.category'] }
+                cond: (() => {
+                  // Build OR-within-group, AND-between-groups condition
+                  const conditions: any[] = [];
+                  if (fandomIds.length > 0) {
+                    // Image must have at least one of the selected fandoms
+                    conditions.push({
+                      $gt: [{ $size: { $setIntersection: [fandomIds, '$$img.category'] } }, 0]
+                    });
+                  }
+                  if (itemTypeIds.length > 0) {
+                    // Image must have at least one of the selected item types
+                    conditions.push({
+                      $gt: [{ $size: { $setIntersection: [itemTypeIds, '$$img.category'] } }, 0]
+                    });
+                  }
+                  if (conditions.length === 0) return true;
+                  if (conditions.length === 1) return conditions[0];
+                  return { $and: conditions };
+                })()
               }
             }
           }
