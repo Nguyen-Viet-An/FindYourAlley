@@ -71,8 +71,10 @@ export default async function Card({
       const evtEnd = new Date(event.endDateTime);
       evtStart.setHours(0, 0, 0, 0);
       evtEnd.setHours(0, 0, 0, 0);
-      const startDay = Math.max(1, Math.round((evtStart.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-      const endDay = Math.min(totalDays, Math.round((evtEnd.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const rawStart = Math.round((evtStart.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const rawEnd = Math.round((evtEnd.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const startDay = Math.max(1, Math.min(totalDays, rawStart));
+      const endDay = Math.max(1, Math.min(totalDays, rawEnd));
       if (endDay - startDay + 1 < totalDays) {
         // Event doesn't span all days — show which day(s)
         dayBadge = startDay === endDay ? `Ngày ${startDay}` : `Ngày ${startDay}–${endDay}`;

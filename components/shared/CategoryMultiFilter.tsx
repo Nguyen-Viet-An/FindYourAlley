@@ -154,7 +154,7 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
           {(selected.length > 0 || excluded.length > 0) && (
             <div className="flex items-center justify-between px-3 py-1.5 border-b">
               <span className="text-xs text-muted-foreground">
-                {selected.length} chọn, {excluded.length} loại trừ
+                {selected.length} chọn, {excluded.length} blacklist
               </span>
               <button onClick={clearAll} className="text-xs text-primary-500 hover:underline">Xóa tất cả</button>
             </div>
@@ -213,7 +213,7 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
                           "shrink-0 p-0.5 rounded hover:bg-destructive/20",
                           isExcluded && "text-destructive"
                         )}
-                        title="Loại trừ"
+                        title="Blacklist"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>

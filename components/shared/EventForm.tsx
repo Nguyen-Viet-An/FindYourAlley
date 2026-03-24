@@ -125,6 +125,20 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
     });
   };
 
+  // Sync form dates with initially selected festival days (for new events)
+  useEffect(() => {
+    if (type === "Create" && selectedDays.length > 0 && festivalDays.length > 0) {
+      const firstDay = festivalDays.find(fd => fd.dayNum === selectedDays[0]);
+      const lastDay = festivalDays.find(fd => fd.dayNum === selectedDays[selectedDays.length - 1]);
+      if (firstDay && lastDay) {
+        const start = new Date(firstDay.date); start.setHours(8, 0, 0, 0);
+        const end = new Date(lastDay.date); end.setHours(23, 59, 0, 0);
+        form.setValue('startDateTime', start);
+        form.setValue('endDateTime', end);
+      }
+    }
+  }, [festivalDays.length]); // only on initial mount when festivalDays are computed
+
   const handleFestivalChange = (opts: Option[]) => {
     setFestivalIds(opts.map(o => o.value));
   };
