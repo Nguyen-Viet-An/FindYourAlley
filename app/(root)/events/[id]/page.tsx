@@ -266,7 +266,7 @@ const EventDetails = async (props: {
               limit={RELATED_LIMIT}
               page={1}
               totalPages={1}
-              requestedCategoryIds={relatedEvents?.requestedCategoryIds} // Pass the requestedCategoryIds
+              requestedCategoryIds={relatedEvents?.requestedCategoryIds}
             />
         </section>
 
