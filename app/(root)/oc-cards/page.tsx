@@ -50,6 +50,7 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
         tradeCount,
         isOwner: userId === item.card.owner?._id?.toString(),
         alreadyRequested: !!requested,
+        requestStatus: requested?.status || null,
       };
     })
   );
@@ -92,6 +93,7 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
                   userId={userId}
                   isOwner={flatExtras[index].isOwner}
                   alreadyRequested={flatExtras[index].alreadyRequested}
+                  requestStatus={flatExtras[index].requestStatus}
                 />
               </div>
             ))}

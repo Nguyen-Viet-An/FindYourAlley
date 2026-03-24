@@ -17,6 +17,14 @@ export default function TradeRequestNotification({ userId }: Props) {
   const [pendingIncoming, setPendingIncoming] = useState(0);
   const [recentUpdates, setRecentUpdates] = useState<any[]>([]);
   const [checked, setChecked] = useState(false);
+  const [prevUserId, setPrevUserId] = useState(userId);
+
+  // Reset when user changes (e.g. switching Clerk accounts)
+  if (userId !== prevUserId) {
+    setPrevUserId(userId);
+    setChecked(false);
+    setOpen(false);
+  }
 
   useEffect(() => {
     if (!userId || checked) return;

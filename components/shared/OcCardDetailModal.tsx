@@ -153,18 +153,20 @@ export default function OcCardDetailModal({
 
             {/* Trade request button (not for own cards) */}
             {!isOwner && userId && (
-              <TradeRequestButton
-                cardId={card._id}
-                userId={userId}
-                imageIndex={imageIndex}
-                alreadyRequested={alreadyRequested}
-                available={card.available}
-              />
+              <div className="pt-2">
+                <TradeRequestButton
+                  cardId={card._id}
+                  userId={userId}
+                  imageIndex={imageIndex}
+                  alreadyRequested={alreadyRequested}
+                  available={card.available}
+                />
+              </div>
             )}
 
             {/* Trade requests list (owner only) */}
             {isOwner && userId && (
-              <OwnerTradeRequests cardId={card._id} userId={userId} open={open} />
+              <OwnerTradeRequests cardId={card._id} userId={userId} open={open} imageIndex={imageIndex} />
             )}
           </div>
         </div>
@@ -173,19 +175,19 @@ export default function OcCardDetailModal({
   );
 }
 
-function OwnerTradeRequests({ cardId, userId, open }: { cardId: string; userId: string; open: boolean }) {
+function OwnerTradeRequests({ cardId, userId, open, imageIndex }: { cardId: string; userId: string; open: boolean; imageIndex: number }) {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
       setLoading(true);
-      getTradeRequestsForCard(cardId)
+      getTradeRequestsForCard(cardId, imageIndex)
         .then((data) => setRequests(data || []))
         .catch(() => setRequests([]))
         .finally(() => setLoading(false));
     }
-  }, [open, cardId]);
+  }, [open, cardId, imageIndex]);
 
   if (loading) {
     return <p className="text-xs text-muted-foreground">Đang tải...</p>;
@@ -201,7 +203,7 @@ function OwnerTradeRequests({ cardId, userId, open }: { cardId: string; userId: 
 
   return (
     <div className="border rounded-lg p-3">
-      <h4 className="font-semibold text-sm mb-2">Danh sách người muốn đổi ({requests.length})</h4>
+      <h4 className="font-semibold text-sm mb-2">Danh sách muốn đổi ({requests.length})</h4>
       <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
         {requests.map((req: any) => {
           const name = req.requester

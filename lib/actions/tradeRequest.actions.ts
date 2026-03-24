@@ -58,11 +58,13 @@ export async function createTradeRequest({
 }
 
 // GET TRADE REQUESTS FOR A CARD (card owner sees these)
-export async function getTradeRequestsForCard(cardId: string) {
+export async function getTradeRequestsForCard(cardId: string, imageIndex?: number) {
   try {
     await connectToDatabase();
+    const filter: any = { card: cardId };
+    if (imageIndex !== undefined) filter.imageIndex = imageIndex;
     const requests = await populateRequest(
-      TradeRequest.find({ card: cardId }).sort({ createdAt: -1 })
+      TradeRequest.find(filter).sort({ createdAt: -1 })
     );
     return JSON.parse(JSON.stringify(requests));
   } catch (error) {
