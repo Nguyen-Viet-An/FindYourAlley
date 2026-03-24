@@ -47,7 +47,7 @@ const getCategoriesByNames = async (names: string | string[]) => {
 const populateEvent = (query: any) => {
   return query
     .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
-    .populate({ path: 'festival', model: Festival, select: '_id name code' })
+    .populate({ path: 'festival', model: Festival, select: '_id name code startDate endDate' })
     .populate({ path: 'images.category', model: Category, select: '_id name type' }); // Populate categories inside images
 };
 
@@ -356,7 +356,7 @@ export async function getSearchSuggestions() {
 }
 
 // GET ALL EVENTS
-export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy }: GetAllEventsParams) {
+export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy, dayDate }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
@@ -365,6 +365,16 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, e
 
     // 1. Build base query (event-level) excluding category specifics first
     const baseQuery: any = {};
+
+    // Day filter: only events whose date range overlaps the given day
+    if (dayDate) {
+      const dayStart = new Date(dayDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      baseQuery.startDateTime = { $lte: dayEnd };
+      baseQuery.endDateTime = { $gte: dayStart };
+    }
 
     if (query) {
       baseQuery.$or = [
@@ -978,12 +988,21 @@ export async function getBoothNeighbors(boothCode: string, range = 2) {
   }
 }
 
-export async function getBoothEventMap(festivalId?: string): Promise<BoothEventMap> {
+export async function getBoothEventMap(festivalId?: string, dayDate?: string): Promise<BoothEventMap> {
   try {
     await connectToDatabase();
     const filter: any = {};
     if (festivalId) {
       filter.festival = festivalId;
+    }
+    // Day filter: only events whose date range overlaps the given day
+    if (dayDate) {
+      const dayStart = new Date(dayDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      filter.startDateTime = { $lte: dayEnd };
+      filter.endDateTime = { $gte: dayStart };
     }
     const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder').lean();
 

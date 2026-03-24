@@ -28,6 +28,7 @@ export default function FestivalFilter({ festivals }: FestivalFilterProps) {
     const params = new URLSearchParams(searchParams.toString());
     params.set('festivalId', id);
     params.delete('page');
+    params.delete('festivalDay');
     setIsLoading(true);
     router.push(`?${params.toString()}`, { scroll: false });
     setTimeout(() => setIsLoading(false), 300);

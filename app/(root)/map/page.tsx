@@ -1,6 +1,7 @@
 import { getBoothEventMap, getUniqueEventTitleCount } from '@/lib/actions/event.actions';
 import { getFestivals, getFestivalById } from '@/lib/actions/festival.actions';
 import InteractiveFloorplan from '@/components/shared/InteractiveFloorplan';
+import DayFilter from '@/components/shared/DayFilter';
 import { Metadata } from 'next';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -20,11 +21,20 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
   const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
   const festival = festivalId ? await getFestivalById(festivalId) : null;
 
+  // Day filter for multi-day festivals
+  const festivalDayParam = params?.festivalDay ? Number(params.festivalDay) : undefined;
+  let dayDate: string | undefined;
+  if (festivalDayParam && festival?.startDate) {
+    const d = new Date(festival.startDate);
+    d.setDate(d.getDate() + (festivalDayParam - 1));
+    dayDate = d.toISOString();
+  }
+
   // Use festival-specific files; no fallback so festivals without a map show "no map" message
   const floorMapFile = festival?.floorMapFile || '';
   const boothFile = festival?.boothFile || '';
 
-  const boothMap = floorMapFile ? await getBoothEventMap(festivalId) : {};
+  const boothMap = floorMapFile ? await getBoothEventMap(festivalId, dayDate) : {};
 
   // Load the XML floor map data
   let xmlContent = '';
@@ -69,6 +79,11 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
           <p className="text-gray-600 dark:text-muted-foreground mt-2">
             Di chuột qua các gian để xem sample, click để xem chi tiết
           </p>
+          {festival?.startDate && festival?.endDate && (
+            <div className="mt-3 flex justify-center">
+              <DayFilter startDate={festival.startDate} endDate={festival.endDate} />
+            </div>
+          )}
         </div>
 
         {xmlContent ? (

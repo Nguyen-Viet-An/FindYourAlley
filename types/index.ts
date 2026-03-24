@@ -73,6 +73,7 @@ export type CreateUserParams = {
     page: number
     festivalId?: string | string[]
     sortBy?: 'newest' | 'alphabetical' | 'mostBookmarked' | 'random'
+    dayDate?: string // ISO date string to filter events present on this day
   }
 
   export type GetEventsByUserParams = {

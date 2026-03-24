@@ -77,7 +77,7 @@ export default function OcCardItem({
 
           {/* Hover overlay with info */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
               <h3 className="text-white font-semibold text-sm line-clamp-1">
                 {image?.ocName || 'OC Card'}
               </h3>
@@ -88,6 +88,17 @@ export default function OcCardItem({
               }`}>
                 {card.available ? "Còn đổi" : "Hết card"}
               </span>
+              {alreadyRequested && requestStatus && (
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                  requestStatus === 'accepted'
+                    ? 'bg-green-400/90 text-white'
+                    : requestStatus === 'declined'
+                      ? 'bg-gray-400/80 text-white'
+                      : 'bg-yellow-400/80 text-white'
+                }`}>
+                  {requestStatus === 'accepted' ? 'Đã chấp nhận' : requestStatus === 'declined' ? 'Đã từ chối' : 'Đang chờ'}
+                </span>
+              )}
             </div>
             <p className="text-white/80 text-xs truncate">{card.ownerName}</p>
             {image?.artistName && (

@@ -12,6 +12,7 @@ import { getEventIdsOrderedByUser } from '@/lib/actions/order.actions';
 import { auth } from '@clerk/nextjs/server'
 import { getFestivals, ensureDefaultFestival } from '@/lib/actions/festival.actions';
 import FestivalFilter from '@/components/shared/FestivalFilter';
+import DayFilter from '@/components/shared/DayFilter';
 
 export default async function Home({ searchParams }: SearchParamProps) {
   const params = await searchParams;
@@ -65,6 +66,16 @@ export default async function Home({ searchParams }: SearchParamProps) {
     ? (Array.isArray(rawFestivalParam) ? rawFestivalParam : String(rawFestivalParam).split(',').filter(Boolean))
     : (festivals[0]?._id ? [festivals[0]._id] : []);
 
+  // Day filter for multi-day festivals
+  const selectedFestival = festivals.find((f: any) => f._id === selectedFestivalIds[0]);
+  const festivalDayParam = params?.festivalDay ? Number(params.festivalDay) : undefined;
+  let dayDate: string | undefined;
+  if (festivalDayParam && selectedFestival?.startDate) {
+    const d = new Date(selectedFestival.startDate);
+    d.setDate(d.getDate() + (festivalDayParam - 1));
+    dayDate = d.toISOString();
+  }
+
   const [eventIdsOrdered, events, suggestions, uniqueEventTitleCount] = await Promise.all([
     getEventIdsOrderedByUser({ userId }),
     getAllEvents({
@@ -79,6 +90,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
       limit: 20,
       festivalId: selectedFestivalIds,
       sortBy: sortBy as any,
+      dayDate,
     }),
     getSearchSuggestions(),
     getUniqueEventTitleCount(selectedFestivalIds),
@@ -116,6 +128,12 @@ export default async function Home({ searchParams }: SearchParamProps) {
             <div className="w-48">
               <FestivalFilter festivals={festivals} />
             </div>
+            {selectedFestival?.startDate && selectedFestival?.endDate && (
+              <DayFilter
+                startDate={selectedFestival.startDate}
+                endDate={selectedFestival.endDate}
+              />
+            )}
           </div>
 
           <div className="flex gap-3 flex-wrap">
@@ -138,7 +156,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <Link href={`/featured${selectedFestivalParam}`}>Mặt hàng nổi bật</Link>
             </Button>
             <Button size="sm" asChild className="bg-pink-500 hover:bg-pink-400 text-white">
-              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Trading Cards</Link>
+              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Cards</Link>
             </Button>
           </div>
 
@@ -149,30 +167,32 @@ export default async function Home({ searchParams }: SearchParamProps) {
           </span>
         </div>
 
-        <div className="flex gap-4 w-full items-end">
+        <div className="flex flex-col gap-3 w-full">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
             <div>
               <div className="font-semibold mb-1">Tìm kiếm</div>
               <SearchAutocomplete suggestions={suggestions as any} />
             </div>
             <div>
-              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
+              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✓ chọn, ✕ loại trừ)</span></div>
               <CategoryMultiFilter categoryFilterType="fandom" excludeParamKey="excludeFandom" />
             </div>
             <div>
-              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
+              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✓/✕)</span></div>
               <CategoryMultiFilter
                 categoryFilterType="itemType"
                 excludeParamKey="excludeItemType"
                 pinnedItems={[{ id: "__deal", name: "Ưu đãi / Freebie", emoji: "🏷️" }]}
               />
             </div>
-            <div>
-              <div className="font-semibold mb-1">Mở preorder</div>
-              <HasPreorderFilter />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Mở preorder</div>
+                <HasPreorderFilter />
+              </div>
+              <SortSelect />
             </div>
           </div>
-          <SortSelect />
         </div>
 
         <Collection

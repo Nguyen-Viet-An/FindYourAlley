@@ -21,7 +21,7 @@ import { TagInput } from "./TagInput"
 import { useRouter } from "next/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
 import { IEvent } from "@/lib/database/models/event.model"
-import { Plus, Trash2, PlusCircle, XCircle, Star, Tag} from "lucide-react"
+import { Plus, Trash2, PlusCircle, XCircle, Star, Tag, CalendarDays} from "lucide-react"
 import { storage } from '@/lib/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
@@ -73,6 +73,57 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
 
   const festivalOptions: Option[] = (festivals || []).map((f: any) => ({ label: f.name, value: f._id }));
   const selectedFestivalOptions: Option[] = festivalOptions.filter(o => festivalIds.includes(o.value));
+
+  // Compute multi-day festival info for the "attend which day" picker
+  const selectedFestivalObjs = (festivals || []).filter((f: any) => festivalIds.includes(f._id));
+  const multiDayFestival = selectedFestivalObjs.find((f: any) => {
+    if (!f.startDate || !f.endDate) return false;
+    const s = new Date(f.startDate); s.setHours(0,0,0,0);
+    const e = new Date(f.endDate); e.setHours(0,0,0,0);
+    return e.getTime() > s.getTime();
+  }) as any;
+
+  const festivalDays: { dayNum: number; date: Date; label: string }[] = [];
+  if (multiDayFestival) {
+    const s = new Date(multiDayFestival.startDate); s.setHours(0,0,0,0);
+    const e = new Date(multiDayFestival.endDate); e.setHours(0,0,0,0);
+    const totalDays = Math.round((e.getTime() - s.getTime()) / (1000*60*60*24)) + 1;
+    for (let i = 0; i < totalDays; i++) {
+      const d = new Date(s); d.setDate(d.getDate() + i);
+      festivalDays.push({ dayNum: i + 1, date: d, label: `Ngày ${i + 1} (${d.getDate()}/${d.getMonth() + 1})` });
+    }
+  }
+
+  // Track which festival days are selected (for multi-day attendance)
+  const [selectedDays, setSelectedDays] = useState<number[]>(() => {
+    if (!multiDayFestival || festivalDays.length === 0) return [];
+    // Infer from existing event dates
+    if (event && event.startDateTime && event.endDateTime) {
+      const evtStart = new Date(event.startDateTime); evtStart.setHours(0,0,0,0);
+      const evtEnd = new Date(event.endDateTime); evtEnd.setHours(0,0,0,0);
+      return festivalDays
+        .filter(fd => fd.date.getTime() >= evtStart.getTime() && fd.date.getTime() <= evtEnd.getTime())
+        .map(fd => fd.dayNum);
+    }
+    // Default: all days selected
+    return festivalDays.map(fd => fd.dayNum);
+  });
+
+  const toggleDay = (dayNum: number) => {
+    setSelectedDays(prev => {
+      const next = prev.includes(dayNum) ? prev.filter(d => d !== dayNum) : [...prev, dayNum].sort();
+      // Update form date fields based on selected days
+      if (next.length > 0 && festivalDays.length > 0) {
+        const firstDay = festivalDays.find(fd => fd.dayNum === next[0])!;
+        const lastDay = festivalDays.find(fd => fd.dayNum === next[next.length - 1])!;
+        const start = new Date(firstDay.date); start.setHours(8, 0, 0, 0);
+        const end = new Date(lastDay.date); end.setHours(23, 59, 0, 0);
+        form.setValue('startDateTime', start);
+        form.setValue('endDateTime', end);
+      }
+      return next;
+    });
+  };
 
   const handleFestivalChange = (opts: Option[]) => {
     setFestivalIds(opts.map(o => o.value));
@@ -541,6 +592,35 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             />
           </div>
         </div>
+
+        {/* Multi-day festival attendance picker */}
+        {festivalDays.length > 1 && (
+          <div className="border rounded-lg p-4">
+            <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-blue-500" />
+              Gian hàng tham gia ngày nào? <span className="text-xs text-muted-foreground font-normal">({multiDayFestival.code || multiDayFestival.name})</span>
+            </h3>
+            <div className="flex gap-2 flex-wrap">
+              {festivalDays.map(fd => (
+                <button
+                  key={fd.dayNum}
+                  type="button"
+                  onClick={() => toggleDay(fd.dayNum)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    selectedDays.includes(fd.dayNum)
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-grey-50 dark:bg-muted text-grey-500 dark:text-muted-foreground hover:bg-grey-100 dark:hover:bg-muted/80'
+                  }`}
+                >
+                  {fd.label}
+                </button>
+              ))}
+            </div>
+            {selectedDays.length === 0 && (
+              <p className="text-xs text-red-500 mt-2">Vui lòng chọn ít nhất 1 ngày</p>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField

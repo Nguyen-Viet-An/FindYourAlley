@@ -56,6 +56,30 @@ export default async function Card({
   );
   const effectiveDealBadge = (event as any).dealBadge || (hasFreebie ? 'Freebie' : '');
 
+  // Derive day badge for multi-day festivals
+  const festivals = Array.isArray(event.festival) ? event.festival : event.festival ? [event.festival] : [];
+  const festivalWithDates = festivals.find((f: any) => f.startDate && f.endDate) as any;
+  let dayBadge = '';
+  if (festivalWithDates) {
+    const fStart = new Date(festivalWithDates.startDate);
+    const fEnd = new Date(festivalWithDates.endDate);
+    fStart.setHours(0, 0, 0, 0);
+    fEnd.setHours(0, 0, 0, 0);
+    const totalDays = Math.round((fEnd.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    if (totalDays > 1) {
+      const evtStart = new Date(event.startDateTime);
+      const evtEnd = new Date(event.endDateTime);
+      evtStart.setHours(0, 0, 0, 0);
+      evtEnd.setHours(0, 0, 0, 0);
+      const startDay = Math.max(1, Math.round((evtStart.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const endDay = Math.min(totalDays, Math.round((evtEnd.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      if (endDay - startDay + 1 < totalDays) {
+        // Event doesn't span all days — show which day(s)
+        dayBadge = startDay === endDay ? `Ngày ${startDay}` : `Ngày ${startDay}–${endDay}`;
+      }
+    }
+  }
+
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white dark:bg-card shadow-md transition-all hover:shadow-lg">
        {/* Single fixed-height image wrapper to avoid double padding gap */}
@@ -95,11 +119,18 @@ export default async function Card({
        </div>
 
       <div className="flex flex-col gap-2 p-4 md:p-5 flex-grow">{/* reduced gap & padding */}
-        {effectiveDealBadge && (
-          <span className="inline-block w-fit text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-2 py-0.5 rounded-full whitespace-nowrap">
-            🏷️ {effectiveDealBadge}
-          </span>
-        )}
+        <div className="flex flex-wrap gap-1.5">
+          {effectiveDealBadge && (
+            <span className="inline-block w-fit text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-2 py-0.5 rounded-full whitespace-nowrap">
+              🏷️ {effectiveDealBadge}
+            </span>
+          )}
+          {dayBadge && (
+            <span className="inline-block w-fit text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 px-2 py-0.5 rounded-full whitespace-nowrap">
+              📅 {dayBadge}
+            </span>
+          )}
+        </div>
         <Link href={`/events/${event._id}`}>
           <p className="p-medium-16 md:p-medium-20 line-clamp-2 min-h-[40px] text-black dark:text-foreground">{/* slightly smaller reserved space */}
             {displayTitle}

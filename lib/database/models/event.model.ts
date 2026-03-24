@@ -28,7 +28,7 @@ export interface IEvent extends Document {
   dealBadge?: string;
   dealDescription?: string;
   organizer: { _id: string, firstName: string, lastName: string };
-  festival?: { _id: string; name: string; code?: string }[]; // now an array of festivals
+  festival?: { _id: string; name: string; code?: string; startDate?: string; endDate?: string }[]; // now an array of festivals
 }
 
 const EventSchema = new Schema(
