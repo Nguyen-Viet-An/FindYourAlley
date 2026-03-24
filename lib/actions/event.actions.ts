@@ -629,14 +629,35 @@ export async function getUniqueEventTitleCount(festivalIds?: string[]) {
   }
   const events = await Event.find(filter, 'title').lean();
 
-  const codeRegex = /([A-Z]+\d+)/i;
+  const uniqueCodes = new Set<string>();
 
-  const uniqueCodes = new Set(
-    events.map((event) => {
-      const match = event.title.match(codeRegex);
-      return match ? match[1].toUpperCase() : null;
-    }).filter(Boolean)
-  );
+  for (const event of events) {
+    const title = event.title || '';
+
+    // 1. Find all alpha+numeric booth codes (e.g., A11, Q22)
+    const alphaNumMatches = title.match(/[A-Z]+\d+/gi) || [];
+    for (const m of alphaNumMatches) {
+      uniqueCodes.add(m.toUpperCase());
+    }
+
+    // 2. Handle shorthand "A11-12" → expand to A12 as well
+    const shorthandRegex = /([A-Z]+)(\d+)\s*-\s*(\d+)(?=[^A-Za-z\d]|$)/gi;
+    let match;
+    while ((match = shorthandRegex.exec(title)) !== null) {
+      uniqueCodes.add(match[1].toUpperCase() + match[3]);
+    }
+
+    // 3. If no alpha codes found in this title, try pure numeric (e.g., "48 - name")
+    if (alphaNumMatches.length === 0) {
+      const leadingNums = title.match(/^[\d\s,\-]+/);
+      if (leadingNums) {
+        const parts = leadingNums[0].split(/[,\s\-]+/).filter((p: string) => /^\d+$/.test(p));
+        for (const p of parts) {
+          uniqueCodes.add(p);
+        }
+      }
+    }
+  }
 
   return uniqueCodes.size;
 }
