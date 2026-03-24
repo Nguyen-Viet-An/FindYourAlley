@@ -2,10 +2,41 @@
 
 import { connectToDatabase } from "@/lib/database";
 import OcCard from "@/lib/database/models/ocCard.model";
+import TradeRequest from "@/lib/database/models/tradeRequest.model";
 import User from "@/lib/database/models/user.model";
 import Festival from "@/lib/database/models/festival.model";
 import { handleError } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
+import { S3Client, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
+
+function r2KeyFromUrl(imageUrl: string): string | null {
+  try {
+    const url = new URL(imageUrl);
+    return url.pathname.replace(/^\/+/, "");
+  } catch {
+    return null;
+  }
+}
+
+async function deleteR2Objects(keys: string[]) {
+  const objects = keys.filter(Boolean).map((k) => ({ Key: k }));
+  if (objects.length === 0) return;
+  await r2.send(
+    new DeleteObjectsCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Delete: { Objects: objects },
+    })
+  );
+}
 
 const populateCard = (query: any) =>
   query
@@ -89,8 +120,85 @@ export async function deleteOcCard({
     if (!existing || existing.owner.toString() !== userId) {
       throw new Error("Unauthorized");
     }
+    // Collect R2 keys for all images + appearance image
+    const r2Keys: string[] = [];
+    for (const img of existing.images) {
+      const key = r2KeyFromUrl(img.imageUrl);
+      if (key) r2Keys.push(key);
+    }
+    if (existing.appearance?.imageUrl) {
+      const key = r2KeyFromUrl(existing.appearance.imageUrl);
+      if (key) r2Keys.push(key);
+    }
+    // Delete all trade requests targeting this card
+    await TradeRequest.deleteMany({ card: cardId });
+    // Unset linkedCard references in other trade requests
+    await TradeRequest.updateMany(
+      { linkedCard: cardId },
+      { $unset: { linkedCard: "" } }
+    );
     await OcCard.findByIdAndDelete(cardId);
+    // Delete images from R2
+    await deleteR2Objects(r2Keys);
     revalidatePath("/oc-cards");
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// DELETE SINGLE IMAGE from a multi-image card
+export async function deleteOcCardImage({
+  userId,
+  cardId,
+  imageIndex,
+}: {
+  userId: string;
+  cardId: string;
+  imageIndex: number;
+}) {
+  try {
+    await connectToDatabase();
+    const existing = await OcCard.findById(cardId);
+    if (!existing || existing.owner.toString() !== userId) {
+      throw new Error("Unauthorized");
+    }
+    // If only 1 image left, delete the whole card
+    if (existing.images.length <= 1) {
+      const r2Keys: string[] = [];
+      const key = r2KeyFromUrl(existing.images[0]?.imageUrl);
+      if (key) r2Keys.push(key);
+      if (existing.appearance?.imageUrl) {
+        const aKey = r2KeyFromUrl(existing.appearance.imageUrl);
+        if (aKey) r2Keys.push(aKey);
+      }
+      await TradeRequest.deleteMany({ card: cardId });
+      await TradeRequest.updateMany(
+        { linkedCard: cardId },
+        { $unset: { linkedCard: "" } }
+      );
+      await OcCard.findByIdAndDelete(cardId);
+      await deleteR2Objects(r2Keys);
+      revalidatePath("/oc-cards");
+      return { deleted: true };
+    }
+    // Delete the single image from R2
+    const removedImage = existing.images[imageIndex];
+    if (removedImage?.imageUrl) {
+      const key = r2KeyFromUrl(removedImage.imageUrl);
+      if (key) await deleteR2Objects([key]);
+    }
+    // Remove trade requests for this specific image
+    await TradeRequest.deleteMany({ card: cardId, imageIndex });
+    // Decrement imageIndex for trade requests pointing to higher indices
+    await TradeRequest.updateMany(
+      { card: cardId, imageIndex: { $gt: imageIndex } },
+      { $inc: { imageIndex: -1 } }
+    );
+    // Remove the image from the array
+    existing.images.splice(imageIndex, 1);
+    await existing.save();
+    revalidatePath("/oc-cards");
+    return { deleted: false };
   } catch (error) {
     handleError(error);
   }

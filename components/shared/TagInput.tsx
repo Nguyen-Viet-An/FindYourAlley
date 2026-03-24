@@ -35,7 +35,7 @@ export function TagInput({ value, onChange, placeholder, className }: TagInputPr
   return (
     <div
       className={cn(
-        "flex flex-wrap gap-2 p-2 rounded-lg bg-white border border-gray-200",
+        "flex flex-wrap gap-2 p-2 rounded-lg bg-grey-50 dark:bg-muted border border-gray-200 dark:border-border",
         className
       )}
     >
@@ -48,7 +48,7 @@ export function TagInput({ value, onChange, placeholder, className }: TagInputPr
           <button
             type="button"
             onClick={() => removeTag(tag)}
-            className="text-gray-600 hover:text-gray-400 transition-colors"
+            className="text-white/70 hover:text-white transition-colors"
           >
             ×
           </button>
@@ -61,7 +61,7 @@ export function TagInput({ value, onChange, placeholder, className }: TagInputPr
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+        className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
       />
     </div>
   );

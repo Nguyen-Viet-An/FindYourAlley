@@ -93,7 +93,7 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
         <AlertDialogTrigger className="p-medium-14 flex w-full rounded-sm py-3 pl-8 text-primary-500 hover:bg-primary-50 focus:text-primary-500">
           Không có tag bạn đang tìm? Nhấn vào đây để thêm.
         </AlertDialogTrigger>
-        <AlertDialogContent className="bg-white">
+        <AlertDialogContent className="bg-white dark:bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle>{getDialogTitle()}</AlertDialogTitle>
             <AlertDialogDescription>

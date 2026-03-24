@@ -374,7 +374,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
 
         {/* Appearance */}
         <div className="border rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-2">Đặc điểm nhận dạng</h3>
+          <h3 className="text-lg font-medium mb-2">Đặc điểm nhận diện</h3>
           <p className="text-sm text-muted-foreground mb-3">
             Giúp người khác nhận ra bạn để đổi card.
           </p>

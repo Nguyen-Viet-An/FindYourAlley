@@ -11,6 +11,7 @@ import mongoose from 'mongoose';
 import { isValidUrl } from '@/lib/utils';
 import Link from 'next/link';
 import Card from '@/components/shared/Card';
+import CardLightbox from '@/components/shared/CardLightbox';
 
 // Define both params and searchParams as Promises
 export type paramsType = Promise<{ id: string }>;
@@ -209,15 +210,17 @@ const EventDetails = async (props: {
               {event.featuredProduct?.imageUrl && event.featuredProduct?.description && (
                 <div className="flex flex-col gap-3 mt-2 p-4 rounded-xl border border-yellow-300 dark:border-yellow-500/30 bg-yellow-50 dark:bg-yellow-500/10">
                   <p className="text-base font-semibold flex items-center gap-2">⭐ Mặt hàng nổi bật</p>
-                  <div className="relative w-full max-w-xs h-48 rounded-lg overflow-hidden">
-                    <Image
-                      src={event.featuredProduct.imageUrl}
-                      alt="Mặt hàng nổi bật"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
+                  <CardLightbox imageUrl={event.featuredProduct.imageUrl} alt="Mặt hàng nổi bật" renderImage={false}>
+                    <div className="relative w-full max-w-xs h-48 rounded-lg overflow-hidden cursor-zoom-in">
+                      <Image
+                        src={event.featuredProduct.imageUrl}
+                        alt="Mặt hàng nổi bật"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  </CardLightbox>
                   <p className="text-sm">{event.featuredProduct.description}</p>
                 </div>
               )}

@@ -14,34 +14,63 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteOcCard } from "@/lib/actions/ocCard.actions";
+import { deleteOcCard, deleteOcCardImage } from "@/lib/actions/ocCard.actions";
 import { Trash2 } from "lucide-react";
 
-export default function DeleteOcCard({ cardId, userId }: { cardId: string; userId: string }) {
+type DeleteOcCardProps = {
+  cardId: string;
+  userId: string;
+  iconOnly?: boolean;
+  imageIndex?: number;
+  totalImages?: number;
+};
+
+export default function DeleteOcCard({ cardId, userId, iconOnly, imageIndex, totalImages }: DeleteOcCardProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const isMultiImage = totalImages != null && totalImages > 1 && imageIndex != null;
+  const description = isMultiImage
+    ? "Hành động này sẽ xóa hình này khỏi OC card, bao gồm các yêu cầu đổi liên quan."
+    : "Hành động này sẽ xóa OC card vĩnh viễn, bao gồm các yêu cầu đổi.";
+  const title = isMultiImage
+    ? "Bạn có chắc muốn xóa hình này?"
+    : "Bạn có chắc muốn xóa OC card?";
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button size="sm" variant="destructive">
-          <Trash2 className="w-4 h-4 mr-1" /> Xóa
-        </Button>
+        {iconOnly ? (
+          <button className="bg-white dark:bg-card rounded-md p-1.5 shadow-sm hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500">
+            <Trash2 className="w-4 h-4" />
+          </button>
+        ) : (
+          <Button size="sm" variant="destructive">
+            <Trash2 className="w-4 h-4 mr-1" /> Xóa
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent className="bg-white dark:bg-card">
         <AlertDialogHeader>
-          <AlertDialogTitle>Bạn có chắc muốn xóa OC card?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Hành động này sẽ xóa OC card vĩnh viễn, bao gồm các yêu cầu đổi.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Quay lại</AlertDialogCancel>
           <AlertDialogAction
             onClick={() =>
               startTransition(async () => {
-                await deleteOcCard({ userId, cardId });
-                router.push("/oc-cards");
+                if (isMultiImage) {
+                  const result = await deleteOcCardImage({ userId, cardId, imageIndex });
+                  if (result?.deleted) {
+                    router.push("/oc-cards");
+                  } else {
+                    router.refresh();
+                  }
+                } else {
+                  await deleteOcCard({ userId, cardId });
+                  router.push("/oc-cards");
+                }
               })
             }
           >

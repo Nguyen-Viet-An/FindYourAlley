@@ -39,10 +39,10 @@
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 47% 11.2%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47% 11.2%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 210 40% 98%;
@@ -206,15 +206,15 @@ body {
 
   /* SHADCN OVERRIDES */
   .select-field {
-    @apply w-full bg-grey-50 h-[54px] placeholder:text-grey-500 rounded-full p-regular-16 px-5 py-3 border-none focus-visible:ring-transparent focus:ring-transparent !important;
+    @apply w-full bg-grey-50 dark:bg-muted dark:text-foreground h-[54px] placeholder:text-grey-500 dark:placeholder:text-muted-foreground rounded-full p-regular-16 px-5 py-3 border-none focus-visible:ring-transparent focus:ring-transparent;
   }
 
   .input-field {
-    @apply bg-grey-50 h-[54px] focus-visible:ring-offset-0 placeholder:text-grey-500 rounded-full p-regular-16 px-4 py-3 border-none focus-visible:ring-transparent !important;
+    @apply bg-grey-50 dark:bg-muted dark:text-foreground h-[54px] focus-visible:ring-offset-0 placeholder:text-grey-500 dark:placeholder:text-muted-foreground rounded-full p-regular-16 px-4 py-3 border-none focus-visible:ring-transparent;
   }
 
   .textarea {
-    @apply bg-grey-50 flex flex-1 placeholder:text-grey-500 p-regular-16 px-5 py-3 border-none focus-visible:ring-transparent !important;
+    @apply bg-grey-50 dark:bg-muted dark:text-foreground flex flex-1 placeholder:text-grey-500 dark:placeholder:text-muted-foreground p-regular-16 px-5 py-3 border-none focus-visible:ring-transparent;
   }
 
   .button {
@@ -222,7 +222,7 @@ body {
   }
 
   .select-item {
-    @apply py-3 cursor-pointer  focus:bg-primary-50;
+    @apply py-3 cursor-pointer focus:bg-primary-50 dark:focus:bg-muted;
   }
 
   .toggle-switch {

@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import type { OcCard } from "@/types";
 import OcCardDetailModal from "./OcCardDetailModal";
+import DeleteOcCard from "./DeleteOcCard";
+import { Pencil } from "lucide-react";
 
 type OcCardItemProps = {
   card: OcCard;
@@ -42,6 +45,20 @@ export default function OcCardItem({
       >
         {/* Image with hover overlay */}
         <div className="relative w-full overflow-hidden">
+          {isOwner && userId && (
+            <div className="absolute right-2 top-2 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Link
+                href={`/oc-cards/${card._id}/update`}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white dark:bg-card rounded-md p-1.5 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Pencil className="w-4 h-4" />
+              </Link>
+              <div onClick={(e) => e.stopPropagation()}>
+                <DeleteOcCard cardId={card._id} userId={userId} iconOnly imageIndex={imageIndex} totalImages={card.images?.length} />
+              </div>
+            </div>
+          )}
           {imageUrl && !imgError ? (
             <Image
               src={imageUrl}

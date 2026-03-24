@@ -73,7 +73,7 @@ export default function OcCardDetailModal({
                         <Pencil className="w-3.5 h-3.5" />
                       </Link>
                     </Button>
-                    <DeleteOcCard cardId={card._id} userId={userId!} />
+                    <DeleteOcCard cardId={card._id} userId={userId!} imageIndex={imageIndex} totalImages={card.images?.length} />
                   </>
                 )}
               </div>
