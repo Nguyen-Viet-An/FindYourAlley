@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
+import CardLightbox from "./CardLightbox";
 
 type FeaturedItem = {
   eventId: string;
@@ -87,11 +88,13 @@ export default function FeaturedGallery({ items }: { items: FeaturedItem[] }) {
 
             {/* Image (left) */}
             <div className="md:w-1/2 w-full flex-shrink-0 bg-black flex items-center justify-center">
-              <img
-                src={selected.imageUrl || "/assets/images/broken-image.png"}
-                alt={selected.description || selected.eventTitle}
-                className="w-full h-full object-contain max-h-[60vh] md:max-h-[80vh]"
-              />
+              <CardLightbox imageUrl={selected.imageUrl || "/assets/images/broken-image.png"} alt={selected.description || selected.eventTitle} renderImage={false}>
+                <img
+                  src={selected.imageUrl || "/assets/images/broken-image.png"}
+                  alt={selected.description || selected.eventTitle}
+                  className="w-full h-full object-contain max-h-[60vh] md:max-h-[80vh] cursor-zoom-in"
+                />
+              </CardLightbox>
             </div>
 
             {/* Info (right) */}
