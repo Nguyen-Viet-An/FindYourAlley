@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const sortOptions = [
+  { value: "random", label: "Ngẫu nhiên" },
   { value: "newest", label: "Mới nhất" },
   { value: "oldest", label: "Cũ nhất" },
   { value: "alphabetical", label: "A → Z" },
@@ -20,18 +21,18 @@ const sortOptions = [
 export default function OcCardSortSelect() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const current = searchParams.get("sortBy") || "newest";
+  const current = searchParams.get("sortBy") || "random";
   const [open, setOpen] = useState(false);
 
   const onChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value === "newest") params.delete("sortBy");
+    if (value === "random") params.delete("sortBy");
     else params.set("sortBy", value);
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);
   };
 
-  const currentLabel = sortOptions.find((o) => o.value === current)?.label || "Mới nhất";
+  const currentLabel = sortOptions.find((o) => o.value === current)?.label || "Ngẫu nhiên";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

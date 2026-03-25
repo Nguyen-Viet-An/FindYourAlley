@@ -15,7 +15,7 @@ const sortOptions = [
   { value: "newest", label: "Mới nhất" },
   { value: "alphabetical", label: "A → Z" },
   { value: "mostBookmarked", label: "Bookmark nhiều nhất" },
-  { value: "random", label: "🎲 Ngẫu nhiên" },
+  { value: "random", label: "Ngẫu nhiên" },
 ];
 
 export default function SortSelect() {

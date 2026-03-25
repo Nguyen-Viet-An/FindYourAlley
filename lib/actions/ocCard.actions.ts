@@ -231,6 +231,18 @@ export async function getAllOcCards({
       filter.festival = festivalId;
     }
 
+    if (sortBy === "random") {
+      const pipeline: any[] = [{ $match: filter }];
+      pipeline.push({ $sample: { size: 200 } });
+      const randomDocs = await OcCard.aggregate(pipeline);
+      const ids = randomDocs.map((d: any) => d._id);
+      const cards = await populateCard(OcCard.find({ _id: { $in: ids } }));
+      // Preserve random order from $sample
+      const idOrder = new Map(ids.map((id: any, i: number) => [id.toString(), i]));
+      cards.sort((a: any, b: any) => (idOrder.get(a._id.toString()) ?? 0) - (idOrder.get(b._id.toString()) ?? 0));
+      return JSON.parse(JSON.stringify(cards));
+    }
+
     let sort: any = { createdAt: -1 };
     if (sortBy === "alphabetical") sort = { "images.0.ocName": 1 };
     else if (sortBy === "oldest") sort = { createdAt: 1 };

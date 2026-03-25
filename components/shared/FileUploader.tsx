@@ -9,7 +9,7 @@ import imageCompression from 'browser-image-compression'
 type FileUploaderProps = {
   onFieldChange: (url: string) => void
   imageUrl: string
-  setFiles: (files: File[]) => void 
+  setFiles: (files: File[]) => void
 }
 
 // Function to sanitize filename
@@ -18,17 +18,17 @@ const sanitizeFilename = (filename: string): string => {
   const lastDotIndex = filename.lastIndexOf('.')
   const name = lastDotIndex !== -1 ? filename.slice(0, lastDotIndex) : filename
   const ext = lastDotIndex !== -1 ? filename.slice(lastDotIndex) : ''
-  
+
   // Replace spaces and special characters with underscores
   const sanitizedName = name
     .replace(/\s+/g, '_')           // Replace spaces with underscores
     .replace(/[^\w\-_.]/g, '_')     // Replace special chars with underscores
     .replace(/_+/g, '_')            // Replace multiple underscores with single
     .replace(/^_|_$/g, '')          // Remove leading/trailing underscores
-  
+
   // Add timestamp to make it unique
   const timestamp = Date.now()
-  
+
   return `${sanitizedName}_${timestamp}${ext}`
 }
 
@@ -44,10 +44,10 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
     try {
       setIsUploading(true)
 
-      // Compress image if it's too large (>8MB)
-      if (file.size > 8 * 1024 * 1024) {
+      // Compress image if it's too large (>4MB, Vercel body limit is 4.5MB)
+      if (file.size > 4 * 1024 * 1024) {
         const options = {
-          maxSizeMB: 8,
+          maxSizeMB: 4,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
           fileType: 'image/jpeg',
@@ -89,7 +89,7 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
           }
 
           const { fileUrl } = await res.json()
-          
+
           if (!fileUrl) {
             throw new Error('Không có link ảnh')
           }
@@ -101,7 +101,7 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
         } catch (error) {
           retryCount++
           console.log(`Đăng ảnh lần ${retryCount} thất bại:`, error)
-          
+
           if (retryCount < maxRetries) {
             // Wait before retry (exponential backoff)
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
@@ -131,20 +131,20 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
   })
 
   return (
-    <div 
-      {...getRootProps()} 
+    <div
+      {...getRootProps()}
       className="flex-center bg-dark-3 flex h-full min-h-[12rem] cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50 dark:bg-muted"
     >
       <input {...getInputProps()} className="cursor-pointer" />
-      
+
       {imageUrl ? (
         <div className="flex h-full w-full flex-1 justify-center relative">
-          <img 
-            src={imageUrl} 
-            alt="image" 
-            width={250} 
-            height={250} 
-            className="w-full object-cover object-center" 
+          <img
+            src={imageUrl}
+            alt="image"
+            width={250}
+            height={250}
+            className="w-full object-cover object-center"
           />
           {isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">

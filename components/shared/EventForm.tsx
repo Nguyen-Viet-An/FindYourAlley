@@ -279,13 +279,15 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
 
   // Handle file selection for a specific image entry
   const handleFileChange = (index: number, file: File | null, imageUrl: string = '') => {
-    const newImagesWithCategories = [...imagesWithCategories];
-    newImagesWithCategories[index] = {
-      ...newImagesWithCategories[index],
-      file,
-      imageUrl: file ? '' : imageUrl || newImagesWithCategories[index].imageUrl,
-    };
-    setImagesWithCategories(newImagesWithCategories);
+    setImagesWithCategories(prev => {
+      const next = [...prev];
+      next[index] = {
+        ...next[index],
+        file,
+        imageUrl: file ? '' : imageUrl || next[index].imageUrl,
+      };
+      return next;
+    });
   };
 
 // Handle fandom categories change for a specific image

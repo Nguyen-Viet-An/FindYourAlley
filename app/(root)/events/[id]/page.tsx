@@ -117,12 +117,13 @@ const EventDetails = async (props: {
                 {event.festival && event.festival.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {event.festival.map((f: any) => (
-                      <span
+                      <Link
                         key={f._id}
-                        className="p-medium-14 rounded-full bg-violet-500/15 px-4 py-1.5 text-violet-600 dark:text-violet-400 font-semibold"
+                        href={`/?festivalId=${f._id}`}
+                        className="p-medium-14 rounded-full bg-violet-500/15 px-4 py-1.5 text-violet-600 dark:text-violet-400 font-semibold hover:bg-violet-500/25 transition-colors"
                       >
                         {f.code || f.name}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -165,33 +166,54 @@ const EventDetails = async (props: {
               <div className="mt-4">
                 {(() => {
                   const segments = event.url.split('|').map((s: string) => s.trim()).filter(Boolean);
-                  return (
-                    <div className="flex flex-col gap-1">
-                      {segments.map((seg: string, i: number) => {
-                        const colonIdx = seg.indexOf(': http');
-                        if (colonIdx > 0) {
-                          const label = seg.slice(0, colonIdx).trim();
-                          const link = seg.slice(colonIdx + 2).trim();
-                          return (
-                            <a key={i} href={link.startsWith('http') ? link : `https://${link}`}
-                              target="_blank" rel="noopener noreferrer"
-                              className="text-sm font-medium text-blue-500 hover:underline">
-                              {label}
-                            </a>
-                          );
-                        }
-                        if (isValidUrl(seg)) {
-                          return (
-                            <a key={i} href={seg.startsWith('http') ? seg : `https://${seg}`}
-                              target="_blank" rel="noopener noreferrer"
-                              className="text-sm font-medium text-blue-500 hover:underline">
-                              Link preorder{segments.length > 1 ? ` ${i + 1}` : ''}
-                            </a>
-                          );
-                        }
-                        return <p key={i} className="text-sm font-medium">{seg}</p>;
-                      })}
-                    </div>
+                  const hasMultiple = segments.length > 1 || segments.some((s: string) => s.indexOf(': http') > 0);
+                  if (hasMultiple) {
+                    return (
+                      <div className="flex flex-col gap-1">
+                        <h4 className="text-base font-semibold text-grey-600 dark:text-muted-foreground">Link preorder:</h4>
+                        <ul className="list-disc pl-5">
+                          {segments.map((seg: string, i: number) => {
+                            const colonIdx = seg.indexOf(': http');
+                            if (colonIdx > 0) {
+                              const label = seg.slice(0, colonIdx).trim();
+                              const link = seg.slice(colonIdx + 2).trim();
+                              return (
+                                <li key={i}>
+                                  <a href={link.startsWith('http') ? link : `https://${link}`}
+                                    target="_blank" rel="noopener noreferrer"
+                                    className="text-blue-500 hover:underline">
+                                    {label}
+                                  </a>
+                                </li>
+                              );
+                            }
+                            if (isValidUrl(seg)) {
+                              return (
+                                <li key={i}>
+                                  <a href={seg.startsWith('http') ? seg : `https://${seg}`}
+                                    target="_blank" rel="noopener noreferrer"
+                                    className="text-blue-500 hover:underline">
+                                    Link {i + 1}
+                                  </a>
+                                </li>
+                              );
+                            }
+                            return <li key={i}>{seg}</li>;
+                          })}
+                        </ul>
+                      </div>
+                    );
+                  }
+                  // Single link
+                  const seg = segments[0];
+                  return isValidUrl(seg) ? (
+                    <a href={seg.startsWith('http') ? seg : `https://${seg}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="text-base font-semibold text-blue-500 hover:underline">
+                      Link preorder
+                    </a>
+                  ) : (
+                    <p className="text-base font-semibold">Link preorder: {seg}</p>
                   );
                 })()}
                 <p className="text-sm text-grey-600 dark:text-muted-foreground mt-3">

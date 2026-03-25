@@ -118,13 +118,13 @@ export default async function Card({
       <div className="flex flex-col gap-2 p-4 md:p-5 flex-grow">{/* reduced gap & padding */}
         <div className="flex flex-wrap gap-1.5">
           {effectiveDealBadge && (
-            <span className="inline-block w-fit text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-2 py-0.5 rounded-full whitespace-nowrap">
+            <span className="inline-block w-fit text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-3 py-0.5 rounded-full whitespace-nowrap">
               🏷️ {effectiveDealBadge}
             </span>
           )}
           {dayBadge && (
-            <span className="inline-block w-fit text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 px-2 py-0.5 rounded-full whitespace-nowrap">
-              📅 {dayBadge}
+            <span className="inline-block w-fit text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 px-3 py-0.5 rounded-full whitespace-nowrap">
+              {dayBadge}
             </span>
           )}
         </div>

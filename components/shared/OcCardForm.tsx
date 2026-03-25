@@ -243,7 +243,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
               <div className="mb-3">
                 <label className="text-sm font-medium">Tên OC *</label>
                 <Input
-                  placeholder="Tên nhân vật OC"
+                  placeholder="Tên OC"
                   value={img.ocName}
                   onChange={(e) => handleOcNameChange(index, e.target.value)}
                   maxLength={100}

@@ -1,32 +1,38 @@
-import { getEventsByArtist } from "@/lib/actions/event.actions";
-import Card from "@/components/shared/Card";
+import { getAllArtists } from "@/lib/actions/event.actions";
 import Link from "next/link";
 
 export const revalidate = 60;
 
-export type paramsType = Promise<{ name: string }>;
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
-export default async function ArtistDetailPage({ params }: { params: paramsType }) {
-  const { name } = await params;
-  const decodedName = decodeURIComponent(name);
-  const events = await getEventsByArtist(decodedName);
+export default async function ArtistsPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const festivalId = params?.festivalId;
+  const festivalIds = festivalId
+    ? (Array.isArray(festivalId) ? festivalId : [festivalId])
+    : undefined;
+
+  const artists = await getAllArtists(festivalIds);
 
   return (
     <section className="wrapper my-8 flex flex-col gap-8">
-      <div>
-        <Link href="/artists" className="text-sm text-primary-500 hover:underline">← Tất cả artists</Link>
-        <h2 className="h2-bold mt-2">{decodedName}</h2>
-        <p className="text-muted-foreground">{events.length} sample</p>
-      </div>
+      <h2 className="h2-bold">Tất cả Artists ({artists.length})</h2>
 
-      {events.length > 0 ? (
-        <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {events.map((event: any) => (
-            <Card key={event._id} event={event} hideEdit />
+      {artists.length > 0 ? (
+        <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {artists.map((artist: any) => (
+            <Link
+              key={artist.name}
+              href={`/artists/${encodeURIComponent(artist.name)}`}
+              className="flex flex-col gap-1 rounded-xl border p-4 hover:bg-grey-50 dark:hover:bg-muted transition-colors"
+            >
+              <p className="font-semibold">{artist.name}</p>
+              <p className="text-sm text-muted-foreground">{artist.eventCount} sample</p>
+            </Link>
           ))}
         </div>
       ) : (
-        <p className="text-muted-foreground">Không tìm thấy sample nào.</p>
+        <p className="text-muted-foreground">Không tìm thấy artist nào.</p>
       )}
     </section>
   );
