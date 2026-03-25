@@ -14,10 +14,11 @@ import {
 import { createTradeRequest } from "@/lib/actions/tradeRequest.actions";
 import { getOcCardsByUser } from "@/lib/actions/ocCard.actions";
 import { Heart, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   cardId: string;
-  userId: string;
+  userId: string | null;
   imageIndex?: number;
   alreadyRequested: boolean;
   available: boolean;
@@ -30,6 +31,7 @@ export default function TradeRequestButton({
   alreadyRequested,
   available,
 }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [linkedCardId, setLinkedCardId] = useState("");
@@ -39,7 +41,7 @@ export default function TradeRequestButton({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (open && !myCards.length) {
+    if (open && userId && !myCards.length) {
       getOcCardsByUser(userId).then(setMyCards).catch(() => {});
     }
   }, [open, userId, myCards.length]);
@@ -50,7 +52,7 @@ export default function TradeRequestButton({
     try {
       const result = await createTradeRequest({
         cardId,
-        userId,
+        userId: userId!,
         imageIndex,
         message: message.trim() || undefined,
         linkedCardId: linkedCardId ? linkedCardId.split("-")[0] : undefined,
@@ -97,6 +99,17 @@ export default function TradeRequestButton({
     return (
       <Button disabled className="w-full" variant="secondary">
         Hết card
+      </Button>
+    );
+  }
+
+  if (!userId) {
+    return (
+      <Button
+        className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+        onClick={() => router.push("/sign-in")}
+      >
+        <Heart className="w-4 h-4 mr-2" /> Muốn đổi
       </Button>
     );
   }

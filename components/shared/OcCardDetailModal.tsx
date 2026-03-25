@@ -152,11 +152,11 @@ export default function OcCardDetailModal({
             )}
 
             {/* Trade request button (not for own cards) */}
-            {!isOwner && userId && (
+            {!isOwner && (
               <div className="pt-2">
                 <TradeRequestButton
                   cardId={card._id}
-                  userId={userId}
+                  userId={userId || null}
                   imageIndex={imageIndex}
                   alreadyRequested={alreadyRequested}
                   available={card.available}

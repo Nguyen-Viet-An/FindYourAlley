@@ -107,7 +107,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
             {(card.appearance?.text || card.appearance?.imageUrl) && (
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <User className="w-4 h-4" /> Đặc điểm nhận diện
+                  <User className="w-4 h-4" /> Đặc điểm nhận dạng
                 </h3>
                 {card.appearance.text && <p className="mb-2">{card.appearance.text}</p>}
                 {card.appearance.imageUrl && (
@@ -134,7 +134,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
             )}
 
             {/* Trade request button (not for own cards) */}
-            {!isOwner && userId && (
+            {!isOwner && (
               <div className="pt-2">
                 <TradeRequestButton
                   cardId={card._id}
