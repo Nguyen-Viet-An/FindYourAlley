@@ -166,7 +166,16 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
     return fileUrl;
   }
 
+  const hasUploading = images.some((img) => img.imageUrl?.startsWith("blob:"))
+    || appearancePreview?.startsWith("blob:");
+
   async function onSubmit(values: z.infer<typeof ocCardFormSchema>) {
+    // Block submission if any image is still uploading (blob: preview URL)
+    if (hasUploading) {
+      alert("Ảnh đang được tải lên, vui lòng chờ giây lát rồi thử lại.");
+      return;
+    }
+
     try {
       // Upload images
       const uploadedImages = [];
@@ -404,13 +413,12 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
                 onFieldChange={(url) => {
                   setAppearancePreview(url);
                   form.setValue("appearanceImageUrl", url);
+                  // Clear backup file once real R2 URL arrives
+                  if (url && !url.startsWith("blob:")) setAppearanceFile(null);
                 }}
                 imageUrl={appearancePreview}
                 setFiles={(files) => {
-                  if (files?.[0]) {
-                    setAppearanceFile(files[0]);
-                    setAppearancePreview(URL.createObjectURL(files[0]));
-                  }
+                  if (files?.[0]) setAppearanceFile(files[0]);
                 }}
               />
             </div>
@@ -418,10 +426,13 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
         </div>
 
         <div className="pt-2">
+          {hasUploading && (
+            <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">Ảnh đang được tải lên, vui lòng chờ...</p>
+          )}
           <Button
             type="submit"
             size="lg"
-            disabled={form.formState.isSubmitting}
+            disabled={form.formState.isSubmitting || hasUploading}
             className="button col-span-2 w-full"
           >
           {form.formState.isSubmitting

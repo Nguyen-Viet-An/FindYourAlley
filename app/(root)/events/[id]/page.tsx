@@ -163,32 +163,49 @@ const EventDetails = async (props: {
 
             {event.hasPreorder === "Yes" && event.url && (
               <div className="mt-4">
-                {isValidUrl(event.url) ? (
-                  <a
-                    href={event.url.startsWith('http') ? event.url : `https://${event.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-base font-semibold text-blue-500"
-                  >
-                    Link preorder
-                  </a>
-                ) : (
-                  <p className="text-base font-semibold">
-                    Link preorder: {event.url}
-                  </p>
-                )}
-                <p className="p-medium-16 lg:p-regular-18 mt-4">
+                {(() => {
+                  const segments = event.url.split('|').map((s: string) => s.trim()).filter(Boolean);
+                  return (
+                    <div className="flex flex-col gap-1">
+                      {segments.map((seg: string, i: number) => {
+                        const colonIdx = seg.indexOf(': http');
+                        if (colonIdx > 0) {
+                          const label = seg.slice(0, colonIdx).trim();
+                          const link = seg.slice(colonIdx + 2).trim();
+                          return (
+                            <a key={i} href={link.startsWith('http') ? link : `https://${link}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="text-sm font-medium text-blue-500 hover:underline">
+                              {label}
+                            </a>
+                          );
+                        }
+                        if (isValidUrl(seg)) {
+                          return (
+                            <a key={i} href={seg.startsWith('http') ? seg : `https://${seg}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="text-sm font-medium text-blue-500 hover:underline">
+                              Link preorder{segments.length > 1 ? ` ${i + 1}` : ''}
+                            </a>
+                          );
+                        }
+                        return <p key={i} className="text-sm font-medium">{seg}</p>;
+                      })}
+                    </div>
+                  );
+                })()}
+                <p className="text-sm text-grey-600 dark:text-muted-foreground mt-3">
                   Thời gian mở:
                 </p>
-                <div className="flex flex-col gap-5">
-                  <div className="flex gap-2 md:gap-3">
+                <div className="flex flex-col gap-3 mt-1">
+                  <div className="flex gap-2 items-center">
                     <Image
                       src="/assets/icons/calendar.svg"
                       alt="calendar"
-                      width={32}
-                      height={32}
+                      width={20}
+                      height={20}
                     />
-                    <div className="p-medium-16 lg:p-regular-20 flex flex-wrap items-center">
+                    <div className="text-sm flex flex-wrap items-center gap-x-1">
                       <p>
                         {formatDateTime(event.startDateTime).dateOnly} -{" "}
                         {formatDateTime(event.startDateTime).timeOnly}
@@ -248,7 +265,7 @@ const EventDetails = async (props: {
                     <Link
                       key={`${cat.type}-${cat.name}`}
                       href={`/?${encodeURIComponent(cat.type)}=${encodeURIComponent(cat.name)}`}
-                      className="text-sm rounded-full bg-grey-500/10 dark:bg-muted px-4 py-2.5 text-grey-500 dark:text-muted-foreground hover:bg-primary-500/10 hover:text-primary-600 transition-colors"
+                      className="text-xs rounded-full bg-grey-500/10 dark:bg-muted px-3 py-1.5 text-grey-500 dark:text-muted-foreground hover:bg-primary-500/10 hover:text-primary-600 transition-colors"
                     >
                       {cat.name}
                     </Link>

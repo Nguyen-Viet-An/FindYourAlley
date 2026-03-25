@@ -898,7 +898,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 <FormItem className="w-full">
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
-                      <Input placeholder="Link preorder" {...field} value={field.value || ""} className="input-field" />
+                      <Input placeholder="Link preorder (nhiều link: Artist1: link1 | Artist2: link2)" {...field} value={field.value || ""} className="input-field" />
                     </div>
                   </FormControl>
                   <FormMessage />
