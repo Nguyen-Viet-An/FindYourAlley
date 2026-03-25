@@ -168,11 +168,11 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <SearchAutocomplete suggestions={suggestions as any} />
             </div>
             <div>
-              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✓ chọn, ✕ loại trừ)</span></div>
+              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
               <CategoryMultiFilter categoryFilterType="fandom" excludeParamKey="excludeFandom" />
             </div>
             <div>
-              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✓/✕)</span></div>
+              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
               <CategoryMultiFilter
                 categoryFilterType="itemType"
                 excludeParamKey="excludeItemType"
