@@ -69,12 +69,6 @@ export default async function Home({ searchParams }: SearchParamProps) {
   // Day filter for multi-day festivals
   const selectedFestival = festivals.find((f: any) => f._id === selectedFestivalIds[0]);
   const festivalDayParam = params?.festivalDay ? Number(params.festivalDay) : undefined;
-  let dayDate: string | undefined;
-  if (festivalDayParam && selectedFestival?.startDate) {
-    const d = new Date(selectedFestival.startDate);
-    d.setDate(d.getDate() + (festivalDayParam - 1));
-    dayDate = d.toISOString();
-  }
 
   const [eventIdsOrdered, events, suggestions, uniqueEventTitleCount] = await Promise.all([
     getEventIdsOrderedByUser({ userId }),
@@ -90,7 +84,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
       limit: 20,
       festivalId: selectedFestivalIds,
       sortBy: sortBy as any,
-      dayDate,
+      festivalDay: festivalDayParam,
     }),
     getSearchSuggestions(),
     getUniqueEventTitleCount(selectedFestivalIds),
@@ -156,7 +150,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <Link href={`/featured${selectedFestivalParam}`}>Mặt hàng nổi bật</Link>
             </Button>
             <Button size="sm" asChild className="bg-pink-500 hover:bg-pink-400 text-white">
-              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Trading Cards</Link>
+              <Link href={`/oc-cards${selectedFestivalParam}`}>OC Cards</Link>
             </Button>
           </div>
 
@@ -174,11 +168,11 @@ export default async function Home({ searchParams }: SearchParamProps) {
               <SearchAutocomplete suggestions={suggestions as any} />
             </div>
             <div>
-              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
+              <div className="font-semibold mb-1">Fandom <span className="text-xs text-muted-foreground">(✓ chọn, ✕ loại trừ)</span></div>
               <CategoryMultiFilter categoryFilterType="fandom" excludeParamKey="excludeFandom" />
             </div>
             <div>
-              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✕ để blacklist)</span></div>
+              <div className="font-semibold mb-1">Loại mặt hàng <span className="text-xs text-muted-foreground">(✓/✕)</span></div>
               <CategoryMultiFilter
                 categoryFilterType="itemType"
                 excludeParamKey="excludeItemType"

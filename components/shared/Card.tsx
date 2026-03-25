@@ -56,7 +56,7 @@ export default async function Card({
   );
   const effectiveDealBadge = (event as any).dealBadge || (hasFreebie ? 'Freebie' : '');
 
-  // Derive day badge for multi-day festivals
+  // Derive day badge for multi-day festivals using attendDays field
   const festivals = Array.isArray(event.festival) ? event.festival : event.festival ? [event.festival] : [];
   const festivalWithDates = festivals.find((f: any) => f.startDate && f.endDate) as any;
   let dayBadge = '';
@@ -67,17 +67,12 @@ export default async function Card({
     fEnd.setHours(0, 0, 0, 0);
     const totalDays = Math.round((fEnd.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     if (totalDays > 1) {
-      const evtStart = new Date(event.startDateTime);
-      const evtEnd = new Date(event.endDateTime);
-      evtStart.setHours(0, 0, 0, 0);
-      evtEnd.setHours(0, 0, 0, 0);
-      const rawStart = Math.round((evtStart.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      const rawEnd = Math.round((evtEnd.getTime() - fStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      const startDay = Math.max(1, Math.min(totalDays, rawStart));
-      const endDay = Math.max(1, Math.min(totalDays, rawEnd));
-      if (endDay - startDay + 1 < totalDays) {
-        // Event doesn't span all days — show which day(s)
-        dayBadge = startDay === endDay ? `Ngày ${startDay}` : `Ngày ${startDay}–${endDay}`;
+      const attendDays: number[] = (event as any).attendDays || [];
+      if (attendDays.length > 0 && attendDays.length < totalDays) {
+        const sorted = [...attendDays].sort((a, b) => a - b);
+        dayBadge = sorted.length === 1
+          ? `Ngày ${sorted[0]}`
+          : `Ngày ${sorted[0]}–${sorted[sorted.length - 1]}`;
       }
     }
   }

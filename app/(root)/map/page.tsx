@@ -23,18 +23,12 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
 
   // Day filter for multi-day festivals
   const festivalDayParam = params?.festivalDay ? Number(params.festivalDay) : undefined;
-  let dayDate: string | undefined;
-  if (festivalDayParam && festival?.startDate) {
-    const d = new Date(festival.startDate);
-    d.setDate(d.getDate() + (festivalDayParam - 1));
-    dayDate = d.toISOString();
-  }
 
   // Use festival-specific files; no fallback so festivals without a map show "no map" message
   const floorMapFile = festival?.floorMapFile || '';
   const boothFile = festival?.boothFile || '';
 
-  const boothMap = floorMapFile ? await getBoothEventMap(festivalId, dayDate) : {};
+  const boothMap = floorMapFile ? await getBoothEventMap(festivalId, festivalDayParam) : {};
 
   // Load the XML floor map data
   let xmlContent = '';

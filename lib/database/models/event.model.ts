@@ -27,6 +27,7 @@ export interface IEvent extends Document {
   featuredProduct?: { imageUrl: string; description: string };
   dealBadge?: string;
   dealDescription?: string;
+  attendDays?: number[]; // which festival days the booth attends, e.g. [1, 2]
   organizer: { _id: string, firstName: string, lastName: string };
   festival?: { _id: string; name: string; code?: string; startDate?: string; endDate?: string }[]; // now an array of festivals
 }
@@ -57,6 +58,7 @@ const EventSchema = new Schema(
     },
     dealBadge: { type: String, maxlength: 30 },
     dealDescription: { type: String, maxlength: 500 },
+    attendDays: { type: [Number], default: [] },
     organizer: { type: Schema.Types.ObjectId, ref: "User" },
     festival: [{ type: Schema.Types.ObjectId, ref: 'Festival' }], // now array
   }

@@ -32,6 +32,7 @@ export type CreateUserParams = {
       featuredProduct?: { imageUrl: string; description: string };
       dealBadge?: string;
       dealDescription?: string;
+      attendDays?: number[];
     };
     path: string;
   };
@@ -53,6 +54,7 @@ export type CreateUserParams = {
       featuredProduct?: { imageUrl: string; description: string };
       dealBadge?: string;
       dealDescription?: string;
+      attendDays?: number[];
     };
     path: string;
   };
@@ -73,7 +75,7 @@ export type CreateUserParams = {
     page: number
     festivalId?: string | string[]
     sortBy?: 'newest' | 'alphabetical' | 'mostBookmarked' | 'random'
-    dayDate?: string // ISO date string to filter events present on this day
+    festivalDay?: number // which festival day number to filter (e.g. 1 or 2)
   }
 
   export type GetEventsByUserParams = {

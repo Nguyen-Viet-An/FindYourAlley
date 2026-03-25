@@ -154,6 +154,7 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       featuredProduct,
       dealBadge,
       dealDescription,
+      attendDays,
     } = event;
 
     const formattedImages = await Promise.all(
@@ -187,6 +188,7 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       url,
       hasPreorder: hasPreorder || "No",
       organizer: userId,
+      attendDays: attendDays || [],
     };
 
     if (festivalIds.length) eventData.festival = festivalIds;
@@ -247,6 +249,7 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
       hasPreorder: event.hasPreorder || "No",
       extraTag: normalizeTags(event.extraTag), // normalize on update
       url: event.url,
+      attendDays: event.attendDays || [],
     };
 
     if (festivalIds.length) updatePayload.festival = festivalIds; else updatePayload.festival = [];
@@ -356,7 +359,7 @@ export async function getSearchSuggestions() {
 }
 
 // GET ALL EVENTS
-export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy, dayDate }: GetAllEventsParams) {
+export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy, festivalDay }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
@@ -366,14 +369,9 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, e
     // 1. Build base query (event-level) excluding category specifics first
     const baseQuery: any = {};
 
-    // Day filter: only events whose date range overlaps the given day
-    if (dayDate) {
-      const dayStart = new Date(dayDate);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(dayDate);
-      dayEnd.setHours(23, 59, 59, 999);
-      baseQuery.startDateTime = { $lte: dayEnd };
-      baseQuery.endDateTime = { $gte: dayStart };
+    // Day filter: only events that attend the given festival day
+    if (festivalDay) {
+      baseQuery.attendDays = festivalDay;
     }
 
     if (query) {
@@ -1009,23 +1007,18 @@ export async function getBoothNeighbors(boothCode: string, range = 2) {
   }
 }
 
-export async function getBoothEventMap(festivalId?: string, dayDate?: string): Promise<BoothEventMap> {
+export async function getBoothEventMap(festivalId?: string, festivalDay?: number): Promise<BoothEventMap> {
   try {
     await connectToDatabase();
     const filter: any = {};
     if (festivalId) {
       filter.festival = festivalId;
     }
-    // Day filter: only events whose date range overlaps the given day
-    if (dayDate) {
-      const dayStart = new Date(dayDate);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(dayDate);
-      dayEnd.setHours(23, 59, 59, 999);
-      filter.startDateTime = { $lte: dayEnd };
-      filter.endDateTime = { $gte: dayStart };
+    // Day filter: only events that attend the given festival day
+    if (festivalDay) {
+      filter.attendDays = festivalDay;
     }
-    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder').lean();
+    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder attendDays').lean();
 
     const boothEvents: { [boothCode: string]: any[] } = {};
 

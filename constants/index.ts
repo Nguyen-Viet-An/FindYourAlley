@@ -49,4 +49,5 @@ export const headerLinks = [
     featuredProductDescription: '',
     dealBadge: '',
     dealDescription: '',
+    attendDays: [] as number[],
   }

@@ -97,13 +97,9 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
   // Track which festival days are selected (for multi-day attendance)
   const [selectedDays, setSelectedDays] = useState<number[]>(() => {
     if (!multiDayFestival || festivalDays.length === 0) return [];
-    // Infer from existing event dates
-    if (event && event.startDateTime && event.endDateTime) {
-      const evtStart = new Date(event.startDateTime); evtStart.setHours(0,0,0,0);
-      const evtEnd = new Date(event.endDateTime); evtEnd.setHours(0,0,0,0);
-      return festivalDays
-        .filter(fd => fd.date.getTime() >= evtStart.getTime() && fd.date.getTime() <= evtEnd.getTime())
-        .map(fd => fd.dayNum);
+    // Read from attendDays if available (persisted field)
+    if (event && (event as any).attendDays && (event as any).attendDays.length > 0) {
+      return [...(event as any).attendDays].sort();
     }
     // Default: all days selected
     return festivalDays.map(fd => fd.dayNum);
@@ -112,30 +108,16 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
   const toggleDay = (dayNum: number) => {
     setSelectedDays(prev => {
       const next = prev.includes(dayNum) ? prev.filter(d => d !== dayNum) : [...prev, dayNum].sort();
-      // Update form date fields based on selected days
-      if (next.length > 0 && festivalDays.length > 0) {
-        const firstDay = festivalDays.find(fd => fd.dayNum === next[0])!;
-        const lastDay = festivalDays.find(fd => fd.dayNum === next[next.length - 1])!;
-        const start = new Date(firstDay.date); start.setHours(8, 0, 0, 0);
-        const end = new Date(lastDay.date); end.setHours(23, 59, 0, 0);
-        form.setValue('startDateTime', start);
-        form.setValue('endDateTime', end);
-      }
+      // Store selected days in the form (no longer overwrite preorder dates)
+      form.setValue('attendDays', next);
       return next;
     });
   };
 
-  // Sync form dates with initially selected festival days (for new events)
+  // Sync attendDays with initially selected festival days (for new events)
   useEffect(() => {
     if (type === "Create" && selectedDays.length > 0 && festivalDays.length > 0) {
-      const firstDay = festivalDays.find(fd => fd.dayNum === selectedDays[0]);
-      const lastDay = festivalDays.find(fd => fd.dayNum === selectedDays[selectedDays.length - 1]);
-      if (firstDay && lastDay) {
-        const start = new Date(firstDay.date); start.setHours(8, 0, 0, 0);
-        const end = new Date(lastDay.date); end.setHours(23, 59, 0, 0);
-        form.setValue('startDateTime', start);
-        form.setValue('endDateTime', end);
-      }
+      form.setValue('attendDays', selectedDays);
     }
   }, [festivalDays.length]); // only on initial mount when festivalDays are computed
 
@@ -249,11 +231,13 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
         featuredProductDescription: (event as any).featuredProduct?.description || '',
         dealBadge: (event as any).dealBadge || '',
         dealDescription: (event as any).dealDescription || '',
+        attendDays: (event as any).attendDays || [],
       }
     : {
         ...eventDefaultValues,
         hasPreorder: eventDefaultValues.hasPreorder ?? "No",
         festival: festivalIds,
+        attendDays: [] as number[],
         artists: [{ name: '', link: '' }],
         images: [{
           imageUrl: '',
@@ -513,6 +497,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         images: imagesData as any, // Use type assertion to bypass TypeScript check
         hasPreorder: values.hasPreorder || "No",
         festival: festivalIds,
+        attendDays: values.attendDays || [],
         featuredProduct: featuredImgUrl && values.featuredProductDescription
           ? { imageUrl: featuredImgUrl, description: values.featuredProductDescription }
           : undefined,
