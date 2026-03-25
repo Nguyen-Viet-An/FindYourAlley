@@ -6,6 +6,8 @@ import { Metadata } from 'next';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: 'Sơ đồ gian hàng | FindYourAlley',
   description: 'Sơ đồ tương tác các gian hàng tại sự kiện',

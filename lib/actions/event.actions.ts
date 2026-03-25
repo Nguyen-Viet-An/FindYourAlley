@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { unstable_cache } from 'next/cache'
 import { S3Client, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { connectToDatabase } from '@/lib/database'
 import Event from '@/lib/database/models/event.model'
@@ -322,41 +323,45 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 }
 
 // GET SEARCH SUGGESTIONS (booth titles, artist names, extra tags)
-export async function getSearchSuggestions() {
-  try {
-    await connectToDatabase();
-    const events = await Event.find({}, 'title artists extraTag').lean();
-    const suggestions: { type: string; value: string }[] = [];
-    const seen = new Set<string>();
+export const getSearchSuggestions = unstable_cache(
+  async () => {
+    try {
+      await connectToDatabase();
+      const events = await Event.find({}, 'title artists extraTag').lean();
+      const suggestions: { type: string; value: string }[] = [];
+      const seen = new Set<string>();
 
-    for (const e of events) {
-      const titleKey = `booth:${e.title}`;
-      if (!seen.has(titleKey)) { seen.add(titleKey); suggestions.push({ type: 'booth', value: e.title }); }
+      for (const e of events) {
+        const titleKey = `booth:${e.title}`;
+        if (!seen.has(titleKey)) { seen.add(titleKey); suggestions.push({ type: 'booth', value: e.title }); }
 
-      if (Array.isArray(e.artists)) {
-        for (const a of e.artists) {
-          if (a.name) {
-            const key = `artist:${a.name.toLowerCase()}`;
-            if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'artist', value: a.name }); }
+        if (Array.isArray(e.artists)) {
+          for (const a of e.artists) {
+            if (a.name) {
+              const key = `artist:${a.name.toLowerCase()}`;
+              if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'artist', value: a.name }); }
+            }
+          }
+        }
+
+        if (Array.isArray(e.extraTag)) {
+          for (const t of e.extraTag) {
+            if (t) {
+              const key = `tag:${t.toLowerCase()}`;
+              if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'tag', value: t }); }
+            }
           }
         }
       }
-
-      if (Array.isArray(e.extraTag)) {
-        for (const t of e.extraTag) {
-          if (t) {
-            const key = `tag:${t.toLowerCase()}`;
-            if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'tag', value: t }); }
-          }
-        }
-      }
+      return suggestions;
+    } catch (error) {
+      handleError(error);
+      return [];
     }
-    return suggestions;
-  } catch (error) {
-    handleError(error);
-    return [];
-  }
-}
+  },
+  ['search-suggestions'],
+  { revalidate: 120 }
+);
 
 // GET ALL EVENTS
 export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy, festivalDay }: GetAllEventsParams) {

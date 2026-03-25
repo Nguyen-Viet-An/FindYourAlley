@@ -2,6 +2,8 @@ import { getFeaturedProducts } from "@/lib/actions/event.actions";
 import { getFestivals } from "@/lib/actions/festival.actions";
 import FeaturedGallery from "@/components/shared/FeaturedGallery";
 
+export const revalidate = 60;
+
 type FeaturedPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };

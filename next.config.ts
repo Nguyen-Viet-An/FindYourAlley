@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // domains: ['utfs.io','firebasestorage.googleapis.com'],
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -19,7 +19,16 @@ const nextConfig = {
         port: ''
       }
     ]
-  }
+  },
+  headers: async () => [
+    {
+      // Cache static assets (fonts, icons) in browser for 1 year
+      source: '/assets/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      ],
+    },
+  ],
 }
 
 module.exports = nextConfig

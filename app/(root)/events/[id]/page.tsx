@@ -3,6 +3,8 @@ import Collection from '@/components/shared/Collection';
 import ImageCarousel from '@/components/shared/ImageCarousel';
 import ShareButton from '@/components/shared/ShareButton';
 import { getEventById, getRelatedEventsByCategories, getBoothNeighbors } from '@/lib/actions/event.actions'
+
+export const revalidate = 60;
 import { ICategory } from '@/lib/database/models/category.model';
 import { formatDateTime } from '@/lib/utils';
 import { SearchParamProps } from '@/types'

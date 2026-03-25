@@ -2,6 +2,8 @@ import { getEventsByArtist } from "@/lib/actions/event.actions";
 import Card from "@/components/shared/Card";
 import Link from "next/link";
 
+export const revalidate = 60;
+
 export type paramsType = Promise<{ name: string }>;
 
 export default async function ArtistDetailPage({ params }: { params: paramsType }) {

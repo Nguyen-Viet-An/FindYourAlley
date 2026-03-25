@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getAllExtraTags } from "@/lib/actions/event.actions";
 import { getFestivals } from "@/lib/actions/festival.actions";
 
+export const revalidate = 60;
+
 type TagsPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };

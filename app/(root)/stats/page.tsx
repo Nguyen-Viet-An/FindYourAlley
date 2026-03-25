@@ -3,6 +3,8 @@ import { getFestivals } from "@/lib/actions/festival.actions";
 import StatsCharts from "@/components/shared/StatsCharts";
 import Link from "next/link";
 
+export const revalidate = 60;
+
 type StatsPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };

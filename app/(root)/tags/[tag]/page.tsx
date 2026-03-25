@@ -1,6 +1,8 @@
 import { getEventsByTag } from "@/lib/actions/event.actions";
 import Collection from "@/components/shared/Collection";
 
+export const revalidate = 60;
+
 export default async function TagDetailPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
   const decodedTag = decodeURIComponent(tag); // 👈 decode here
