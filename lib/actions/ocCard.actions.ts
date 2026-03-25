@@ -1,5 +1,6 @@
 "use server";
 
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/database";
 import OcCard from "@/lib/database/models/ocCard.model";
 import TradeRequest from "@/lib/database/models/tradeRequest.model";
@@ -228,13 +229,14 @@ export async function getAllOcCards({
     }
 
     if (festivalId) {
-      filter.festival = festivalId;
+      filter.festival = new mongoose.Types.ObjectId(festivalId);
     }
 
     if (sortBy === "random") {
       const pipeline: any[] = [{ $match: filter }];
       pipeline.push({ $sample: { size: 200 } });
       const randomDocs = await OcCard.aggregate(pipeline);
+      if (randomDocs.length === 0) return [];
       const ids = randomDocs.map((d: any) => d._id);
       const cards = await populateCard(OcCard.find({ _id: { $in: ids } }));
       // Preserve random order from $sample
