@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { getLowResUrl } from '@/lib/utils';
 import { X } from 'lucide-react';
 
@@ -26,11 +27,13 @@ export default function CardLightbox({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const prevOverflowRef = useRef<string>('');
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
+    prevOverflowRef.current = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     setIsLightboxOpen(true);
-    document.body.style.overflow = 'hidden'; // Prevent scrolling when lightbox is open
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
   };
@@ -39,7 +42,7 @@ export default function CardLightbox({
     setIsLightboxOpen(false);
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
-    document.body.style.overflow = ''; // Re-enable scrolling
+    document.body.style.overflow = prevOverflowRef.current;
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -223,15 +226,15 @@ export default function CardLightbox({
         {children}
       </div>
 
-      {/* Lightbox */}
-      {isLightboxOpen && (
+      {/* Lightbox - rendered via portal to escape modal transform context */}
+      {isLightboxOpen && createPortal(
         <div
-          className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black bg-opacity-80 z-[9999] flex items-center justify-center"
           onClick={closeLightbox}
         >
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-2 rounded-full z-[1001] transition-colors"
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-2 rounded-full z-[10000] transition-colors"
             aria-label="Close lightbox"
           >
             <X className="h-6 w-6 text-white" />
@@ -254,11 +257,12 @@ export default function CardLightbox({
                 alt={alt}
                 className="no-drag"
                 style={imageStyle}
-                draggable="false" // Prevent default drag behavior
+                draggable="false"
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
