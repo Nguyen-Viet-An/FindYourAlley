@@ -111,7 +111,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
                 </h3>
                 {card.appearance.text && <p className="mb-2">{card.appearance.text}</p>}
                 {card.appearance.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh/Minh họa" renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
                       alt="Ảnh nhận dạng"

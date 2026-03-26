@@ -129,7 +129,7 @@ export default function OcCardDetailModal({
                 </h4>
                 {card.appearance?.text && <p className="text-sm mb-1.5">{card.appearance.text}</p>}
                 {card.appearance?.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh/Minh họa" renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
                       alt="Ảnh nhận dạng"
