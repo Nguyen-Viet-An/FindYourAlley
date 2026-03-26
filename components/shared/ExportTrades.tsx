@@ -8,6 +8,8 @@ type TradeExportItem = {
   cardOwner: string;
   offeredOcName: string;
   contactMethod: string;
+  requesterContact: string;
+  appearance: string;
   requesterName: string;
 };
 
@@ -26,6 +28,8 @@ function flattenTrades(
       cardOwner: t.card?.ownerName || "—",
       offeredOcName: linkedImg?.ocName || "—",
       contactMethod: t.card?.contactMethod || t.linkedCard?.contactMethod || "",
+      requesterContact: "",
+      appearance: "",
       requesterName: "",
     });
   });
@@ -41,6 +45,8 @@ function flattenTrades(
       cardOwner: t.linkedCard?.ownerName || "—",
       offeredOcName: t.card?.images?.[t.imageIndex ?? 0]?.ocName || "—",
       contactMethod: t.linkedCard?.contactMethod || "",
+      requesterContact: t.contactMethod || "",
+      appearance: t.linkedCard?.appearance?.text || "",
       requesterName: reqName,
     });
   });
@@ -65,7 +71,8 @@ function buildHtmlContent(items: TradeExportItem[]) {
         <td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(item.cardOcName)}</td>
         <td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(item.cardOwner)}</td>
         <td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(item.offeredOcName)}</td>
-        <td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(item.contactMethod)}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(item.contactMethod || item.requesterContact || "")}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(item.appearance)}</td>
       </tr>`
     )
     .join("");
@@ -84,6 +91,7 @@ function buildHtmlContent(items: TradeExportItem[]) {
             <th style="padding:8px 10px;border:1px solid #ddd">Chủ card</th>
             <th style="padding:8px 10px;border:1px solid #ddd">Tên OC đã đổi</th>
             <th style="padding:8px 10px;border:1px solid #ddd">Liên hệ</th>
+            <th style="padding:8px 10px;border:1px solid #ddd">Nhận dạng</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -109,7 +117,9 @@ export default function ExportTrades({
       ...items.map((item, i) => {
         const parts = [`${i + 1}. ${item.cardOcName} (chủ: ${item.cardOwner})`];
         parts.push(`   Đổi bằng: ${item.offeredOcName}`);
-        if (item.contactMethod) parts.push(`   📞 Liên hệ: ${item.contactMethod}`);
+        const contact = item.contactMethod || item.requesterContact;
+        if (contact) parts.push(`   📞 Liên hệ: ${contact}`);
+        if (item.appearance) parts.push(`   👤 Nhận dạng: ${item.appearance}`);
         return parts.join("\n");
       }),
     ];

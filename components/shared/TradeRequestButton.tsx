@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { createTradeRequest } from "@/lib/actions/tradeRequest.actions";
+import { createTradeRequest, getDefaultContact } from "@/lib/actions/tradeRequest.actions";
 import { getOcCardsByUser } from "@/lib/actions/ocCard.actions";
 import { Heart, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -34,6 +34,8 @@ export default function TradeRequestButton({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [contactMethod, setContactMethod] = useState("");
+  const [contactLoaded, setContactLoaded] = useState(false);
   const [linkedCardId, setLinkedCardId] = useState("");
   const [myCards, setMyCards] = useState<any[]>([]);
   const [submitted, setSubmitted] = useState(alreadyRequested);
@@ -44,7 +46,13 @@ export default function TradeRequestButton({
     if (open && userId && !myCards.length) {
       getOcCardsByUser(userId).then(setMyCards).catch(() => {});
     }
-  }, [open, userId, myCards.length]);
+    if (open && userId && !contactLoaded) {
+      getDefaultContact(userId).then((c) => {
+        setContactMethod(c || "");
+        setContactLoaded(true);
+      }).catch(() => setContactLoaded(true));
+    }
+  }, [open, userId, myCards.length, contactLoaded]);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -55,6 +63,7 @@ export default function TradeRequestButton({
         userId: userId!,
         imageIndex,
         message: message.trim() || undefined,
+        contactMethod: contactMethod.trim() || undefined,
         linkedCardId: linkedCardId ? linkedCardId.split("-")[0] : undefined,
       });
       if (result?.error) {
@@ -169,6 +178,22 @@ export default function TradeRequestButton({
               </div>
             </div>
           )}
+
+          {/* Contact method - required */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">
+              Phương thức liên lạc (không bắt buộc)
+            </label>
+            <input
+              type="text"
+              placeholder="VD: FB: facebook.com/ten, IG: @ten, Discord: ten#1234..."
+              value={contactMethod}
+              onChange={(e) => setContactMethod(e.target.value)}
+              maxLength={300}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Để chủ card có thể liên hệ bạn khi chấp nhận đổi</p>
+          </div>
 
           <div>
             <label className="text-sm font-medium mb-1 block">

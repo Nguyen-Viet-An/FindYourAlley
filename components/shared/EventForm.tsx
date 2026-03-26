@@ -730,6 +730,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                   }}
                 />
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
               </div>
 
               {/* Categories for this image */}
@@ -933,6 +934,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 }}
               />
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
           </div>
 
           <FormField

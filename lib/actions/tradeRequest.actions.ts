@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 const populateRequest = (query: any) =>
   query
     .populate({ path: "requester", model: User, select: "_id firstName lastName photo" })
-    .populate({ path: "card", model: OcCard, select: "_id ownerName images owner" })
+    .populate({ path: "card", model: OcCard, select: "_id ownerName images owner contactMethod appearance" })
     .populate({ path: "linkedCard", model: OcCard, select: "_id ownerName images owner appearance contactMethod timePlace" });
 
 // CREATE TRADE REQUEST ("Muốn đổi")
@@ -19,12 +19,14 @@ export async function createTradeRequest({
   cardId,
   imageIndex,
   message,
+  contactMethod,
   linkedCardId,
 }: {
   userId: string;
   cardId: string;
   imageIndex?: number;
   message?: string;
+  contactMethod?: string;
   linkedCardId?: string;
 }) {
   try {
@@ -58,6 +60,7 @@ export async function createTradeRequest({
       requester: userId,
       imageIndex: imageIndex ?? 0,
       message: message || "",
+      contactMethod: contactMethod || undefined,
       linkedCard: linkedCardId || undefined,
       status: "pending",
     });
@@ -211,5 +214,26 @@ export async function getAcceptedTradesForUser(userId: string) {
   } catch (error) {
     handleError(error);
     return { asRequester: [], asOwner: [] };
+  }
+}
+
+// GET DEFAULT CONTACT METHOD FOR PREFILL
+// Priority: 1) contactMethod from user's OC cards, 2) user's email
+export async function getDefaultContact(userId: string) {
+  try {
+    await connectToDatabase();
+    // Check if user has OC cards with contactMethod
+    const cardWithContact = await OcCard.findOne(
+      { owner: userId, contactMethod: { $nin: [null, ""] } },
+      { contactMethod: 1 }
+    ).sort({ createdAt: -1 });
+    if (cardWithContact?.contactMethod) return cardWithContact.contactMethod;
+
+    // Fallback to user email
+    const user = await User.findById(userId, { email: 1 });
+    return user?.email || "";
+  } catch (error) {
+    handleError(error);
+    return "";
   }
 }

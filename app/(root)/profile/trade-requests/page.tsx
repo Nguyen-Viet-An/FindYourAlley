@@ -70,6 +70,9 @@ export default async function TradeRequestsPage() {
                       {req.message && (
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.message}</p>
                       )}
+                      {req.contactMethod && (
+                        <p className="text-xs text-muted-foreground mt-1">Phương thức liên lạc: <span className="font-medium text-foreground">{req.contactMethod}</span></p>
+                      )}
                       {req.linkedCard && (
                         <Link
                           href={`/oc-cards/${req.linkedCard._id}`}

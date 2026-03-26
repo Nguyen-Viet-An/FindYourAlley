@@ -125,11 +125,11 @@ export default function OcCardDetailModal({
             {(card.appearance?.text || card.appearance?.imageUrl) && (
               <div className="border rounded-lg p-3">
                 <h4 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5" /> Đặc điểm nhận diện
+                  <User className="w-3.5 h-3.5" /> Đặc điểm nhận dạng
                 </h4>
                 {card.appearance?.text && <p className="text-sm mb-1.5">{card.appearance.text}</p>}
                 {card.appearance?.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh/Minh họa" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
                       alt="Ảnh nhận dạng"
@@ -217,6 +217,9 @@ function OwnerTradeRequests({ cardId, userId, open, imageIndex }: { cardId: stri
               </div>
               {req.message && (
                 <p className="text-xs text-muted-foreground">{req.message}</p>
+              )}
+              {req.contactMethod && (
+                <p className="text-xs text-muted-foreground">Phương thức liên lạc: <span className="font-medium text-foreground">{req.contactMethod}</span></p>
               )}
               {req.linkedCard && (
                 <Link

@@ -111,7 +111,7 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
                 </h3>
                 {card.appearance.text && <p className="mb-2">{card.appearance.text}</p>}
                 {card.appearance.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh/Minh họa" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
                       alt="Ảnh nhận dạng"
@@ -200,6 +200,9 @@ function TradeRequestItem({ request, userId }: { request: any; userId: string })
       </div>
       {request.message && (
         <p className="text-sm text-muted-foreground">{request.message}</p>
+      )}
+      {request.contactMethod && (
+        <p className="text-sm text-muted-foreground">Phương thức liên lạc: <span className="font-medium text-foreground">{request.contactMethod}</span></p>
       )}
       {request.linkedCard && (
         <Link

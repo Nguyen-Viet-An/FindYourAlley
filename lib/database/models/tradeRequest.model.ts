@@ -5,6 +5,7 @@ export interface ITradeRequest extends Document {
   card: { _id: string; ownerName: string; images: any[] };
   requester: { _id: string; firstName: string; lastName: string };
   message?: string;
+  contactMethod?: string;
   linkedCard?: { _id: string; ownerName: string; images: any[] };
   status: "pending" | "accepted" | "declined";
   createdAt: Date;
@@ -15,6 +16,7 @@ const TradeRequestSchema = new Schema({
   requester: { type: Schema.Types.ObjectId, ref: "User", required: true },
   imageIndex: { type: Number, default: 0 },
   message: { type: String, maxlength: 500 },
+  contactMethod: { type: String, maxlength: 300 },
   linkedCard: { type: Schema.Types.ObjectId, ref: "OcCard" },
   status: {
     type: String,

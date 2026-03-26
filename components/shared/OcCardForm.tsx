@@ -269,6 +269,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
                   }}
                 />
               </div>
+              <p className="text-xs text-muted-foreground -mt-2 mb-2">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
               <div className="relative">
                 <Input
                   placeholder="Mô tả ngắn (không bắt buộc)"
@@ -422,6 +423,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
                 }}
               />
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
           </div>
         </div>
 
