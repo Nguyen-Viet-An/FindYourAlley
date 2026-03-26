@@ -139,7 +139,7 @@ export default function TradeRequestButton({
           {myCardItems.length > 0 && (
             <div>
               <label className="text-sm font-medium mb-2 block">
-                Chọn card của bạn để đổi (không bắt buộc)
+                Chọn card của bạn để đổi
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto p-1">
                 {myCardItems.map((item) => {
@@ -182,7 +182,7 @@ export default function TradeRequestButton({
           {/* Contact method - required */}
           <div>
             <label className="text-sm font-medium mb-1 block">
-              Phương thức liên lạc (không bắt buộc)
+              Phương thức liên lạc
             </label>
             <input
               type="text"
@@ -197,7 +197,7 @@ export default function TradeRequestButton({
 
           <div>
             <label className="text-sm font-medium mb-1 block">
-              Lời nhắn (không bắt buộc)
+              Lời nhắn
             </label>
             <Textarea
               placeholder="VD: Mình muốn đổi card này, mình có card X..."
