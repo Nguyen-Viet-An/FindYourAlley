@@ -16,7 +16,7 @@ type OcCardsPageProps = {
 export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
   const params = await searchParams;
   const query = (params?.query as string) || "";
-  const sortBy = (params?.sortBy as string) || "random";
+  const sortBy = (params?.sortBy as string) || "newest";
   const festivalId = (params?.festivalId as string) || undefined;
 
   const { sessionClaims } = await auth();
