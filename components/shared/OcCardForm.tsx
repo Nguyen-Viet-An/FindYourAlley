@@ -407,7 +407,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             )}
           />
           <div>
-            <FormLabel>Ảnh nhận dạng (không bắt buộc)</FormLabel>
+            <FormLabel>Ảnh/Minh họa (không bắt buộc)</FormLabel>
             <div className="w-full h-48 mt-1">
               <FileUploader
                 onFieldChange={(url) => {
