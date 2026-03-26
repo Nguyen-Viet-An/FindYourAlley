@@ -27,12 +27,10 @@ export default function CardLightbox({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const prevOverflowRef = useRef<string>('');
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    prevOverflowRef.current = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     setIsLightboxOpen(true);
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
@@ -42,25 +40,54 @@ export default function CardLightbox({
     setIsLightboxOpen(false);
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
-    document.body.style.overflow = prevOverflowRef.current;
   };
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  // Use refs for zoom state so the non-passive wheel handler always sees current values
+  const zoomRef = useRef(zoomLevel);
+  const positionRef = useRef(position);
+  useEffect(() => { zoomRef.current = zoomLevel; }, [zoomLevel]);
+  useEffect(() => { positionRef.current = position; }, [position]);
 
-    if (!imageRef.current) return;
+  // Attach non-passive wheel listener for zoom (React onWheel is passive and can't preventDefault)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !isLightboxOpen) return;
 
-    // Reduce zoom sensitivity
-    const delta = e.deltaY * -0.001; // Reduced sensitivity
-    const newZoom = Math.max(1, Math.min(5, zoomLevel + delta));
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    if (newZoom === 1) {
-      // Reset position when fully zoomed out
-      setPosition({ x: 0, y: 0 });
-    }
+      if (!imageRef.current) return;
 
-    setZoomLevel(newZoom);
-  };
+      const delta = e.deltaY * -0.001;
+      const newZoom = Math.max(1, Math.min(5, zoomRef.current + delta));
+
+      if (newZoom === 1) {
+        setPosition({ x: 0, y: 0 });
+      }
+
+      setZoomLevel(newZoom);
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [isLightboxOpen]);
+
+  // Block background scroll on the overlay (wheel + touch)
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el || !isLightboxOpen) return;
+
+    const blockWheel = (e: WheelEvent) => { e.preventDefault(); };
+    const blockTouch = (e: TouchEvent) => { e.preventDefault(); };
+
+    el.addEventListener('wheel', blockWheel, { passive: false });
+    el.addEventListener('touchmove', blockTouch, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', blockWheel);
+      el.removeEventListener('touchmove', blockTouch);
+    };
+  }, [isLightboxOpen]);
 
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -229,7 +256,9 @@ export default function CardLightbox({
       {/* Lightbox - rendered via portal to escape modal transform context */}
       {isLightboxOpen && createPortal(
         <div
+          ref={overlayRef}
           className="fixed inset-0 bg-black bg-opacity-80 z-[9999] flex items-center justify-center"
+          style={{ touchAction: 'none' }}
           onClick={closeLightbox}
         >
           <button
@@ -243,7 +272,6 @@ export default function CardLightbox({
             ref={containerRef}
             className="relative p-4"
             onClick={(e) => e.stopPropagation()}
-            onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
