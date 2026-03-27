@@ -48,16 +48,16 @@ export default function CardLightbox({
   useEffect(() => { zoomRef.current = zoomLevel; }, [zoomLevel]);
   useEffect(() => { positionRef.current = position; }, [position]);
 
-  // Attach non-passive wheel listener for zoom (React onWheel is passive and can't preventDefault)
+  // Attach non-passive wheel listener for zoom on the OVERLAY (top-level portal div).
+  // Must be on overlayRef (not containerRef) so events aren't blocked by
+  // react-remove-scroll when CardLightbox is inside a Radix Dialog.
   useEffect(() => {
-    const el = containerRef.current;
+    const el = overlayRef.current;
     if (!el || !isLightboxOpen) return;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
-
-      if (!imageRef.current) return;
 
       const delta = e.deltaY * -0.001;
       const newZoom = Math.max(1, Math.min(5, zoomRef.current + delta));
