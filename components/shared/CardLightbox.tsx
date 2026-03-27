@@ -73,25 +73,14 @@ export default function CardLightbox({
     return () => el.removeEventListener('wheel', handleWheel);
   }, [isLightboxOpen]);
 
-  // Block background scroll on the overlay (wheel only — touch handled by pinch/pan below)
-  useEffect(() => {
-    const el = overlayRef.current;
-    if (!el || !isLightboxOpen) return;
-
-    const blockWheel = (e: WheelEvent) => { e.preventDefault(); };
-
-    el.addEventListener('wheel', blockWheel, { passive: false });
-    return () => {
-      el.removeEventListener('wheel', blockWheel);
-    };
-  }, [isLightboxOpen]);
-
   // Touch: pinch-to-zoom + one-finger pan (when zoomed)
+  // Attached to overlayRef so events aren't blocked by react-remove-scroll
+  // when CardLightbox is inside a Radix Dialog.
   const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
   const lastPinchDistRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const el = containerRef.current;
+    const el = overlayRef.current;
     if (!el || !isLightboxOpen) return;
 
     const getDistance = (t1: Touch, t2: Touch) =>
