@@ -125,14 +125,14 @@ export default function OcCardDetailModal({
             {(card.appearance?.text || card.appearance?.imageUrl) && (
               <div className="border rounded-lg p-3">
                 <h4 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5" /> Đặc điểm nhận dạng
+                  <User className="w-3.5 h-3.5" /> Đặc điểm nhận diện
                 </h4>
                 {card.appearance?.text && <p className="text-sm mb-1.5">{card.appearance.text}</p>}
                 {card.appearance?.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận diện" renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
-                      alt="Ảnh nhận dạng"
+                      alt="Ảnh nhận diện"
                       width={150}
                       height={150}
                       className="rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"

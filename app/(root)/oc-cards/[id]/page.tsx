@@ -107,14 +107,14 @@ export default async function OcCardDetail(props: OcCardDetailProps) {
             {(card.appearance?.text || card.appearance?.imageUrl) && (
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <User className="w-4 h-4" /> Đặc điểm nhận dạng
+                  <User className="w-4 h-4" /> Đặc điểm nhận diện
                 </h3>
                 {card.appearance.text && <p className="mb-2">{card.appearance.text}</p>}
                 {card.appearance.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận dạng" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận diện" renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
-                      alt="Ảnh nhận dạng"
+                      alt="Ảnh nhận diện"
                       width={200}
                       height={200}
                       className="rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"

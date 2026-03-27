@@ -91,7 +91,7 @@ function buildHtmlContent(items: TradeExportItem[]) {
             <th style="padding:8px 10px;border:1px solid #ddd">Chủ card</th>
             <th style="padding:8px 10px;border:1px solid #ddd">Tên OC đã đổi</th>
             <th style="padding:8px 10px;border:1px solid #ddd">Liên hệ</th>
-            <th style="padding:8px 10px;border:1px solid #ddd">Nhận dạng</th>
+            <th style="padding:8px 10px;border:1px solid #ddd">Nhận diện</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -118,8 +118,8 @@ export default function ExportTrades({
         const parts = [`${i + 1}. ${item.cardOcName} (chủ: ${item.cardOwner})`];
         parts.push(`   Đổi bằng: ${item.offeredOcName}`);
         const contact = item.contactMethod || item.requesterContact;
-        if (contact) parts.push(`   📞 Liên hệ: ${contact}`);
-        if (item.appearance) parts.push(`   👤 Nhận dạng: ${item.appearance}`);
+        if (contact) parts.push(`   Phương thức liên hệ: ${contact}`);
+        if (item.appearance) parts.push(`   Nhận diện: ${item.appearance}`);
         return parts.join("\n");
       }),
     ];
