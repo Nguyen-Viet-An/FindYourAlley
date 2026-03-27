@@ -73,19 +73,70 @@ export default function CardLightbox({
     return () => el.removeEventListener('wheel', handleWheel);
   }, [isLightboxOpen]);
 
-  // Block background scroll on the overlay (wheel + touch)
+  // Block background scroll on the overlay (wheel only — touch handled by pinch/pan below)
   useEffect(() => {
     const el = overlayRef.current;
     if (!el || !isLightboxOpen) return;
 
     const blockWheel = (e: WheelEvent) => { e.preventDefault(); };
-    const blockTouch = (e: TouchEvent) => { e.preventDefault(); };
 
     el.addEventListener('wheel', blockWheel, { passive: false });
-    el.addEventListener('touchmove', blockTouch, { passive: false });
     return () => {
       el.removeEventListener('wheel', blockWheel);
-      el.removeEventListener('touchmove', blockTouch);
+    };
+  }, [isLightboxOpen]);
+
+  // Touch: pinch-to-zoom + one-finger pan (when zoomed)
+  const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
+  const lastPinchDistRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !isLightboxOpen) return;
+
+    const getDistance = (t1: Touch, t2: Touch) =>
+      Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        lastPinchDistRef.current = getDistance(e.touches[0], e.touches[1]);
+      } else if (e.touches.length === 1 && zoomRef.current > 1) {
+        e.preventDefault();
+        lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
+        e.preventDefault();
+        const dist = getDistance(e.touches[0], e.touches[1]);
+        const scale = dist / lastPinchDistRef.current;
+        const newZoom = Math.max(1, Math.min(5, zoomRef.current * scale));
+        if (newZoom === 1) setPosition({ x: 0, y: 0 });
+        setZoomLevel(newZoom);
+        lastPinchDistRef.current = dist;
+      } else if (e.touches.length === 1 && zoomRef.current > 1 && lastTouchRef.current) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - lastTouchRef.current.x;
+        const dy = e.touches[0].clientY - lastTouchRef.current.y;
+        setPosition(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+        lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) lastPinchDistRef.current = null;
+      if (e.touches.length === 0) lastTouchRef.current = null;
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isLightboxOpen]);
 
@@ -258,7 +309,6 @@ export default function CardLightbox({
         <div
           ref={overlayRef}
           className="fixed inset-0 bg-black bg-opacity-80 z-[9999] flex items-center justify-center"
-          style={{ touchAction: 'none' }}
           onClick={closeLightbox}
         >
           <button
