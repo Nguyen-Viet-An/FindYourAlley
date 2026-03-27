@@ -291,16 +291,20 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
 
         {/* Festival */}
         <div>
-          <FormLabel>Festival</FormLabel>
+          <FormLabel>Festival *</FormLabel>
           <FestivalMultiSelect
             value={selectedFestivalOptions}
             onChange={(opts: Option[]) => {
               setSelectedFestivalOptions(opts);
               form.setValue("festival", opts.map(o => o.value));
+              form.clearErrors("festival");
             }}
             festivals={festivals}
             promptText="Festival sẽ đổi card"
           />
+          {form.formState.errors.festival && (
+            <p className="text-sm font-medium text-destructive mt-1">{form.formState.errors.festival.message}</p>
+          )}
         </div>
 
         {/* Owner Info Section */}

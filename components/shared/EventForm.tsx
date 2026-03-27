@@ -581,16 +581,20 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
 
         <div className="flex flex-col gap-5 md:flex-row">
           <div className="w-full">
-            <FormLabel>Festival</FormLabel>
+            <FormLabel>Festival *</FormLabel>
             <FestivalMultiSelect
               value={selectedFestivalOptions}
               onChange={(opts: Option[]) => {
                 handleFestivalChange(opts);
                 form.setValue("festival", opts.map(o => o.value));
+                form.clearErrors("festival");
               }}
               festivals={festivals}
               promptText="Festival gian hàng tham gia"
             />
+            {form.formState.errors.festival && (
+              <p className="text-sm font-medium text-destructive mt-1">{form.formState.errors.festival.message}</p>
+            )}
           </div>
         </div>
 

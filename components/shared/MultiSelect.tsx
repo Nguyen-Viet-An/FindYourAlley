@@ -76,6 +76,7 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
           onChange={onChange}
             options={categoryOptions} // use controlled options so updates propagate
           placeholder={promptText}
+          className="bg-grey-50 dark:bg-muted rounded-full"
           emptyIndicator={
             <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
               Không tìm thấy tag.

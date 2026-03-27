@@ -29,7 +29,7 @@ export const eventFormSchema = z.object({
   extraTag: z.array(z.string()).optional(),
   // isFree: z.boolean(),
   url: z.string().optional(),
-  festival: z.array(z.string()).optional().default([]),
+  festival: z.array(z.string()).min(1, "Vui lòng chọn ít nhất một festival"),
   featuredProductImageUrl: z.string().optional().default(""),
   featuredProductDescription: z.string().max(200, "Tối đa 200 ký tự").optional().default(""),
   dealBadge: z.string().max(30, "Tối đa 30 ký tự").optional().default(""),
@@ -47,7 +47,7 @@ export const ocCardFormSchema = z.object({
       description: z.string().max(200, "Tối đa 200 ký tự").optional().default(""),
     })
   ).min(1, "Cần ít nhất một OC card"),
-  festival: z.array(z.string()).optional().default([]),
+  festival: z.array(z.string()).min(1, "Vui lòng chọn ít nhất một festival"),
   eventTime: z.string().max(200).optional().default(""),
   location: z.string().max(300).optional().default(""),
   appearanceText: z.string().max(300).optional().default(""),

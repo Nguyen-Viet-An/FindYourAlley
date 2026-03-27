@@ -22,6 +22,7 @@ const FestivalMultiSelect = ({ value, onChange, festivals, promptText }: Festiva
       onChange={onChange}
       options={festivalOptions}
       placeholder={promptText || "Chọn festival"}
+      className="bg-grey-50 dark:bg-muted rounded-full"
       emptyIndicator={
         <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
           Không tìm thấy festival.
