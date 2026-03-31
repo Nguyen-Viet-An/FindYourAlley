@@ -305,3 +305,61 @@ export function extractAllBoothCodes(title: string): string[] {
   const parsed = parseBooth(title);
   return parsed ? parsed.codes : [];
 }
+
+/**
+ * Expand a boothNumber string (e.g. "D24-25", "C3-C4", "A1") into individual codes
+ */
+export function expandBoothNumber(boothNumber: string): string[] {
+  if (!boothNumber) return [];
+  const trimmed = boothNumber.trim().toUpperCase();
+
+  // Single code: "A1", "F15"
+  const singleMatch = trimmed.match(/^([A-Z]{1,2})(\d+)$/);
+  if (singleMatch) return [trimmed];
+
+  // Range with same section: "D24-25"
+  const compactRange = trimmed.match(/^([A-Z]{1,2})(\d+)-(\d+)$/);
+  if (compactRange) {
+    const [, section, startStr, endStr] = compactRange;
+    const start = parseInt(startStr, 10);
+    const end = parseInt(endStr, 10);
+    if (start <= end && end - start <= 20) {
+      return Array.from({ length: end - start + 1 }, (_, i) => `${section}${start + i}`);
+    }
+  }
+
+  // Range with repeated section: "C3-C4", "E35-E36"
+  const fullRange = trimmed.match(/^([A-Z]{1,2})(\d+)-([A-Z]{1,2})(\d+)$/);
+  if (fullRange) {
+    const [, s1, n1, s2, n2] = fullRange;
+    if (s1 === s2) {
+      const start = parseInt(n1, 10);
+      const end = parseInt(n2, 10);
+      if (start <= end && end - start <= 20) {
+        return Array.from({ length: end - start + 1 }, (_, i) => `${s1}${start + i}`);
+      }
+    }
+    return [`${s1}${n1}`, `${s2}${n2}`];
+  }
+
+  // Comma-separated: "A1,A2" or "K25,26"
+  if (trimmed.includes(',')) {
+    const parts = trimmed.split(/,\s*/);
+    const codes: string[] = [];
+    let lastSection = '';
+    for (const p of parts) {
+      const m = p.match(/^([A-Z]{1,2})(\d+)$/);
+      if (m) {
+        lastSection = m[1];
+        codes.push(p);
+      } else if (/^\d+$/.test(p) && lastSection) {
+        codes.push(`${lastSection}${p}`);
+      }
+    }
+    return codes;
+  }
+
+  // Fallback: try to extract any code
+  const fallback = trimmed.match(/^([A-Z]{1,2}\d+)/);
+  return fallback ? [fallback[1]] : [];
+}

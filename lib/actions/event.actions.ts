@@ -11,7 +11,7 @@ import Festival from '@/lib/database/models/festival.model';
 import { handleError, normalizeTags } from '@/lib/utils'
 import mongoose from 'mongoose';
 import { Schema } from "mongoose";
-import { parseBooth } from '@/lib/utils/booth';
+import { parseBooth, expandBoothNumber } from '@/lib/utils/booth';
 
 import {
   CreateEventParams,
@@ -213,6 +213,8 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
     );
 
     revalidatePath(path);
+    revalidatePath('/');
+    revalidatePath('/map');
     return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
     handleError(error);
@@ -279,6 +281,8 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     );
 
     revalidatePath(path);
+    revalidatePath('/');
+    revalidatePath('/map');
     return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
     handleError(error);
@@ -326,6 +330,8 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
       }
 
       revalidatePath(path)
+      revalidatePath('/')
+      revalidatePath('/map')
     }
   } catch (error) {
     handleError(error)
@@ -658,27 +664,39 @@ export async function getUniqueEventTitleCount(festivalIds?: string[]) {
   if (festivalIds?.length) {
     filter.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
   }
-  const events = await Event.find(filter, 'title').lean();
+  const events = await Event.find(filter, 'title boothNumbers').lean();
 
   const uniqueCodes = new Set<string>();
 
   for (const event of events) {
-    const title = event.title || '';
+    const bn = (event as any).boothNumbers as { festival?: any; boothNumber?: string }[] | undefined;
 
-    // 1. Find all alpha+numeric booth codes (e.g., A11, Q22)
+    // Prefer boothNumbers field
+    if (bn && Array.isArray(bn) && bn.length > 0) {
+      const relevant = festivalIds?.length
+        ? bn.filter(b => b.boothNumber && festivalIds.some(fid => b.festival?.toString() === fid))
+        : bn.filter(b => b.boothNumber);
+
+      for (const b of relevant) {
+        const expanded = expandBoothNumber(b.boothNumber!);
+        expanded.forEach(c => uniqueCodes.add(c.toUpperCase()));
+      }
+      if (relevant.length > 0) continue;
+    }
+
+    // Fallback: parse from title
+    const title = event.title || '';
     const alphaNumMatches = title.match(/[A-Z]+\d+/gi) || [];
     for (const m of alphaNumMatches) {
       uniqueCodes.add(m.toUpperCase());
     }
 
-    // 2. Handle shorthand "A11-12" → expand to A12 as well
     const shorthandRegex = /([A-Z]+)(\d+)\s*-\s*(\d+)(?=[^A-Za-z\d]|$)/gi;
     let match;
     while ((match = shorthandRegex.exec(title)) !== null) {
       uniqueCodes.add(match[1].toUpperCase() + match[3]);
     }
 
-    // 3. If no alpha codes found in this title, try pure numeric (e.g., "48 - name")
     if (alphaNumMatches.length === 0) {
       const leadingNums = title.match(/^[\d\s,\-]+/);
       if (leadingNums) {
@@ -1052,20 +1070,58 @@ export async function getBoothEventMap(festivalId?: string, festivalDay?: number
     if (festivalDay) {
       filter.attendDays = festivalDay;
     }
-    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder attendDays').lean();
+    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder attendDays boothNumbers').lean();
 
     const boothEvents: { [boothCode: string]: any[] } = {};
 
-    // First pass: collect all events by booth code
+    // First pass: collect all events by booth code using boothNumbers field
     for (const event of events) {
-      const parsed = parseBooth(event.title);
-      if (!parsed) continue;
+      const bn = (event as any).boothNumbers as { festival?: any; boothNumber?: string }[] | undefined;
+
+      // Determine codes and label from boothNumbers (preferred) or title fallback
+      let codes: string[] = [];
+      let label = '';
+      let boothName = '';
+
+      if (bn && Array.isArray(bn) && bn.length > 0) {
+        // Use boothNumbers field — filter to matching festival if festivalId provided
+        const relevant = festivalId
+          ? bn.filter(b => b.festival?.toString() === festivalId && b.boothNumber)
+          : bn.filter(b => b.boothNumber);
+
+        for (const b of relevant) {
+          const expanded = expandBoothNumber(b.boothNumber!);
+          codes.push(...expanded);
+        }
+        label = relevant.map(b => b.boothNumber).join(', ');
+        // Derive booth name by stripping booth codes from title
+        boothName = event.title || '';
+        for (const b of relevant) {
+          if (b.boothNumber) {
+            const code = b.boothNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            boothName = boothName
+              .replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '')
+              .replace(new RegExp(`\\s*[-–—|_:]\\s*\\(?${code}\\)?\\s*$`, 'i'), '')
+              .trim();
+          }
+        }
+        boothName = boothName || event.title || '';
+      }
+
+      // Fallback to title parsing if boothNumbers didn't yield codes
+      if (codes.length === 0) {
+        const parsed = parseBooth(event.title);
+        if (!parsed) continue;
+        codes = parsed.codes;
+        label = parsed.label;
+        boothName = parsed.boothName;
+      }
 
       const eventData = {
-        eventId: (event._id as  Schema.Types.ObjectId).toString(),
+        eventId: (event._id as Schema.Types.ObjectId).toString(),
         title: event.title,
-        boothLabel: parsed.label,
-        boothName: parsed.boothName,
+        boothLabel: label,
+        boothName: boothName,
         images: event.images?.map((img: any) => img.imageUrl).filter(Boolean) || [],
         hasPreorder: event.hasPreorder === 'Yes',
         startDateTime: event.startDateTime,
@@ -1073,7 +1129,7 @@ export async function getBoothEventMap(festivalId?: string, festivalDay?: number
       };
 
       // Add event to each booth code it belongs to
-      for (const code of parsed.codes) {
+      for (const code of codes) {
         if (!boothEvents[code]) {
           boothEvents[code] = [];
         }
