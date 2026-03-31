@@ -11,7 +11,9 @@ type GalleryPageProps = {
 export default async function GalleryPage({ searchParams }: GalleryPageProps) {
   const params = await searchParams;
   const festivals = await getFestivals(true);
-  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
+  const festivalCode = (params?.festival as string) || festivals[0]?.code || undefined;
+  const festival = festivals.find((f: any) => f.code === festivalCode) || festivals[0];
+  const festivalId = festival?._id;
   const festivalIds = festivalId ? [festivalId] : [];
 
   // Fetch a large batch for the gallery

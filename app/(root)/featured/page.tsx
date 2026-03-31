@@ -11,7 +11,9 @@ type FeaturedPageProps = {
 export default async function FeaturedPage({ searchParams }: FeaturedPageProps) {
   const params = await searchParams;
   const festivals = await getFestivals(true);
-  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
+  const festivalCode = (params?.festival as string) || festivals[0]?.code || undefined;
+  const festival = festivals.find((f: any) => f.code === festivalCode) || festivals[0];
+  const festivalId = festival?._id;
   const festivalIds = festivalId ? [festivalId] : [];
 
   const events = await getFeaturedProducts(festivalIds);

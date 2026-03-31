@@ -19,14 +19,14 @@ export default function FestivalFilter({ festivals }: FestivalFilterProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const selectedFestivalId = searchParams.get('festivalId') || (festivals[0]?._id || '');
+  const selectedCode = searchParams.get('festival') || (festivals[0]?.code || '');
 
-  const selectedFestival = festivals.find(f => f._id === selectedFestivalId);
+  const selectedFestival = festivals.find(f => f.code === selectedCode);
   const displayValue = selectedFestival ? (selectedFestival.code || selectedFestival.name) : (festivals[0]?.code || festivals[0]?.name || '');
 
-  const onSelect = (id: string) => {
+  const onSelect = (code: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('festivalId', id);
+    params.set('festival', code);
     params.delete('page');
     params.delete('festivalDay');
     setIsLoading(true);
@@ -57,7 +57,7 @@ export default function FestivalFilter({ festivals }: FestivalFilterProps) {
       <PopoverContent className="w-full p-0">
         <div className="max-h-72 overflow-y-auto">
           {filteredFestivals.map(f => {
-            const active = selectedFestivalId === f._id;
+            const active = selectedCode === f.code;
             return (
               <div
                 key={f._id}
@@ -65,7 +65,7 @@ export default function FestivalFilter({ festivals }: FestivalFilterProps) {
                   'relative flex cursor-default select-none items-center gap-1 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
                   active ? 'bg-accent text-accent-foreground' : ''
                 )}
-                onClick={() => onSelect(f._id)}
+                onClick={() => onSelect(f.code || f.name)}
               >
                 <Check className={cn('h-4 w-4', active ? 'opacity-100' : 'opacity-0')} />
                 <span>{f.code || f.name}</span>

@@ -1,9 +1,9 @@
 import { getPopularFandoms, getPopularItemTypes, getPopularExtraTags, getRarestFandoms, getRarestItemTypes, getMostBookmarkedEvents } from "@/lib/actions/event.actions";
 import { getFestivals } from "@/lib/actions/festival.actions";
 import StatsCharts from "@/components/shared/StatsCharts";
-import Link from "next/link";
 
 export const revalidate = 60;
+import Link from "next/link";
 
 type StatsPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -12,9 +12,11 @@ type StatsPageProps = {
 export default async function StatsPage({ searchParams }: StatsPageProps) {
   const params = await searchParams;
   const festivals = await getFestivals(true);
-  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
+  const festivalCode = (params?.festival as string) || festivals[0]?.code || undefined;
+  const festival = festivals.find((f: any) => f.code === festivalCode) || festivals[0];
+  const festivalId = festival?._id;
   const festivalIds = festivalId ? [festivalId] : undefined;
-  const festivalName = festivals.find((f: any) => f._id === festivalId)?.code || festivals.find((f: any) => f._id === festivalId)?.name || '';
+  const festivalName = festival?.code || festival?.name || '';
 
   const [fandoms, itemTypes, rawTags, rareFandoms, rareItemTypes, mostBookmarked] = await Promise.all([
     getPopularFandoms(10, festivalIds),

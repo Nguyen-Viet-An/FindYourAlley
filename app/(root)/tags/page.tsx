@@ -11,7 +11,9 @@ type TagsPageProps = {
 export default async function TagsPage({ searchParams }: TagsPageProps) {
   const params = await searchParams;
   const festivals = await getFestivals(true);
-  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
+  const festivalCode = (params?.festival as string) || festivals[0]?.code || undefined;
+  const festival = festivals.find((f: any) => f.code === festivalCode) || festivals[0];
+  const festivalId = festival?._id;
   const festivalIds = festivalId ? [festivalId] : undefined;
   const tags = await getAllExtraTags(festivalIds);
 
@@ -22,7 +24,7 @@ export default async function TagsPage({ searchParams }: TagsPageProps) {
         {tags.map((tag: string) => (
           <Link
             key={tag}
-            href={`/tags/${encodeURIComponent(tag)}${festivalId ? `?festivalId=${festivalId}` : ''}`}
+            href={`/tags/${encodeURIComponent(tag)}${festivalCode ? `?festival=${festivalCode}` : ''}`}
             className="px-3 py-1 bg-primary-100 rounded-full bg-primary-500 hover:bg-primary-400"
           >
             {tag}

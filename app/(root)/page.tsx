@@ -61,9 +61,12 @@ export default async function Home({ searchParams }: SearchParamProps) {
 
   // await ensureDefaultFestival();
   const festivals = await getFestivals(true);
-  const rawFestivalParam = params?.festivalId;
-  const selectedFestivalIds: string[] = rawFestivalParam
+  const rawFestivalParam = params?.festival;
+  const festivalCodes: string[] = rawFestivalParam
     ? (Array.isArray(rawFestivalParam) ? rawFestivalParam : String(rawFestivalParam).split(',').filter(Boolean))
+    : [];
+  const selectedFestivalIds: string[] = festivalCodes.length > 0
+    ? festivalCodes.map(code => festivals.find((f: any) => f.code === code)?._id).filter(Boolean)
     : (festivals[0]?._id ? [festivals[0]._id] : []);
 
   // Day filter for multi-day festivals
@@ -90,7 +93,8 @@ export default async function Home({ searchParams }: SearchParamProps) {
     getUniqueEventTitleCount(selectedFestivalIds),
   ]);
 
-  const selectedFestivalParam = selectedFestivalIds[0] ? `?festivalId=${selectedFestivalIds[0]}` : '';
+  const selectedFestivalCode = selectedFestival?.code || '';
+  const selectedFestivalParam = selectedFestivalCode ? `?festival=${selectedFestivalCode}` : '';
 
   return (
     <>

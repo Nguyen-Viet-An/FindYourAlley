@@ -7,10 +7,10 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function ArtistsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const festivalId = params?.festivalId;
-  const festivalIds = festivalId
-    ? (Array.isArray(festivalId) ? festivalId : [festivalId])
-    : undefined;
+  const festivals = (await (await import('@/lib/actions/festival.actions')).getFestivals(true)) || [];
+  const festivalCode = params?.festival as string | undefined;
+  const festival = festivalCode ? festivals.find((f: any) => f.code === festivalCode) : festivals[0];
+  const festivalIds = festival?._id ? [festival._id] : undefined;
 
   const artists = await getAllArtists(festivalIds);
 

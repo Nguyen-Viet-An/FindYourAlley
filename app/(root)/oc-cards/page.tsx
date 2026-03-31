@@ -17,15 +17,16 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
   const params = await searchParams;
   const query = (params?.query as string) || "";
   const sortBy = (params?.sortBy as string) || "newest";
-  const festivalId = (params?.festivalId as string) || undefined;
+  const festivalCode = (params?.festival as string) || undefined;
 
   const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
 
-  const [cards, festivals] = await Promise.all([
-    getAllOcCards({ query, sortBy, festivalId }),
-    getFestivals(),
-  ]);
+  const festivals = await getFestivals();
+  const festival = festivalCode ? festivals?.find((f: any) => f.code === festivalCode) : undefined;
+  const festivalId = festival?._id;
+
+  const cards = await getAllOcCards({ query, sortBy, festivalId });
 
   // Flatten cards into per-image items (filter out invalid cards)
   const flatItems: { card: any; imageIndex: number; cardIndex: number }[] = [];

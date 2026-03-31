@@ -1,5 +1,5 @@
 import { getBoothEventMap, getUniqueEventTitleCount } from '@/lib/actions/event.actions';
-import { getFestivals, getFestivalById } from '@/lib/actions/festival.actions';
+import { getFestivals } from '@/lib/actions/festival.actions';
 import InteractiveFloorplan from '@/components/shared/InteractiveFloorplan';
 import DayFilter from '@/components/shared/DayFilter';
 import { hasRegisteredLayout } from '@/lib/utils/boothLayout';
@@ -21,8 +21,9 @@ type MapPageProps = {
 export default async function FloorplanPage({ searchParams }: MapPageProps) {
   const params = await searchParams;
   const festivals = await getFestivals(true);
-  const festivalId = (params?.festivalId as string) || festivals[0]?._id || undefined;
-  const festival = festivalId ? await getFestivalById(festivalId) : null;
+  const festivalCode = (params?.festival as string) || festivals[0]?.code || undefined;
+  const festival = festivals.find((f: any) => f.code === festivalCode) || festivals[0] || null;
+  const festivalId = festival?._id;
 
   // Day filter for multi-day festivals
   const festivalDayParam = params?.festivalDay ? Number(params.festivalDay) : undefined;

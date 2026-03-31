@@ -136,7 +136,7 @@ const EventDetails = async (props: {
                       return (
                         <Link
                           key={f._id}
-                          href={`/?festivalId=${f._id}`}
+                          href={`/?festival=${f.code || f.name}`}
                           className="p-medium-14 rounded-full bg-violet-500/15 px-4 py-1.5 text-violet-600 dark:text-violet-400 font-semibold hover:bg-violet-500/25 transition-colors"
                         >
                           {f.code || f.name}{booth ? ` • ${booth}` : ''}
