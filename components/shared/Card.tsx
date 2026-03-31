@@ -59,12 +59,22 @@ export default async function Card({
   // Strip booth code from title if we're prepending it, to avoid duplication like "D31 - D31 - Name"
   let cleanTitle = displayTitle;
   if (boothEntry?.boothNumber) {
-    const code = boothEntry.boothNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // Strip from start: "D31 - Name" or "[D31] Name" or "(D31) Name"
-    cleanTitle = cleanTitle.replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '');
-    // Strip from end: "Name - D31" or "Name | D31"
-    cleanTitle = cleanTitle.replace(new RegExp(`\\s*[-–—|]\\s*${code}\\s*$`, 'i'), '');
+    // Handle comma-separated booth numbers like "F15, F16"
+    const codes = boothEntry.boothNumber.split(/\s*,\s*/);
+    for (const rawCode of codes) {
+      const code = rawCode.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (!code) continue;
+      // Strip from start: "D31 - Name" or "[D31] Name" or "(D31) Name"
+      cleanTitle = cleanTitle.replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '');
+      // Strip from end: "Name - D31" or "Name | D31"
+      cleanTitle = cleanTitle.replace(new RegExp(`\\s*[-–—|_:]\\s*${code}\\s*$`, 'i'), '');
+      // Also strip if code is the entire remaining string
+      if (cleanTitle.trim().toUpperCase() === rawCode.trim().toUpperCase()) cleanTitle = '';
+    }
+    cleanTitle = cleanTitle.trim();
   }
+  // If stripping removed everything, use original title
+  if (!cleanTitle) cleanTitle = displayTitle;
   const fullDisplayTitle = `${boothPrefix}${cleanTitle}`;
 
   const currentCategory = imageToDisplay.category && imageToDisplay.category.length > 0

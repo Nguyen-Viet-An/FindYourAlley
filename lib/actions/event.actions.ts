@@ -349,7 +349,13 @@ export const getSearchSuggestions = unstable_cache(
         if (Array.isArray((e as any).boothNumbers)) {
           for (const bn of (e as any).boothNumbers) {
             if (bn.boothNumber) {
-              const val = `${bn.boothNumber} - ${e.title}`;
+              // Strip booth code from title to avoid "F15 - PHYSOART - F15"
+              const code = bn.boothNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              let clean = e.title
+                .replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '')
+                .replace(new RegExp(`\\s*[-–—|_:]\\s*${code}\\s*$`, 'i'), '')
+                .trim() || e.title;
+              const val = `${bn.boothNumber} - ${clean}`;
               const key = `boothnum:${val.toLowerCase()}`;
               if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'booth', value: val }); }
             }
