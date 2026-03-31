@@ -309,13 +309,18 @@ export function extractAllBoothCodes(title: string): string[] {
 /**
  * Expand a boothNumber string (e.g. "D24-25", "C3-C4", "A1") into individual codes
  */
+/** Normalize a booth code by stripping leading zeros from the number part */
+function normalizeCode(code: string): string {
+  return code.replace(/^([A-Z]{1,2})0+(\d)/, '$1$2');
+}
+
 export function expandBoothNumber(boothNumber: string): string[] {
   if (!boothNumber) return [];
   const trimmed = boothNumber.trim().toUpperCase();
 
-  // Single code: "A1", "F15"
+  // Single code: "A1", "F15", "P01" -> "P1"
   const singleMatch = trimmed.match(/^([A-Z]{1,2})(\d+)$/);
-  if (singleMatch) return [trimmed];
+  if (singleMatch) return [normalizeCode(trimmed)];
 
   // Range with same section: "D24-25"
   const compactRange = trimmed.match(/^([A-Z]{1,2})(\d+)-(\d+)$/);
@@ -324,7 +329,7 @@ export function expandBoothNumber(boothNumber: string): string[] {
     const start = parseInt(startStr, 10);
     const end = parseInt(endStr, 10);
     if (start <= end && end - start <= 20) {
-      return Array.from({ length: end - start + 1 }, (_, i) => `${section}${start + i}`);
+      return Array.from({ length: end - start + 1 }, (_, i) => normalizeCode(`${section}${start + i}`));
     }
   }
 
@@ -336,10 +341,10 @@ export function expandBoothNumber(boothNumber: string): string[] {
       const start = parseInt(n1, 10);
       const end = parseInt(n2, 10);
       if (start <= end && end - start <= 20) {
-        return Array.from({ length: end - start + 1 }, (_, i) => `${s1}${start + i}`);
+        return Array.from({ length: end - start + 1 }, (_, i) => normalizeCode(`${s1}${start + i}`));
       }
     }
-    return [`${s1}${n1}`, `${s2}${n2}`];
+    return [normalizeCode(`${s1}${n1}`), normalizeCode(`${s2}${n2}`)];
   }
 
   // Comma-separated: "A1,A2" or "K25,26"
@@ -351,9 +356,9 @@ export function expandBoothNumber(boothNumber: string): string[] {
       const m = p.match(/^([A-Z]{1,2})(\d+)$/);
       if (m) {
         lastSection = m[1];
-        codes.push(p);
+        codes.push(normalizeCode(p));
       } else if (/^\d+$/.test(p) && lastSection) {
-        codes.push(`${lastSection}${p}`);
+        codes.push(normalizeCode(`${lastSection}${p}`));
       }
     }
     return codes;
@@ -361,5 +366,5 @@ export function expandBoothNumber(boothNumber: string): string[] {
 
   // Fallback: try to extract any code
   const fallback = trimmed.match(/^([A-Z]{1,2}\d+)/);
-  return fallback ? [fallback[1]] : [];
+  return fallback ? [normalizeCode(fallback[1])] : [];
 }

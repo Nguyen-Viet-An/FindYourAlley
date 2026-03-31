@@ -1070,7 +1070,7 @@ export async function getBoothEventMap(festivalId?: string, festivalDay?: number
     if (festivalDay) {
       filter.attendDays = festivalDay;
     }
-    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder attendDays boothNumbers').lean();
+    const events = await Event.find(filter, 'title images startDateTime endDateTime hasPreorder attendDays boothNumbers attendDays').lean();
 
     const boothEvents: { [boothCode: string]: any[] } = {};
 
@@ -1125,7 +1125,8 @@ export async function getBoothEventMap(festivalId?: string, festivalDay?: number
         images: event.images?.map((img: any) => img.imageUrl).filter(Boolean) || [],
         hasPreorder: event.hasPreorder === 'Yes',
         startDateTime: event.startDateTime,
-        endDateTime: event.endDateTime
+        endDateTime: event.endDateTime,
+        attendDays: (event as any).attendDays as number[] | undefined
       };
 
       // Add event to each booth code it belongs to

@@ -883,10 +883,16 @@ export default function InteractiveFloorplan({
         >
           <div className="flex flex-col gap-3">
             <div>
-              <h4 className={`font-semibold text-sm line-clamp-2 ${
+              <h4 className={`font-semibold text-sm ${
                 hoveredBooth.isEmptyBooth ? 'text-gray-700' : 'text-gray-900'
               }`}>
-                {hoveredBooth.title}
+                {hoveredBooth.title.includes('\n') ? (
+                  hoveredBooth.title.split('\n').map((line, i) => (
+                    <div key={i} className="line-clamp-1">{line}</div>
+                  ))
+                ) : (
+                  <span className="line-clamp-2">{hoveredBooth.title}</span>
+                )}
               </h4>
               <p className="text-xs text-gray-600 mt-1">
                 Vị trí gian: {hoveredBooth.boothLabel}
@@ -951,7 +957,15 @@ export default function InteractiveFloorplan({
                 {focusedBooth.boothName && (
                   <div>
                     <span className="font-medium text-gray-700">Tên gian:</span>
-                    <span className="ml-2 text-gray-900">{focusedBooth.boothName}</span>
+                    {focusedBooth.boothName.includes('\n') ? (
+                      <div className="mt-1 space-y-1">
+                        {focusedBooth.boothName.split('\n').map((line, i) => (
+                          <div key={i} className="text-gray-900 text-sm">{line}</div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="ml-2 text-gray-900">{focusedBooth.boothName}</span>
+                    )}
                   </div>
                 )}
 
@@ -962,9 +976,12 @@ export default function InteractiveFloorplan({
                       {focusedBooth.allEvents.map((event, index) => (
                         <div key={event.eventId} className="border border-gray-200 rounded p-2 text-sm">
                           <h4 className="font-medium text-gray-900 line-clamp-1">{event.title}</h4>
+                          {event.attendDays && event.attendDays.length > 0 && (
+                            <span className="text-xs text-gray-500">Ngày {event.attendDays.join(', ')}</span>
+                          )}
                           <a
                             href={`/events/${event.eventId}`}
-                            className="text-xs text-blue-600 hover:text-blue-800 underline"
+                            className="text-xs text-blue-600 hover:text-blue-800 underline ml-1"
                           >
                             Chi tiết
                           </a>

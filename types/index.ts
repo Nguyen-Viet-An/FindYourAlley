@@ -206,6 +206,7 @@ export type CreateUserParams = {
     hasPreorder: boolean;
     startDateTime?: Date;
     endDateTime?: Date;
+    attendDays?: number[];
   }
 
   export type ParsedBooth = {

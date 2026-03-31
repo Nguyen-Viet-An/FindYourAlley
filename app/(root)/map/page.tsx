@@ -58,9 +58,24 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
         if (dayKey && parsed[dayKey]) {
           boothNamesData = parsed[dayKey];
         } else {
-          // No day selected — merge all days (first day's value wins on conflicts)
-          for (const day of Object.keys(parsed).sort()) {
-            boothNamesData = { ...parsed[day], ...boothNamesData };
+          // No day selected — merge all days with day labels for different names
+          const days = Object.keys(parsed).sort();
+          const codesByDay: Record<string, Record<string, string>> = {};
+          for (const day of days) {
+            for (const [code, name] of Object.entries(parsed[day] as Record<string, string>)) {
+              if (!codesByDay[code]) codesByDay[code] = {};
+              codesByDay[code][day] = name;
+            }
+          }
+          for (const [code, dayNames] of Object.entries(codesByDay)) {
+            const uniqueNames = [...new Set(Object.values(dayNames))];
+            if (uniqueNames.length === 1) {
+              boothNamesData[code] = uniqueNames[0];
+            } else {
+              boothNamesData[code] = Object.entries(dayNames)
+                .map(([day, name]) => `Ngày ${day}: ${name}`)
+                .join('\n');
+            }
           }
         }
       } else {
@@ -89,7 +104,7 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
     <div className="wrapper my-8">
       <div className="flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="h2-bold">Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
+          <h1 className="h2-bold">🗺️ Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
           <p className="text-gray-600 dark:text-muted-foreground mt-2">
             Di chuột qua các gian để xem sample, click để xem chi tiết
           </p>
