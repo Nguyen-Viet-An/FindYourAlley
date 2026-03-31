@@ -68,6 +68,19 @@ export default function InteractiveFloorplan({
   const lastTouchDist = useRef<number | null>(null);
   const lastTouchCenter = useRef<{ x: number; y: number } | null>(null);
   const isZoomed = useRef(false);
+  const lastTouchTime = useRef(0);
+  const [isZoomedState, setIsZoomedState] = useState(false);
+
+  const updateIsZoomed = (val: boolean) => {
+    isZoomed.current = val;
+    setIsZoomedState(val);
+  };
+
+  // Sync isZoomedState with viewBox changes
+  useEffect(() => {
+    const zoomed = Math.abs(viewBox.w - initialViewBox.w) > 1 || Math.abs(viewBox.h - initialViewBox.h) > 1;
+    setIsZoomedState(zoomed);
+  }, [viewBox, initialViewBox]);
 
   // Generate booth layout
   useEffect(() => {
@@ -228,6 +241,7 @@ export default function InteractiveFloorplan({
       isPanning.current = false;
       lastTouchDist.current = null;
       lastTouchCenter.current = null;
+      lastTouchTime.current = Date.now();
     };
 
     svg.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -242,7 +256,8 @@ export default function InteractiveFloorplan({
 
   // Pan with mouse drag
   const handlePanStart = (e: React.MouseEvent) => {
-    // Only start pan on middle-click or when holding space, but also allow left-click drag
+    // Skip synthetic mouse events after touch
+    if (Date.now() - lastTouchTime.current < 500) return;
     if (e.button === 0) {
       isPanning.current = true;
       hasDragged.current = false;
@@ -604,7 +619,7 @@ export default function InteractiveFloorplan({
         ref={svgRef}
         viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
         className="border rounded-lg w-full max-w-none mx-auto cursor-grab active:cursor-grabbing bg-gray-50 dark:bg-gray-900"
-        style={{ touchAction: isZoomed.current ? 'none' : 'pan-y' }}
+        style={{ touchAction: isZoomedState ? 'none' : 'manipulation' }}
         preserveAspectRatio="xMidYMid meet"
         onMouseDown={handlePanStart}
         onMouseMove={(e) => { handlePanMove(e); handleMouseMove(e); }}
