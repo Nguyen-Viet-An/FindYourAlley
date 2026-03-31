@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BoothEventMap } from '@/types';
 import { BoothPosition } from '@/lib/utils/floormap';
-import { generateBoothLayout } from '@/lib/utils/boothLayout';
+import { getFestivalLayout, FestivalLayout, DEFAULT_SECTION_COLOR } from '@/lib/utils/boothLayout';
 import ImageCarousel from '@/components/shared/ImageCarousel';
 
 interface StampRally {
@@ -19,6 +19,7 @@ interface InteractiveFloorplanProps {
   xmlContent: string;
   boothNames: { [key: string]: string };
   stampRallies: StampRally[];
+  festivalCode?: string;
 }
 
 interface HoverData {
@@ -40,8 +41,10 @@ export default function InteractiveFloorplan({
   boothMap,
   xmlContent,
   boothNames,
-  stampRallies
+  stampRallies,
+  festivalCode
 }: InteractiveFloorplanProps) {
+  const [layout, setLayout] = useState<FestivalLayout | null>(null);
   const [booths, setBooths] = useState<BoothPosition[]>([]);
   const [hoveredBooth, setHoveredBooth] = useState<HoverData | null>(null);
   const [focusedBooth, setFocusedBooth] = useState<HoverData | null>(null);
@@ -53,19 +56,38 @@ export default function InteractiveFloorplan({
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('booth');
   const [isMobile, setIsMobile] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
+
+  // Zoom & pan state
+  const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: 7100, h: 2700 });
+  const [initialViewBox, setInitialViewBox] = useState({ x: 0, y: 0, w: 7100, h: 2700 });
+  const isPanning = useRef(false);
+  const panStart = useRef({ x: 0, y: 0 });
+  const hasDragged = useRef(false);
+  const lastTouchDist = useRef<number | null>(null);
+  const lastTouchCenter = useRef<{ x: number; y: number } | null>(null);
+  const isZoomed = useRef(false);
 
   // Generate booth layout
   useEffect(() => {
     try {
-      const generatedBooths = generateBoothLayout();
-      setBooths(generatedBooths);
+      const festivalLayout = getFestivalLayout(festivalCode);
+      setLayout(festivalLayout);
+      setBooths(festivalLayout.booths);
+
+      // Parse viewBox string into numeric values
+      const parts = (festivalLayout.viewBox ?? '0 0 7100 2700').split(/\s+/).map(Number);
+      const vb = { x: parts[0], y: parts[1], w: parts[2], h: parts[3] };
+      setViewBox(vb);
+      setInitialViewBox(vb);
+
       setLoading(false);
     } catch (error) {
       console.error('Error generating booth layout:', error);
       setLoading(false);
     }
-  }, []);
+  }, [festivalCode]);
 
   // Detect mobile device
   useEffect(() => {
@@ -77,6 +99,195 @@ export default function InteractiveFloorplan({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Detect dark mode
+  useEffect(() => {
+    const html = document.documentElement;
+    setIsDark(html.classList.contains('dark'));
+
+    const observer = new MutationObserver(() => {
+      setIsDark(html.classList.contains('dark'));
+    });
+    observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  // Zoom with mouse wheel
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+
+      // Get cursor position in SVG coordinates
+      const rect = svg.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) / rect.width;
+      const my = (e.clientY - rect.top) / rect.height;
+
+      setViewBox(prev => {
+        const newW = prev.w * zoomFactor;
+        const newH = prev.h * zoomFactor;
+        // Don't zoom out beyond 2x the initial size
+        if (newW > initialViewBox.w * 2 || newH > initialViewBox.h * 2) return prev;
+        // Don't zoom in beyond 10% of initial
+        if (newW < initialViewBox.w * 0.1) return prev;
+        const next = {
+          x: prev.x + (prev.w - newW) * mx,
+          y: prev.y + (prev.h - newH) * my,
+          w: newW,
+          h: newH,
+        };
+        isZoomed.current = Math.abs(next.w - initialViewBox.w) > 1 || Math.abs(next.h - initialViewBox.h) > 1;
+        return next;
+      });
+    };
+
+    svg.addEventListener('wheel', handleWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', handleWheel);
+  }, [initialViewBox]);
+
+  // Touch zoom/pan (pinch + drag)
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const getTouchDist = (t: TouchList) => {
+      const dx = t[0].clientX - t[1].clientX;
+      const dy = t[0].clientY - t[1].clientY;
+      return Math.hypot(dx, dy);
+    };
+    const getTouchCenter = (t: TouchList) => ({
+      x: (t[0].clientX + t[1].clientX) / 2,
+      y: (t[0].clientY + t[1].clientY) / 2,
+    });
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        lastTouchDist.current = getTouchDist(e.touches);
+        lastTouchCenter.current = getTouchCenter(e.touches);
+      } else if (e.touches.length === 1 && isZoomed.current) {
+        // Only capture single-finger drag when zoomed in; otherwise let the page scroll
+        e.preventDefault();
+        isPanning.current = true;
+        hasDragged.current = false;
+        panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && lastTouchDist.current !== null) {
+        e.preventDefault();
+        const newDist = getTouchDist(e.touches);
+        const zoomFactor = lastTouchDist.current / newDist;
+
+        const rect = svg.getBoundingClientRect();
+        const center = getTouchCenter(e.touches);
+        const mx = (center.x - rect.left) / rect.width;
+        const my = (center.y - rect.top) / rect.height;
+
+        // Pan from center movement
+        const prevCenter = lastTouchCenter.current!;
+        const dx = (prevCenter.x - center.x) / rect.width;
+        const dy = (prevCenter.y - center.y) / rect.height;
+
+        setViewBox(prev => {
+          const newW = Math.max(initialViewBox.w * 0.1, Math.min(initialViewBox.w * 2, prev.w * zoomFactor));
+          const newH = Math.max(initialViewBox.h * 0.1, Math.min(initialViewBox.h * 2, prev.h * zoomFactor));
+          const next = {
+            x: prev.x + (prev.w - newW) * mx + dx * prev.w,
+            y: prev.y + (prev.h - newH) * my + dy * prev.h,
+            w: newW,
+            h: newH,
+          };
+          isZoomed.current = Math.abs(next.w - initialViewBox.w) > 1 || Math.abs(next.h - initialViewBox.h) > 1;
+          return next;
+        });
+
+        lastTouchDist.current = newDist;
+        lastTouchCenter.current = center;
+      } else if (e.touches.length === 1 && isPanning.current) {
+        e.preventDefault();
+        const rect = svg.getBoundingClientRect();
+        const dx = (panStart.current.x - e.touches[0].clientX) / rect.width;
+        const dy = (panStart.current.y - e.touches[0].clientY) / rect.height;
+        if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) hasDragged.current = true;
+
+        setViewBox(prev => ({
+          ...prev,
+          x: prev.x + dx * prev.w,
+          y: prev.y + dy * prev.h,
+        }));
+        panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isPanning.current = false;
+      lastTouchDist.current = null;
+      lastTouchCenter.current = null;
+    };
+
+    svg.addEventListener('touchstart', handleTouchStart, { passive: false });
+    svg.addEventListener('touchmove', handleTouchMove, { passive: false });
+    svg.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      svg.removeEventListener('touchstart', handleTouchStart);
+      svg.removeEventListener('touchmove', handleTouchMove);
+      svg.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [initialViewBox]);
+
+  // Pan with mouse drag
+  const handlePanStart = (e: React.MouseEvent) => {
+    // Only start pan on middle-click or when holding space, but also allow left-click drag
+    if (e.button === 0) {
+      isPanning.current = true;
+      hasDragged.current = false;
+      panStart.current = { x: e.clientX, y: e.clientY };
+    }
+  };
+
+  const handlePanMove = (e: React.MouseEvent) => {
+    if (!isPanning.current || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const dx = (panStart.current.x - e.clientX) / rect.width;
+    const dy = (panStart.current.y - e.clientY) / rect.height;
+    if (Math.abs(dx) > 0.005 || Math.abs(dy) > 0.005) hasDragged.current = true;
+
+    setViewBox(prev => ({
+      ...prev,
+      x: prev.x + dx * prev.w,
+      y: prev.y + dy * prev.h,
+    }));
+    panStart.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handlePanEnd = () => {
+    isPanning.current = false;
+  };
+
+  const handleZoom = (factor: number) => {
+    setViewBox(prev => {
+      const newW = Math.max(initialViewBox.w * 0.1, Math.min(initialViewBox.w * 2, prev.w * factor));
+      const newH = Math.max(initialViewBox.h * 0.1, Math.min(initialViewBox.h * 2, prev.h * factor));
+      const next = {
+        x: prev.x + (prev.w - newW) / 2,
+        y: prev.y + (prev.h - newH) / 2,
+        w: newW,
+        h: newH,
+      };
+      isZoomed.current = Math.abs(next.w - initialViewBox.w) > 1 || Math.abs(next.h - initialViewBox.h) > 1;
+      return next;
+    });
+  };
+
+  const handleResetZoom = () => {
+    setViewBox(initialViewBox);
+    isZoomed.current = false;
+  };
 
   // Clear selected rallies when switching view modes
   useEffect(() => {
@@ -149,7 +360,7 @@ export default function InteractiveFloorplan({
   const isBoothInActiveRallies = (boothCode: string): boolean => {
     const checkRally = activeRally || hoveredRally;
     if (!checkRally) return false;
-    
+
     const expandedBooths = expandBoothCodes(checkRally.booths);
     return expandedBooths.includes(boothCode);
   };
@@ -158,31 +369,31 @@ export default function InteractiveFloorplan({
   // Determine booth opacity in rally mode
   const getBoothOpacity = (boothCode: string): number => {
     if (viewMode !== 'rally') return 1;
-    
+
     // If rallies are selected (filtered mode), check against selected rallies
     if (selectedRallies.length > 0) {
       const isInSelectedRallies = selectedRallies.some(rally => {
         const expandedBooths = expandBoothCodes(rally.booths);
         return expandedBooths.includes(boothCode);
       });
-      
+
       // If booth is not in any selected rally, dim it
       if (!isInSelectedRallies) return 0.2;
-      
+
       // If booth is in selected rallies and there's an active/hovered rally, apply highlighting
       if (activeRally || hoveredRally) {
         return isBoothInActiveRallies(boothCode) ? 1 : 0.2;
       }
-      
+
       // Otherwise, show all selected rally booths at full opacity
       return 1;
     }
-    
+
     // If no rallies selected, normal behavior with hover/active
     if (activeRally || hoveredRally) {
       return isBoothInActiveRallies(boothCode) ? 1 : 0.2;
     }
-    
+
     return 1;
   };
 
@@ -299,6 +510,7 @@ export default function InteractiveFloorplan({
   };
 
   const handleClick = (booth: BoothPosition) => {
+    if (hasDragged.current) return; // Suppress click after drag/pan
     if (viewMode === 'booth') {
       const boothData = boothMap[booth.code];
       if (boothData) {
@@ -325,20 +537,7 @@ export default function InteractiveFloorplan({
   };
 
   const getSectionColor = (section: string) => {
-    const colors: { [key: string]: { fill: string; stroke: string; hoverFill: string } } = {
-      'A': { fill: '#fef3c7', stroke: '#f59e0b', hoverFill: '#fde68a' },
-      'B': { fill: '#dbeafe', stroke: '#3b82f6', hoverFill: '#bfdbfe' },
-      'C': { fill: '#dcfce7', stroke: '#10b981', hoverFill: '#bbf7d0' },
-      'D': { fill: '#fce7f3', stroke: '#ec4899', hoverFill: '#fbcfe8' },
-      'E': { fill: '#e0e7ff', stroke: '#6366f1', hoverFill: '#c7d2fe' },
-      'F': { fill: '#fed7d7', stroke: '#ef4444', hoverFill: '#fecaca' },
-      'G': { fill: '#d1fae5', stroke: '#059669', hoverFill: '#a7f3d0' },
-      'H': { fill: '#fef2e2', stroke: '#f97316', hoverFill: '#fed7aa' },
-      'J': { fill: '#f3e8ff', stroke: '#8b5cf6', hoverFill: '#e9d5ff' },
-      'K': { fill: '#fdf2f8', stroke: '#d946ef', hoverFill: '#f5d0fe' },
-      'P': { fill: '#d1d5db', stroke: '#6b7280', hoverFill: '#e5e7eb' }
-    };
-    return colors[section] || { fill: '#f3f4f6', stroke: '#6b7280', hoverFill: '#e5e7eb' };
+    return layout?.sectionColors[section] ?? DEFAULT_SECTION_COLOR;
   };
 
   if (loading) {
@@ -375,18 +574,48 @@ export default function InteractiveFloorplan({
         </button>
       </div>
 
+      {/* Zoom controls */}
+      <div className="flex justify-center gap-1.5 mb-2">
+        <button
+          onClick={() => handleZoom(0.7)}
+          className="px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-muted dark:hover:bg-muted/80 text-xs font-medium"
+          title="Phóng to"
+        >
+          🔍+
+        </button>
+        <button
+          onClick={() => handleZoom(1.4)}
+          className="px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-muted dark:hover:bg-muted/80 text-xs font-medium"
+          title="Thu nhỏ"
+        >
+          🔍−
+        </button>
+        <button
+          onClick={handleResetZoom}
+          className="px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-muted dark:hover:bg-muted/80 text-xs font-medium"
+          title="Đặt lại"
+        >
+          ↺ Reset
+        </button>
+      </div>
+
       {/* SVG Floorplan */}
       <svg
         ref={svgRef}
-        viewBox="0 0 7100 2700"
-        className="border rounded-lg bg-gray-50 w-full max-w-none mx-auto"
+        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
+        className="border rounded-lg w-full max-w-none mx-auto cursor-grab active:cursor-grabbing bg-gray-50 dark:bg-gray-900"
+        style={{ touchAction: isZoomed.current ? 'none' : 'pan-y' }}
         preserveAspectRatio="xMidYMid meet"
-        onClick={handleBackgroundClick}
+        onMouseDown={handlePanStart}
+        onMouseMove={(e) => { handlePanMove(e); handleMouseMove(e); }}
+        onMouseUp={handlePanEnd}
+        onMouseLeave={handlePanEnd}
+        onClick={(e) => { if (!hasDragged.current) handleBackgroundClick(); }}
       >
         {/* Background grid */}
         <defs>
           <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
-            <path d="M 120 0 L 0 0 0 120" fill="none" stroke="#e5e7eb" strokeWidth="2" opacity="0.2"/>
+            <path d="M 120 0 L 0 0 0 120" fill="none" stroke={isDark ? '#374151' : '#e5e7eb'} strokeWidth="2" opacity="0.2"/>
           </pattern>
           <filter id="shadow">
             <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3"/>
@@ -396,17 +625,19 @@ export default function InteractiveFloorplan({
 
         {/* Section Labels */}
         <g className="section-labels">
-          <text x="800" y="2520" fontSize="80" fontWeight="bold" fill="#f59e0b" textAnchor="middle">A</text>
-          <text x="5400" y="2520" fontSize="80" fontWeight="bold" fill="#6b7280" textAnchor="middle">P</text>
-          <text x="350" y="2110" fontSize="80" fontWeight="bold" fill="#3b82f6" textAnchor="middle">B</text>
-          <text x="350" y="1710" fontSize="80" fontWeight="bold" fill="#10b981" textAnchor="middle">C</text>
-          <text x="350" y="1310" fontSize="80" fontWeight="bold" fill="#ec4899" textAnchor="middle">D</text>
-          <text x="350" y="910" fontSize="80" fontWeight="bold" fill="#6366f1" textAnchor="middle">E</text>
-          <text x="4500" y="2110" fontSize="80" fontWeight="bold" fill="#ef4444" textAnchor="middle">F</text>
-          <text x="4500" y="1710" fontSize="80" fontWeight="bold" fill="#059669" textAnchor="middle">G</text>
-          <text x="4500" y="1310" fontSize="80" fontWeight="bold" fill="#f97316" textAnchor="middle">H</text>
-          <text x="4500" y="910" fontSize="80" fontWeight="bold" fill="#8b5cf6" textAnchor="middle">J</text>
-          <text x="4000" y="300" fontSize="80" fontWeight="bold" fill="#d946ef" textAnchor="middle">K</text>
+          {layout?.sectionLabels.map((label, idx) => (
+            <text
+              key={`${label.section}-${idx}`}
+              x={label.x}
+              y={label.y}
+              fontSize={label.fontSize}
+              fontWeight="bold"
+              fill={label.color}
+              textAnchor="middle"
+            >
+              {label.section}
+            </text>
+          ))}
         </g>
 
         {/* Render booths */}
@@ -429,8 +660,8 @@ export default function InteractiveFloorplan({
                   y={booth.y}
                   width={booth.width}
                   height={booth.height}
-                  fill={hasEvent ? colors.fill : '#f9fafb'}
-                  stroke={isHighlighted ? getStampRallyColor(0) : (hasEvent ? colors.stroke : '#d1d5db')}
+                  fill={hasEvent ? (isDark ? colors.darkFill : colors.fill) : (isDark ? '#1f2937' : '#f9fafb')}
+                  stroke={isHighlighted ? getStampRallyColor(0) : (hasEvent ? colors.stroke : (isDark ? '#4b5563' : '#d1d5db'))}
                   strokeWidth={isHighlighted ? "4" : "2"}
                   className={`cursor-pointer transition-all duration-200 ${
                     hasEvent ? 'hover:opacity-80' : 'hover:fill-gray-100'
@@ -450,7 +681,7 @@ export default function InteractiveFloorplan({
                   textAnchor="middle"
                   fontSize="36"
                   fontWeight="bold"
-                  fill={hasEvent ? '#374151' : '#9ca3af'}
+                  fill={hasEvent ? (isDark ? '#e5e7eb' : '#374151') : (isDark ? '#6b7280' : '#9ca3af')}
                   className="pointer-events-none select-none"
                 >
                   {booth.number}
@@ -476,7 +707,7 @@ export default function InteractiveFloorplan({
             {stampRallies.map((rally, rallyIndex) => {
               // Check if this rally should be shown based on selection filter
               const shouldShowRally = selectedRallies.length === 0 || selectedRallies.some(r => r.name === rally.name);
-              
+
               // If rallies are selected and this rally is not selected, hide it completely
               if (!shouldShowRally) {
                 return null;
@@ -818,7 +1049,7 @@ export default function InteractiveFloorplan({
                       return originalBooth === boothCode;
                     });
                     const artist = focusedStampRally.artists && originalBoothIndex >= 0 ? focusedStampRally.artists[originalBoothIndex] : null;
-                    
+
                     return (
                       <div
                         key={boothCode}
@@ -850,6 +1081,11 @@ export default function InteractiveFloorplan({
         )}
       </div>
 
+      {/* Credit */}
+      {layout?.credit && (
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-1">{layout.credit}</p>
+      )}
+
             {/* Stamp Rally Selector - Only shown in rally mode */}
       {viewMode === 'rally' && (
         <div className="mb-4 bg-white rounded-lg shadow-md p-4 border border-gray-200">
@@ -858,13 +1094,13 @@ export default function InteractiveFloorplan({
             {stampRallies.map((rally, index) => {
               const isSelected = selectedRallies.some(r => r.name === rally.name);
               const color = getStampRallyColor(index);
-              
+
               return (
                 <label
                   key={rally.name}
                   className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'bg-blue-50 border-2 border-blue-500' 
+                    isSelected
+                      ? 'bg-blue-50 border-2 border-blue-500'
                       : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
                   }`}
                   onClick={() => {
@@ -885,8 +1121,8 @@ export default function InteractiveFloorplan({
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: color }}
                       />
                       <span className="font-medium text-gray-900 text-sm">{rally.name}</span>

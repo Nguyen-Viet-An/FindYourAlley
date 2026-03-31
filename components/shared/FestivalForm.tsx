@@ -10,6 +10,7 @@ import * as z from 'zod'
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
 import { createFestival, updateFestival } from "@/lib/actions/festival.actions"
+import { useRef, useState } from "react"
 
 type FestivalFormProps = {
   type: "Create" | "Update"
@@ -47,6 +48,42 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
     resolver: zodResolver(festivalFormSchema),
     defaultValues: initialValues,
   })
+
+  const [uploading, setUploading] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadTargetField = useRef<string | null>(null)
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const fieldName = uploadTargetField.current as keyof z.infer<typeof festivalFormSchema> | null
+    if (!file || !fieldName) return
+
+    setUploading(fieldName)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/upload-festival-file', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (res.ok && data.filePath) {
+        form.setValue(fieldName, data.filePath)
+      } else {
+        alert(data.error || 'Upload failed')
+      }
+    } catch {
+      alert('Upload failed')
+    } finally {
+      setUploading(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const triggerUpload = (fieldName: string, accept: string) => {
+    uploadTargetField.current = fieldName
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = accept
+      fileInputRef.current.click()
+    }
+  }
 
   async function onSubmit(values: z.infer<typeof festivalFormSchema>) {
     if (type === "Create") {
@@ -140,18 +177,36 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
         <div className="flex flex-col gap-5 p-4 rounded-lg border bg-grey-50 dark:bg-muted">
           <h3 className="font-semibold">📁 Tệp dữ liệu sơ đồ</h3>
           <p className="text-sm text-muted-foreground">
-            Đặt tệp vào thư mục gốc dự án rồi nhập tên tệp ở đây.
+            Upload tệp hoặc nhập đường dẫn thủ công.
           </p>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
 
           <FormField
             control={form.control}
             name="floorMapFile"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>File sơ đồ (.drawio.xml)</FormLabel>
-                <FormControl>
-                  <Input placeholder="VD: MyEvent floor map.drawio.xml" {...field} className="input-field" />
-                </FormControl>
+                <FormLabel>File sơ đồ (.xml)</FormLabel>
+                <div className="flex gap-2">
+                  <FormControl>
+                    <Input placeholder="VD: data/floormap.xml" {...field} className="input-field flex-1" />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploading === 'floorMapFile'}
+                    onClick={() => triggerUpload('floorMapFile', '.xml')}
+                  >
+                    {uploading === 'floorMapFile' ? '...' : '📤'}
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -163,9 +218,20 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>File tên gian (.json)</FormLabel>
-                <FormControl>
-                  <Input placeholder="VD: mybooth.json" {...field} className="input-field" />
-                </FormControl>
+                <div className="flex gap-2">
+                  <FormControl>
+                    <Input placeholder="VD: data/booth-cofi16.json" {...field} className="input-field flex-1" />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploading === 'boothFile'}
+                    onClick={() => triggerUpload('boothFile', '.json')}
+                  >
+                    {uploading === 'boothFile' ? '...' : '📤'}
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -177,9 +243,20 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>File stamp rally (.json)</FormLabel>
-                <FormControl>
-                  <Input placeholder="VD: mystamprally.json" {...field} className="input-field" />
-                </FormControl>
+                <div className="flex gap-2">
+                  <FormControl>
+                    <Input placeholder="VD: data/stamprally.json" {...field} className="input-field flex-1" />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploading === 'stampRallyFile'}
+                    onClick={() => triggerUpload('stampRallyFile', '.json')}
+                  >
+                    {uploading === 'stampRallyFile' ? '...' : '📤'}
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

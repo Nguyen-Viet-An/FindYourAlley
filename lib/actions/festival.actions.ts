@@ -40,7 +40,7 @@ export async function ensureDefaultFestival() {
         code: 'COFI15',
         isActive: true,
         floorMapFile: 'Cofi floor map.drawio.xml',
-        boothFile: 'booth.json',
+        boothFile: 'booth-cofi15.json',
         stampRallyFile: 'stamprally.json',
       });
     }

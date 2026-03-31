@@ -55,7 +55,17 @@ export default async function Card({
       })
     : boothNumbers[0];
   const boothPrefix = boothEntry?.boothNumber ? `${boothEntry.boothNumber} - ` : '';
-  const fullDisplayTitle = `${boothPrefix}${displayTitle}`;
+
+  // Strip booth code from title if we're prepending it, to avoid duplication like "D31 - D31 - Name"
+  let cleanTitle = displayTitle;
+  if (boothEntry?.boothNumber) {
+    const code = boothEntry.boothNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Strip from start: "D31 - Name" or "[D31] Name" or "(D31) Name"
+    cleanTitle = cleanTitle.replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '');
+    // Strip from end: "Name - D31" or "Name | D31"
+    cleanTitle = cleanTitle.replace(new RegExp(`\\s*[-–—|]\\s*${code}\\s*$`, 'i'), '');
+  }
+  const fullDisplayTitle = `${boothPrefix}${cleanTitle}`;
 
   const currentCategory = imageToDisplay.category && imageToDisplay.category.length > 0
     ? imageToDisplay.category[0]

@@ -2,6 +2,7 @@ import { getBoothEventMap, getUniqueEventTitleCount } from '@/lib/actions/event.
 import { getFestivals, getFestivalById } from '@/lib/actions/festival.actions';
 import InteractiveFloorplan from '@/components/shared/InteractiveFloorplan';
 import DayFilter from '@/components/shared/DayFilter';
+import { hasRegisteredLayout } from '@/lib/utils/boothLayout';
 import { Metadata } from 'next';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -29,8 +30,9 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
   // Use festival-specific files; no fallback so festivals without a map show "no map" message
   const floorMapFile = festival?.floorMapFile || '';
   const boothFile = festival?.boothFile || '';
+  const hasLayout = hasRegisteredLayout(festival?.code);
 
-  const boothMap = floorMapFile ? await getBoothEventMap(festivalId, festivalDayParam) : {};
+  const boothMap = (floorMapFile || hasLayout) ? await getBoothEventMap(festivalId, festivalDayParam) : {};
 
   // Load the XML floor map data
   let xmlContent = '';
@@ -47,7 +49,22 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
     try {
       const boothNamesPath = path.join(process.cwd(), boothFile);
       const boothNamesContent = await fs.readFile(boothNamesPath, 'utf-8');
-      boothNamesData = JSON.parse(boothNamesContent);
+      const parsed = JSON.parse(boothNamesContent);
+
+      // Support per-day format: { "1": {...}, "2": {...} } vs flat { "A1": "name", ... }
+      if (parsed["1"] && typeof parsed["1"] === 'object' && !Array.isArray(parsed["1"])) {
+        const dayKey = festivalDayParam ? String(festivalDayParam) : undefined;
+        if (dayKey && parsed[dayKey]) {
+          boothNamesData = parsed[dayKey];
+        } else {
+          // No day selected — merge all days (first day's value wins on conflicts)
+          for (const day of Object.keys(parsed).sort()) {
+            boothNamesData = { ...parsed[day], ...boothNamesData };
+          }
+        }
+      } else {
+        boothNamesData = parsed;
+      }
     } catch (error) {
       console.error('Error loading booth names:', error);
     }
@@ -71,7 +88,7 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
     <div className="wrapper my-8">
       <div className="flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="h2-bold">🗺️ Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
+          <h1 className="h2-bold">Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
           <p className="text-gray-600 dark:text-muted-foreground mt-2">
             Di chuột qua các gian để xem sample, click để xem chi tiết
           </p>
@@ -82,13 +99,14 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
           )}
         </div>
 
-        {xmlContent ? (
+        {(xmlContent || hasLayout) ? (
           <div className="bg-white dark:bg-card rounded-lg shadow-sm border p-4">
             <InteractiveFloorplan
               boothMap={boothMap}
               xmlContent={xmlContent}
               boothNames={boothNamesData}
               stampRallies={stampRallyData.stampRallies}
+              festivalCode={festival?.code}
             />
           </div>
         ) : (
