@@ -20,6 +20,11 @@ const nextConfig = {
       }
     ]
   },
+  // Include data files (booth JSON, floor map XML, stamp rally) in serverless output
+  outputFileTracingIncludes: {
+    '/map': ['./*.json', './*.xml'],
+    '/map/*': ['./*.json', './*.xml'],
+  },
   headers: async () => [
     {
       // Cache static assets (fonts, icons) in browser for 1 year
