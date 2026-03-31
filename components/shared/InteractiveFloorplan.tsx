@@ -182,8 +182,8 @@ export default function InteractiveFloorplan({
         lastTouchDist.current = getTouchDist(e.touches);
         lastTouchCenter.current = getTouchCenter(e.touches);
       } else if (e.touches.length === 1 && isZoomed.current) {
-        // Only capture single-finger drag when zoomed in; otherwise let the page scroll
-        e.preventDefault();
+        // Don't preventDefault here — CSS touch-action handles scroll prevention,
+        // and we need the click event to fire for booth taps
         isPanning.current = true;
         hasDragged.current = false;
         panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -222,18 +222,20 @@ export default function InteractiveFloorplan({
         lastTouchDist.current = newDist;
         lastTouchCenter.current = center;
       } else if (e.touches.length === 1 && isPanning.current) {
-        e.preventDefault();
         const rect = svg.getBoundingClientRect();
         const dx = (panStart.current.x - e.touches[0].clientX) / rect.width;
         const dy = (panStart.current.y - e.touches[0].clientY) / rect.height;
         if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) hasDragged.current = true;
 
-        setViewBox(prev => ({
-          ...prev,
-          x: prev.x + dx * prev.w,
-          y: prev.y + dy * prev.h,
-        }));
-        panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        if (hasDragged.current) {
+          e.preventDefault();
+          setViewBox(prev => ({
+            ...prev,
+            x: prev.x + dx * prev.w,
+            y: prev.y + dy * prev.h,
+          }));
+          panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
       }
     };
 
