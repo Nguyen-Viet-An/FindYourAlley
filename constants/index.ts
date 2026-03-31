@@ -16,6 +16,10 @@ export const headerLinks = [
       route: '/profile',
     },
     {
+      label: 'Hướng dẫn',
+      route: '/guide',
+    },
+    {
       label: 'Festivals',
       route: '/festivals',
       adminOnly: true,

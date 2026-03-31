@@ -35,6 +35,12 @@ export const eventFormSchema = z.object({
   dealBadge: z.string().max(30, "Tối đa 30 ký tự").optional().default(""),
   dealDescription: z.string().max(500, "Tối đa 500 ký tự").optional().default(""),
   attendDays: z.array(z.number()).optional().default([]),
+  boothNumbers: z.array(
+    z.object({
+      festival: z.string(),
+      boothNumber: z.string().max(50, "Tối đa 50 ký tự").default(""),
+    })
+  ).optional().default([]),
 });
 
 export const ocCardFormSchema = z.object({

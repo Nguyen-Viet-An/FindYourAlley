@@ -232,12 +232,17 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
         dealBadge: (event as any).dealBadge || '',
         dealDescription: (event as any).dealDescription || '',
         attendDays: (event as any).attendDays || [],
+        boothNumbers: (event as any).boothNumbers?.map((bn: any) => ({
+          festival: bn.festival?._id || bn.festival || '',
+          boothNumber: bn.boothNumber || '',
+        })) || [],
       }
     : {
         ...eventDefaultValues,
         hasPreorder: eventDefaultValues.hasPreorder ?? "No",
         festival: festivalIds,
         attendDays: [] as number[],
+        boothNumbers: [] as { festival: string; boothNumber: string }[],
         artists: [{ name: '', link: '' }],
         images: [{
           imageUrl: '',
@@ -500,6 +505,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         hasPreorder: values.hasPreorder || "No",
         festival: festivalIds,
         attendDays: values.attendDays || [],
+        boothNumbers: (values.boothNumbers || []).filter(bn => bn.boothNumber.trim()),
         featuredProduct: featuredImgUrl && values.featuredProductDescription
           ? { imageUrl: featuredImgUrl, description: values.featuredProductDescription }
           : undefined,
@@ -571,7 +577,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <Input placeholder="Vị trí gian - tên gian (ví dụ: Q22 - Gà Rán)" {...field} className="input-field" />
+                  <Input placeholder="Tên gian hàng (ví dụ: Gà Rán)" {...field} className="input-field" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -624,6 +630,41 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             {selectedDays.length === 0 && (
               <p className="text-xs text-red-500 mt-2">Vui lòng chọn ít nhất 1 ngày</p>
             )}
+          </div>
+        )}
+
+        {/* Booth number per festival */}
+        {festivalIds.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <FormLabel>Số hiệu gian</FormLabel>
+            {festivalIds.map((fid) => {
+              const fest = festivals.find((f: any) => f._id === fid);
+              const label = fest ? (fest.code || fest.name) : fid;
+              const boothNumbers = form.watch('boothNumbers') || [];
+              const idx = boothNumbers.findIndex((bn: any) => bn.festival === fid);
+              const currentValue = idx >= 0 ? boothNumbers[idx].boothNumber : '';
+              return (
+                <div key={fid} className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
+                  <span className="text-sm text-grey-600 dark:text-muted-foreground whitespace-nowrap mr-3 font-medium">{label}:</span>
+                  <Input
+                    placeholder={`VD: B12, B13 hoặc Q22-Q24`}
+                    value={currentValue}
+                    onChange={(e) => {
+                      const updated = [...(form.getValues('boothNumbers') || [])];
+                      const i = updated.findIndex((bn) => bn.festival === fid);
+                      if (i >= 0) {
+                        updated[i] = { ...updated[i], boothNumber: e.target.value };
+                      } else {
+                        updated.push({ festival: fid, boothNumber: e.target.value });
+                      }
+                      form.setValue('boothNumbers', updated);
+                    }}
+                    className="input-field"
+                    maxLength={50}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 

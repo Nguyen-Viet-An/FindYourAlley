@@ -13,6 +13,7 @@ const isPublicRoute = createRouteMatcher([
     '/gallery',
     '/featured',
     '/stamprally',
+    '/guide',
     '/api/webhooks(.*)',
     '/sign-in(.*)', '/sign-up(.*)'])
 

@@ -84,8 +84,11 @@ const EventDetails = async (props: {
   }
   const uniqueCategories = Array.from(uniqueCategoryMap.values());
 
-  // Extract booth code from title for neighbor discovery
-  const boothCodeMatch = event.title.match(/^([A-Z]+\d+)/i);
+  // Extract booth code for neighbor discovery — prefer boothNumbers field, fallback to title parsing
+  const firstBoothNumber = (event.boothNumbers || [])[0]?.boothNumber || '';
+  const boothCodeMatch = firstBoothNumber
+    ? firstBoothNumber.match(/^([A-Z]+\d+)/i)
+    : event.title.match(/^([A-Z]+\d+)/i);
   const boothCode = boothCodeMatch ? boothCodeMatch[1].toUpperCase() : null;
   const neighborEvents = boothCode ? await getBoothNeighbors(boothCode) : [];
 
@@ -93,6 +96,18 @@ const EventDetails = async (props: {
   const imageUrls = event.images && event.images.length > 0
     ? event.images.map((img: any) => img.imageUrl || img.url)
     : [event.imageUrl || '/assets/images/broken-image.png'];
+
+  // Build booth number lookup
+  const boothNumbers: { festival: string; boothNumber: string }[] = event.boothNumbers || [];
+  const getBoothForFestival = (festivalId: string) => {
+    const bn = boothNumbers.find((b: any) => {
+      const fid = b.festival?._id?.toString() || b.festival?.toString() || '';
+      return fid === festivalId;
+    });
+    return bn?.boothNumber || '';
+  };
+  const firstBooth = event.festival?.length ? getBoothForFestival(event.festival[0]._id) : (boothNumbers[0]?.boothNumber || '');
+  const titleWithBooth = firstBooth ? `${firstBooth} - ${event.title}` : event.title;
 
     return (
       <>
@@ -110,21 +125,24 @@ const EventDetails = async (props: {
             <div className="flex w-full flex-col gap-2 p-5 md:p-10">
               <div className="flex flex-col gap-6">
                 <div className="flex items-start justify-between gap-4">
-                  <h2 className='h2-bold'>{event.title}</h2>
+                  <h2 className='h2-bold'>{titleWithBooth}</h2>
                   <ShareButton title={event.title} />
                 </div>
 
                 {event.festival && event.festival.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {event.festival.map((f: any) => (
-                      <Link
-                        key={f._id}
-                        href={`/?festivalId=${f._id}`}
-                        className="p-medium-14 rounded-full bg-violet-500/15 px-4 py-1.5 text-violet-600 dark:text-violet-400 font-semibold hover:bg-violet-500/25 transition-colors"
-                      >
-                        {f.code || f.name}
-                      </Link>
-                    ))}
+                    {event.festival.map((f: any) => {
+                      const booth = getBoothForFestival(f._id);
+                      return (
+                        <Link
+                          key={f._id}
+                          href={`/?festivalId=${f._id}`}
+                          className="p-medium-14 rounded-full bg-violet-500/15 px-4 py-1.5 text-violet-600 dark:text-violet-400 font-semibold hover:bg-violet-500/25 transition-colors"
+                        >
+                          {f.code || f.name}{booth ? ` • ${booth}` : ''}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
 

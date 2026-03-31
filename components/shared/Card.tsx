@@ -44,6 +44,19 @@ export default async function Card({
 
   const displayTitle = imageIndex > 0 ? `${event.title} (Trang ${imageIndex + 1})` : event.title;
 
+  // Derive booth number prefix from boothNumbers field
+  const boothNumbers = (event as any).boothNumbers || [];
+  const eventFestivals = Array.isArray(event.festival) ? event.festival : event.festival ? [event.festival] : [];
+  const firstFestival = eventFestivals[0] as any;
+  const boothEntry = firstFestival
+    ? boothNumbers.find((bn: any) => {
+        const bnFid = bn.festival?._id?.toString() || bn.festival?.toString() || '';
+        return bnFid === firstFestival._id?.toString();
+      })
+    : boothNumbers[0];
+  const boothPrefix = boothEntry?.boothNumber ? `${boothEntry.boothNumber} - ` : '';
+  const fullDisplayTitle = `${boothPrefix}${displayTitle}`;
+
   const currentCategory = imageToDisplay.category && imageToDisplay.category.length > 0
     ? imageToDisplay.category[0]
     : null;
@@ -130,7 +143,7 @@ export default async function Card({
         </div>
         <Link href={`/events/${event._id}`}>
           <p className="p-medium-16 md:p-medium-20 line-clamp-2 min-h-[40px] text-black dark:text-foreground">{/* slightly smaller reserved space */}
-            {displayTitle}
+            {fullDisplayTitle}
           </p>
         </Link>
         <div className="flex flex-col gap-2"> {/* Increase gap for better spacing */}

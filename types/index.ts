@@ -33,6 +33,7 @@ export type CreateUserParams = {
       dealBadge?: string;
       dealDescription?: string;
       attendDays?: number[];
+      boothNumbers?: { festival: string; boothNumber: string }[];
     };
     path: string;
   };
@@ -55,6 +56,7 @@ export type CreateUserParams = {
       dealBadge?: string;
       dealDescription?: string;
       attendDays?: number[];
+      boothNumbers?: { festival: string; boothNumber: string }[];
     };
     path: string;
   };

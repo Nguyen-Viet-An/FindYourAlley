@@ -48,14 +48,16 @@ export default function CardLightbox({
   useEffect(() => { zoomRef.current = zoomLevel; }, [zoomLevel]);
   useEffect(() => { positionRef.current = position; }, [position]);
 
-  // Attach non-passive wheel listener for zoom on the OVERLAY (top-level portal div).
-  // Must be on overlayRef (not containerRef) so events aren't blocked by
-  // react-remove-scroll when CardLightbox is inside a Radix Dialog.
+  // Attach wheel listener for zoom in CAPTURE phase on document.
+  // Must use capture phase so it fires BEFORE react-remove-scroll's handlers
+  // (which block wheel events on elements outside the Radix Dialog scope).
   useEffect(() => {
-    const el = overlayRef.current;
-    if (!el || !isLightboxOpen) return;
+    if (!isLightboxOpen) return;
 
     const handleWheel = (e: WheelEvent) => {
+      // Only handle events targeting our lightbox overlay/children
+      if (!overlayRef.current?.contains(e.target as Node)) return;
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -69,24 +71,24 @@ export default function CardLightbox({
       setZoomLevel(newZoom);
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
+    document.addEventListener('wheel', handleWheel, { capture: true, passive: false } as AddEventListenerOptions);
+    return () => document.removeEventListener('wheel', handleWheel, { capture: true } as EventListenerOptions);
   }, [isLightboxOpen]);
 
   // Touch: pinch-to-zoom + one-finger pan (when zoomed)
-  // Attached to overlayRef so events aren't blocked by react-remove-scroll
-  // when CardLightbox is inside a Radix Dialog.
+  // Uses document-level capture phase so events fire BEFORE react-remove-scroll
+  // can block them when CardLightbox is inside a Radix Dialog.
   const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
   const lastPinchDistRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const el = overlayRef.current;
-    if (!el || !isLightboxOpen) return;
+    if (!isLightboxOpen) return;
 
     const getDistance = (t1: Touch, t2: Touch) =>
       Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (!overlayRef.current?.contains(e.target as Node)) return;
       if (e.touches.length === 2) {
         e.preventDefault();
         lastPinchDistRef.current = getDistance(e.touches[0], e.touches[1]);
@@ -97,6 +99,7 @@ export default function CardLightbox({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (!overlayRef.current?.contains(e.target as Node)) return;
       if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
         e.preventDefault();
         const dist = getDistance(e.touches[0], e.touches[1]);
@@ -119,13 +122,13 @@ export default function CardLightbox({
       if (e.touches.length === 0) lastTouchRef.current = null;
     };
 
-    el.addEventListener('touchstart', handleTouchStart, { passive: false });
-    el.addEventListener('touchmove', handleTouchMove, { passive: false });
-    el.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchstart', handleTouchStart, { capture: true, passive: false } as AddEventListenerOptions);
+    document.addEventListener('touchmove', handleTouchMove, { capture: true, passive: false } as AddEventListenerOptions);
+    document.addEventListener('touchend', handleTouchEnd, { capture: true });
     return () => {
-      el.removeEventListener('touchstart', handleTouchStart);
-      el.removeEventListener('touchmove', handleTouchMove);
-      el.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true } as EventListenerOptions);
+      document.removeEventListener('touchmove', handleTouchMove, { capture: true } as EventListenerOptions);
+      document.removeEventListener('touchend', handleTouchEnd, { capture: true });
     };
   }, [isLightboxOpen]);
 

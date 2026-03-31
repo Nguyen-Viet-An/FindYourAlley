@@ -49,6 +49,7 @@ const populateEvent = (query: any) => {
   return query
     .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
     .populate({ path: 'festival', model: Festival, select: '_id name code startDate endDate' })
+    .populate({ path: 'boothNumbers.festival', model: Festival, select: '_id name code' })
     .populate({ path: 'images.category', model: Category, select: '_id name type' }); // Populate categories inside images
 };
 
@@ -156,6 +157,7 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       dealBadge,
       dealDescription,
       attendDays,
+      boothNumbers,
     } = event;
 
     const formattedImages = await Promise.all(
@@ -190,6 +192,10 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       hasPreorder: hasPreorder || "No",
       organizer: userId,
       attendDays: attendDays || [],
+      boothNumbers: (boothNumbers || []).filter(bn => bn.boothNumber?.trim()).map(bn => ({
+        festival: new mongoose.Types.ObjectId(bn.festival),
+        boothNumber: bn.boothNumber.trim(),
+      })),
     };
 
     if (festivalIds.length) eventData.festival = festivalIds;
@@ -251,6 +257,10 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
       extraTag: normalizeTags(event.extraTag), // normalize on update
       url: event.url,
       attendDays: event.attendDays || [],
+      boothNumbers: (event.boothNumbers || []).filter(bn => bn.boothNumber?.trim()).map(bn => ({
+        festival: new mongoose.Types.ObjectId(bn.festival),
+        boothNumber: bn.boothNumber.trim(),
+      })),
     };
 
     if (festivalIds.length) updatePayload.festival = festivalIds; else updatePayload.festival = [];
@@ -327,13 +337,24 @@ export const getSearchSuggestions = unstable_cache(
   async () => {
     try {
       await connectToDatabase();
-      const events = await Event.find({}, 'title artists extraTag').lean();
+      const events = await Event.find({}, 'title artists extraTag boothNumbers').lean();
       const suggestions: { type: string; value: string }[] = [];
       const seen = new Set<string>();
 
       for (const e of events) {
         const titleKey = `booth:${e.title}`;
         if (!seen.has(titleKey)) { seen.add(titleKey); suggestions.push({ type: 'booth', value: e.title }); }
+
+        // Add booth numbers as suggestions
+        if (Array.isArray((e as any).boothNumbers)) {
+          for (const bn of (e as any).boothNumbers) {
+            if (bn.boothNumber) {
+              const val = `${bn.boothNumber} - ${e.title}`;
+              const key = `boothnum:${val.toLowerCase()}`;
+              if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'booth', value: val }); }
+            }
+          }
+        }
 
         if (Array.isArray(e.artists)) {
           for (const a of e.artists) {
@@ -383,7 +404,8 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, e
       baseQuery.$or = [
         { title: { $regex: query, $options: 'i' } },
         { extraTag: { $regex: query, $options: 'i' } },
-        { 'artists.name': { $regex: query, $options: 'i' } }
+        { 'artists.name': { $regex: query, $options: 'i' } },
+        { 'boothNumbers.boothNumber': { $regex: query, $options: 'i' } }
       ];
     }
 
@@ -996,10 +1018,11 @@ export async function getBoothNeighbors(boothCode: string, range = 2) {
       if (i > 0 && i !== num) neighborCodes.push(`${prefix}${i}`);
     }
 
-    // Find events whose title starts with any neighbor code
-    const orConditions = neighborCodes.map(code => ({
-      title: { $regex: `^${code}\\b`, $options: 'i' }
-    }));
+    // Find events whose title OR boothNumbers start with any neighbor code
+    const orConditions: any[] = neighborCodes.flatMap(code => [
+      { title: { $regex: `^${code}\\b`, $options: 'i' } },
+      { 'boothNumbers.boothNumber': { $regex: `(^|,\\s*)${code}\\b`, $options: 'i' } },
+    ]);
 
     if (!orConditions.length) return [];
     const events = await populateEvent(
