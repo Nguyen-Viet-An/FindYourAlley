@@ -571,7 +571,7 @@ export default function InteractiveFloorplan({
       <div className="flex justify-center mb-4 gap-2">
         <button
           onClick={() => setViewMode('booth')}
-          className={`px-6 py-3 rounded-lg font-medium transition-all ${
+          className={`px-3 py-1.5 sm:px-6 sm:py-3 text-sm sm:text-base rounded-lg font-medium transition-all ${
             viewMode === 'booth'
               ? 'bg-blue-500 text-white shadow-md'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -581,7 +581,7 @@ export default function InteractiveFloorplan({
         </button>
         <button
           onClick={() => setViewMode('rally')}
-          className={`px-6 py-3 rounded-lg font-medium transition-all ${
+          className={`px-3 py-1.5 sm:px-6 sm:py-3 text-sm sm:text-base rounded-lg font-medium transition-all ${
             viewMode === 'rally'
               ? 'bg-blue-500 text-white shadow-md'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

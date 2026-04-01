@@ -104,7 +104,7 @@ export default async function FloorplanPage({ searchParams }: MapPageProps) {
     <div className="wrapper my-8">
       <div className="flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="h2-bold">🗺️ Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
+          <h1 className="h2-bold">Sơ đồ gian hàng {festivalName && `- ${festivalName}`}</h1>
           <p className="text-gray-600 dark:text-muted-foreground mt-2">
             Di chuột qua các gian để xem sample, click để xem chi tiết
           </p>
