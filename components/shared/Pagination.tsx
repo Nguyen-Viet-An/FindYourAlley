@@ -57,12 +57,12 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
     return pages
   }
 
-  return (
-    <div className="flex items-center gap-2">
+ return (
+    <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
       <Button
-        size="lg"
+        size="sm"
         variant="outline"
-        className="w-20"
+        className="w-16 sm:w-20 text-xs sm:text-sm"
         onClick={() => onClick(currentPage - 1)}
         disabled={currentPage <= 1}
       >
@@ -72,9 +72,9 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
       {getPageNumbers().map((pageNum, idx) => (
         <Button
           key={idx}
-          size="lg"
+          size="sm"
           variant={pageNum === currentPage ? 'default' : 'outline'}
-          className="w-12"
+          className="w-8 sm:w-12 text-xs sm:text-sm"
           onClick={() => typeof pageNum === 'number' && onClick(pageNum)}
           disabled={pageNum === '...'}
         >
@@ -83,9 +83,9 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
       ))}
 
       <Button
-        size="lg"
+        size="sm"
         variant="outline"
-        className="w-20"
+        className="w-16 sm:w-20 text-xs sm:text-sm"
         onClick={() => onClick(currentPage + 1)}
         disabled={currentPage >= totalPages}
       >

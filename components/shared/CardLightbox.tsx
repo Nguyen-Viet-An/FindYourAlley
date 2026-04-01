@@ -28,6 +28,7 @@ export default function CardLightbox({
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -93,6 +94,7 @@ export default function CardLightbox({
         e.preventDefault();
         lastPinchDistRef.current = getDistance(e.touches[0], e.touches[1]);
       } else if (e.touches.length === 1 && zoomRef.current > 1) {
+        if (closeBtnRef.current?.contains(e.target as Node)) return;
         e.preventDefault();
         lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
@@ -109,6 +111,7 @@ export default function CardLightbox({
         setZoomLevel(newZoom);
         lastPinchDistRef.current = dist;
       } else if (e.touches.length === 1 && zoomRef.current > 1 && lastTouchRef.current) {
+        if (closeBtnRef.current?.contains(e.target as Node)) return;
         e.preventDefault();
         const dx = e.touches[0].clientX - lastTouchRef.current.x;
         const dy = e.touches[0].clientY - lastTouchRef.current.y;
@@ -304,6 +307,7 @@ export default function CardLightbox({
           onClick={closeLightbox}
         >
           <button
+            ref={closeBtnRef}
             onClick={closeLightbox}
             className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-2 rounded-full z-[10000] transition-colors"
             aria-label="Close lightbox"
