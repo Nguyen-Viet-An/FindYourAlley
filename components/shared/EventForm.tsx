@@ -18,6 +18,7 @@ import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox"
+import { Switch } from "../ui/switch"
 import { TagInput } from "./TagInput"
 import { useRouter } from "next/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
@@ -844,9 +845,9 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             name="hasPreorder"
             render={({ field }) => (
               <FormItem className="w-full">
-                <h3 className="text-lg font-medium mb-4">{t('preorderQuestion')}</h3>
+                <FormLabel>{t('preorderQuestion')}</FormLabel>
                 <FormControl>
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
                     <label className="flex items-center gap-2">
                       <input
                         type="radio"
@@ -855,7 +856,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         onChange={() => field.onChange("Yes")}
                         className="peer hidden"
                       />
-                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "Yes" ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-muted"}`}>
+                      <div className={`cursor-pointer border px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${field.value === "Yes" ? "bg-primary-500 text-white" : "bg-grey-50 dark:bg-muted text-grey-500 dark:text-muted-foreground hover:bg-grey-100 dark:hover:bg-muted/80"}`}>
                         {tc('yes')}
                       </div>
                     </label>
@@ -867,7 +868,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         onChange={() => field.onChange("No")}
                         className="peer hidden"
                       />
-                      <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "No" ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-muted"}`}>
+                      <div className={`cursor-pointer border px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${field.value === "No" ? "bg-primary-500 text-white" : "bg-grey-50 dark:bg-muted text-grey-500 dark:text-muted-foreground hover:bg-grey-100 dark:hover:bg-muted/80"}`}>
                         {tc('no')}
                       </div>
                     </label>
@@ -889,18 +890,16 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               <FormItem className="w-full">
                 <div className="flex items-center gap-3">
                   <FormControl>
-                    <input
-                      type="checkbox"
+                    <Switch
                       checked={field.value || false}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      className="w-5 h-5 accent-primary-500"
+                      onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <FormLabel className="text-sm font-medium cursor-pointer" onClick={() => field.onChange(!field.value)}>
+                  <FormLabel className="text-base font-medium cursor-pointer" onClick={() => field.onChange(!field.value)}>
                     {t('postEventPreorderToggle')}
                   </FormLabel>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{t('postEventPreorderNote')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('postEventPreorderNote')}</p>
                 <FormMessage />
               </FormItem>
             )}
