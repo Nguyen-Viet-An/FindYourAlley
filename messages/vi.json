@@ -6,6 +6,7 @@
     "createOcCard": "Đăng OC card",
     "profile": "Profile",
     "festivals": "Festivals",
+    "categories": "Tags",
     "signIn": "Đăng nhập",
     "guideTip": "Tips để dùng web"
   },
@@ -58,7 +59,8 @@
     "loading": "Loading floor map..."
   },
   "footer": {
-    "copyright": "2026 FindYourAlley. Bản quyền thuộc về Myosotis Diamandis (Fb)."
+    "copyright": "2026 FindYourAlley. Bản quyền thuộc về Myosotis Diamandis (Fb).",
+    "donate": "☕ Ủng hộ"
   },
   "common": {
     "search": "Tìm kiếm...",
@@ -460,7 +462,33 @@
     "faq3q": "Gian hàng tham gia 2 festival, nhập mã gian sao?",
     "faq3a": "Mỗi festival có ô nhập mã gian riêng. Chỉ cần điền mã gian vào ô tương ứng của từng festival là được.",
     "faq4q": "Trade request gửi rồi nhưng không thấy phản hồi?",
-    "faq4a": "Chủ OC sẽ nhận thông báo. Hãy kiên nhẫn chờ, hoặc liên hệ trực tiếp nếu bạn đã cung cấp thông tin liên hệ trong lời mời trade."
+    "faq4a": "Chủ OC sẽ nhận thông báo. Hãy kiên nhẫn chờ, hoặc liên hệ trực tiếp nếu bạn đã cung cấp thông tin liên hệ trong lời mời trade.",
+    "tagGuideTitle": "Cách gắn tag đúng cách",
+    "tagGuideIntro": "Để tag của bạn hiển thị chính xác và giúp người khác tìm kiếm dễ dàng, hãy lưu ý những điều sau:",
+    "tagFandomLabel": "Tag Fandom",
+    "tagFandomRule1": "Nhập đúng tên chính thức của series/tác phẩm (ví dụ: \"Jujutsu Kaisen\", không phải \"JJK\").",
+    "tagFandomRule2": "Không nhập tên nhân vật hoặc cặp đôi/ship vào fandom. Ví dụ: \"Erwin Smith\" hay \"Eruri\" không phải fandom.",
+    "tagFandomRule3": "Tên nhân vật, cặp đôi, ship nên được thêm ở mục \"Thêm tag khác\".",
+    "tagItemLabel": "Tag Loại hàng",
+    "tagItemRule1": "Nhập đúng loại sản phẩm (ví dụ: \"Standee\", \"Keychain\", \"Print\"). Không nhập tên fandom vào đây.",
+    "tagExtraLabel": "Thêm tag khác",
+    "tagExtraRule1": "Dùng cho tên nhân vật, cặp đôi/ship, chủ đề, hoặc bất kỳ từ khoá nào giúp người mua tìm thấy bạn.",
+    "tagExtraRule2": "Ví dụ: \"Erwin Smith\", \"Eruri\", \"Fantasy AU\".",
+    "tagApprovalLabel": "Tag cần được duyệt",
+    "tagApprovalRule1": "Tag mới sẽ không hiển thị ngay trên bộ lọc trang chủ. Admin sẽ duyệt tag trong thời gian sớm nhất.",
+    "tagApprovalRule2": "Bạn vẫn có thể chọn tag chưa duyệt khi đăng gian hàng, nhưng tag đó chưa xuất hiện trong bộ lọc cho đến khi được duyệt."
+  },
+  "donate": {
+    "pageTitle": "Ủng hộ dự án",
+    "title": "Ủng hộ dự án",
+    "intro": "FindYourAlley được phát triển và duy trì hoàn toàn miễn phí. Nếu bạn thấy trang web hữu ích, bạn có thể ủng hộ mình một ly cà phê để duy trì server và phát triển thêm tính năng mới!",
+    "bank": "Chuyển khoản ngân hàng (Việt Nam)",
+    "bankName": "Ngân hàng: Techcombank",
+    "bankAccount": "Số tài khoản: 19036602675012",
+    "bankHolder": "Chủ tài khoản: NGUYEN VIET AN",
+    "international": "Quốc tế",
+    "kofi": "Ủng hộ qua Ko-fi",
+    "thanks": "Cảm ơn bạn rất nhiều! Mọi đóng góp đều giúp mình có thêm động lực phát triển trang web."
   },
   "event": {
     "promoHeading": "🏷️ Ưu đãi",
@@ -556,5 +584,27 @@
     "yes": "Có, mở preorder",
     "no": "Không",
     "note": "Link preorder và thời gian mở/đóng đơn hiện tại sẽ được sử dụng. Bạn có thể cập nhật bằng cách chỉnh sửa gian hàng."
+  },
+  "catManage": {
+    "title": "🏷️ Quản lý Tag",
+    "all": "Tất cả",
+    "fandom": "Fandom",
+    "itemType": "Mặt hàng",
+    "search": "Tìm tag...",
+    "name": "Tên",
+    "type": "Loại",
+    "usage": "Sử dụng",
+    "status": "Trạng thái",
+    "actions": "Hành động",
+    "approved": "Đã duyệt",
+    "pending": "Chờ duyệt",
+    "approve": "Duyệt",
+    "rename": "Đổi tên",
+    "mergeInto": "Gộp vào",
+    "selectTarget": "Chọn tag đích...",
+    "confirmDelete": "Xóa tag \"{name}\"? Tag sẽ bị gỡ khỏi tất cả gian hàng.",
+    "confirmMerge": "Gộp \"{source}\" vào \"{target}\"? Tất cả gian hàng dùng tag này sẽ chuyển sang tag đích.",
+    "noTags": "Không tìm thấy tag nào.",
+    "total": "Tổng: {count} tag"
   }
 }

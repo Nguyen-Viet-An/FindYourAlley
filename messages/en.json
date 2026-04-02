@@ -6,6 +6,7 @@
     "createOcCard": "Post OC card",
     "profile": "Profile",
     "festivals": "Festivals",
+    "categories": "Tags",
     "signIn": "Sign in",
     "guideTip": "Tips for using the website"
   },
@@ -58,7 +59,8 @@
     "loading": "Loading floor map..."
   },
   "footer": {
-    "copyright": "2026 FindYourAlley. All rights reserved by Myosotis Diamandis (Fb)."
+    "copyright": "2026 FindYourAlley. All rights reserved by Myosotis Diamandis (Fb).",
+    "donate": "☕ Donate"
   },
   "common": {
     "search": "Search...",
@@ -458,7 +460,33 @@
     "faq3q": "Booth in 2 festivals, how to enter booth codes?",
     "faq3a": "Each festival has its own booth code field. Just fill in the booth code for each festival separately.",
     "faq4q": "Sent a trade request but no response?",
-    "faq4a": "The OC owner will receive a notification. Please be patient, or contact them directly if you provided contact info in your trade request."
+    "faq4a": "The OC owner will receive a notification. Please be patient, or contact them directly if you provided contact info in your trade request.",
+    "tagGuideTitle": "How to tag correctly",
+    "tagGuideIntro": "To help others find your booth easily, please follow these tagging guidelines:",
+    "tagFandomLabel": "Fandom tags",
+    "tagFandomRule1": "Use the official series/franchise name (e.g. \"Jujutsu Kaisen\", not \"JJK\").",
+    "tagFandomRule2": "Do not put character names or ships in fandom. E.g. \"Erwin Smith\" or \"Eruri\" are not fandoms.",
+    "tagFandomRule3": "Character names, pairings, and ships should go in \"Extra tags\".",
+    "tagItemLabel": "Item type tags",
+    "tagItemRule1": "Enter the product type (e.g. \"Standee\", \"Keychain\", \"Print\"). Don't put fandom names here.",
+    "tagExtraLabel": "Extra tags",
+    "tagExtraRule1": "Use for character names, pairings/ships, themes, or any keyword that helps buyers find you.",
+    "tagExtraRule2": "Examples: \"Erwin Smith\", \"Eruri\", \"Fantasy AU\".",
+    "tagApprovalLabel": "Tags need approval",
+    "tagApprovalRule1": "New tags won't appear in the homepage filters immediately. An admin will review and approve them soon.",
+    "tagApprovalRule2": "You can still select unapproved tags when posting your booth, but they won't show in filters until approved."
+  },
+  "donate": {
+    "pageTitle": "Donate",
+    "title": "Support the project",
+    "intro": "FindYourAlley is developed and maintained completely for free. If you find the website useful, you can buy me a coffee to help keep the server running and develop new features!",
+    "bank": "Bank transfer (Vietnam)",
+    "bankName": "Bank: Techcombank",
+    "bankAccount": "Account: 19036602675012",
+    "bankHolder": "Holder: NGUYEN VIET AN",
+    "international": "International",
+    "kofi": "Support on Ko-fi",
+    "thanks": "Thank you so much! Every contribution motivates me to keep improving the website."
   },
   "event": {
     "promoHeading": "🏷️ Deals",
@@ -554,5 +582,27 @@
     "yes": "Yes, open preorders",
     "no": "No thanks",
     "note": "Your current preorder link and order dates will be reused. You can update them by editing your booth sample page."
+  },
+  "catManage": {
+    "title": "🏷️ Manage Tags",
+    "all": "All",
+    "fandom": "Fandom",
+    "itemType": "Item Type",
+    "search": "Search tags...",
+    "name": "Name",
+    "type": "Type",
+    "usage": "Usage",
+    "status": "Status",
+    "actions": "Actions",
+    "approved": "Approved",
+    "pending": "Pending",
+    "approve": "Approve",
+    "rename": "Rename",
+    "mergeInto": "Merge into",
+    "selectTarget": "Select target tag...",
+    "confirmDelete": "Delete tag \"{name}\"? It will be removed from all booths.",
+    "confirmMerge": "Merge \"{source}\" into \"{target}\"? All booths using this tag will switch to the target.",
+    "noTags": "No tags found.",
+    "total": "Total: {count} tags"
   }
 }

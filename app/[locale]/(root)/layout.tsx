@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server"
 import Link from "next/link"
 import { BookOpen } from "lucide-react"
 import { getTranslations } from "next-intl/server"
+import { ensureUser } from "@/lib/actions/user.actions"
 
 export default async function RootLayout({
   children,
@@ -13,7 +14,14 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const { sessionClaims } = await auth();
-  const userId = sessionClaims?.userId as string;
+  let userId = sessionClaims?.userId as string;
+
+  // Fallback: if logged in but no MongoDB userId, create on the fly
+  if (!userId) {
+    const fallbackId = await ensureUser();
+    if (fallbackId) userId = fallbackId;
+  }
+
   const t = await getTranslations('nav');
 
   return (

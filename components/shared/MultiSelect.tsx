@@ -35,7 +35,7 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
     // Fetch categories when the component mounts
   useEffect(() => {
     const getCategories = async () => {
-        const categoryList = await getAllCategories(categoryType); // Fetch categories from the API
+        const categoryList = await getAllCategories(categoryType, false); // Show all tags (including unapproved) in forms
         setCategories(categoryList || []); // Update state with fetched categories
         setIsLoaded(true); // Indicate that loading is complete
     };

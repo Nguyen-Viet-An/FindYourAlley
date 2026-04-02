@@ -9,6 +9,7 @@ import Event from '@/lib/database/models/event.model'
 import { handleError } from '@/lib/utils'
 
 import { CreateUserParams, UpdateUserParams } from '@/types'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 
 export async function createUser(user: CreateUserParams) {
   try {
@@ -77,5 +78,49 @@ export async function deleteUser(clerkId: string) {
     return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null
   } catch (error) {
     handleError(error)
+  }
+}
+
+// Fallback: if Clerk user exists but MongoDB record is missing (webhook failed),
+// create the record on the fly and update Clerk publicMetadata.
+export async function ensureUser(): Promise<string | null> {
+  try {
+    const { userId: clerkId, sessionClaims } = await auth();
+    if (!clerkId) return null;
+
+    // Already has a MongoDB userId in session
+    const existingUserId = sessionClaims?.userId as string | undefined;
+    if (existingUserId) return existingUserId;
+
+    await connectToDatabase();
+
+    // Check if MongoDB record exists by clerkId
+    let dbUser = await User.findOne({ clerkId });
+
+    if (!dbUser) {
+      // Fetch user info from Clerk
+      const client = await clerkClient();
+      const clerkUser = await client.users.getUser(clerkId);
+
+      dbUser = await User.create({
+        clerkId,
+        email: clerkUser.emailAddresses[0]?.emailAddress ?? '',
+        username: clerkUser.username ?? clerkUser.id,
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        photo: clerkUser.imageUrl,
+      });
+    }
+
+    // Update Clerk publicMetadata so future requests have userId
+    const client = await clerkClient();
+    await client.users.updateUserMetadata(clerkId, {
+      publicMetadata: { userId: dbUser._id.toString() },
+    });
+
+    return dbUser._id.toString();
+  } catch (error) {
+    console.error('[ensureUser] Failed:', error);
+    return null;
   }
 }

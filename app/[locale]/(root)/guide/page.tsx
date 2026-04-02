@@ -199,6 +199,41 @@ export default async function GuidePage() {
         </ul>
       </Section>
 
+      {/* Section: Tag Guidelines */}
+      <Section icon={<Tag className="h-5 w-5 text-amber-500" />} title={t('tagGuideTitle')}>
+        <div className="space-y-3 text-sm">
+          <p>{t('tagGuideIntro')}</p>
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="font-medium text-green-700 dark:text-green-400 mb-1">{t('tagFandomLabel')}</p>
+            <ul className="list-disc pl-5 space-y-1 text-green-800 dark:text-green-300">
+              <li>{t('tagFandomRule1')}</li>
+              <li>{t('tagFandomRule2')}</li>
+              <li>{t('tagFandomRule3')}</li>
+            </ul>
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <p className="font-medium text-blue-700 dark:text-blue-400 mb-1">{t('tagItemLabel')}</p>
+            <ul className="list-disc pl-5 space-y-1 text-blue-800 dark:text-blue-300">
+              <li>{t('tagItemRule1')}</li>
+            </ul>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+            <p className="font-medium text-amber-700 dark:text-amber-400 mb-1">{t('tagExtraLabel')}</p>
+            <ul className="list-disc pl-5 space-y-1 text-amber-800 dark:text-amber-300">
+              <li>{t('tagExtraRule1')}</li>
+              <li>{t('tagExtraRule2')}</li>
+            </ul>
+          </div>
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <p className="font-medium text-red-700 dark:text-red-400 mb-1">{t('tagApprovalLabel')}</p>
+            <ul className="list-disc pl-5 space-y-1 text-red-800 dark:text-red-300">
+              <li>{t('tagApprovalRule1')}</li>
+              <li>{t('tagApprovalRule2')}</li>
+            </ul>
+          </div>
+        </div>
+      </Section>
+
       {/* Section: FAQ */}
       <Section icon={<HelpCircle className="h-5 w-5 text-amber-500" />} title={t('faqTitle')}>
         <div className="space-y-4 text-sm">
@@ -208,6 +243,7 @@ export default async function GuidePage() {
           <FaqItem q={t('faq4q')} a={t('faq4a')} />
         </div>
       </Section>
+
     </div>
   );
 }

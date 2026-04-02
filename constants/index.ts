@@ -20,6 +20,11 @@ export const headerLinks = [
       route: '/festivals',
       adminOnly: true,
     },
+    {
+      label: 'nav.categories',
+      route: '/categories',
+      adminOnly: true,
+    },
   ]
 
   export const ocCardDefaultValues = {

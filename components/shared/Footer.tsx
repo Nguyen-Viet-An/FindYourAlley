@@ -18,6 +18,13 @@ const Footer = async () => {
         </Link>
 
         <p>{t('copyright')}</p>
+
+        <Link
+          href="/donate"
+          className="inline-flex items-center gap-2 rounded-full bg-[#FF5E5B] px-5 py-2 text-sm font-medium text-white hover:bg-[#e54e4b] transition-colors"
+        >
+          ☕ {t('donate')}
+        </Link>
       </div>
     </footer>
   )

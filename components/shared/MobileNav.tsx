@@ -21,7 +21,7 @@ import {
               alt="menu"
               width={24}
               height={24}
-              className="cursor-pointer"
+              className="cursor-pointer dark:invert"
             />
           </SheetTrigger>
           <SheetContent className="flex flex-col gap-6 bg-white dark:bg-card md:hidden">
