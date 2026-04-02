@@ -38,7 +38,7 @@ const Orders = async (props: SearchParamProps) => {
             {orders && orders.length === 0 ? (
               <tr className="border-b">
                 <td colSpan={5} className="py-4 text-center text-gray-500">
-                  No orders found.
+                  {t('noOrders')}
                 </td>
               </tr>
             ) : (

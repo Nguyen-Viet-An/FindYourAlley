@@ -1,6 +1,7 @@
 import Footer from "@/components/shared/Footer"
 import Header from "@/components/shared/Header"
 import TradeRequestNotification from "@/components/shared/TradeRequestNotification"
+import PostEventPreorderNotification from "@/components/shared/PostEventPreorderNotification"
 import { auth } from "@clerk/nextjs/server"
 import Link from "next/link"
 import { BookOpen } from "lucide-react"
@@ -27,6 +28,7 @@ export default async function RootLayout({
       <main className="flex-1">{children}</main>
       <Footer />
       {userId && <TradeRequestNotification userId={userId} />}
+      {userId && <PostEventPreorderNotification userId={userId} />}
     </div>
   )
 }

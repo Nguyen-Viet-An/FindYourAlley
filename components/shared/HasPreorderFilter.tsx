@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const HasPreorderFilter = () => {
+const HasPreorderFilter = ({ festivalEndDate }: { festivalEndDate?: string | Date }) => {
   const tc = useTranslations('common');
   const tf = useTranslations('filter');
   const [selectedValue, setSelectedValue] = useState<string>("All");
@@ -20,12 +20,21 @@ const HasPreorderFilter = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Options for preorder filter
-  const options = [
-    { value: "All", label: tc('any') },
-    { value: "Yes", label: tf('hasPreorder') },
-    { value: "No", label: tc('no') }
-  ];
+  // Check if festival has ended
+  const isFestivalEnded = festivalEndDate ? new Date(festivalEndDate) < new Date() : false;
+
+  // Options change based on whether festival has ended
+  const options = isFestivalEnded
+    ? [
+        { value: "All", label: tc('any') },
+        { value: "PostEvent", label: tf('hasPostEventPreorder') },
+        { value: "No", label: tc('no') }
+      ]
+    : [
+        { value: "All", label: tc('any') },
+        { value: "Yes", label: tf('hasPreorder') },
+        { value: "No", label: tc('no') }
+      ];
 
   // Handle selection change
   const onSelectValue = (value: string) => {
@@ -36,8 +45,13 @@ const HasPreorderFilter = () => {
 
     if (value === "All") {
       currentParams.delete("hasPreorder");
+      currentParams.delete("hasPostEventPreorder");
+    } else if (value === "PostEvent") {
+      currentParams.delete("hasPreorder");
+      currentParams.set("hasPostEventPreorder", "true");
     } else {
       currentParams.set("hasPreorder", value === "Yes" ? "true" : "false");
+      currentParams.delete("hasPostEventPreorder");
     }
 
     router.push(`?${currentParams.toString()}`, { scroll: false });
@@ -45,10 +59,13 @@ const HasPreorderFilter = () => {
 
   // Sync state with URL params
   useEffect(() => {
-    const currentValue = searchParams.get("hasPreorder");
-    if (currentValue === "true") {
+    const preorderValue = searchParams.get("hasPreorder");
+    const postEventValue = searchParams.get("hasPostEventPreorder");
+    if (postEventValue === "true") {
+      setSelectedValue("PostEvent");
+    } else if (preorderValue === "true") {
       setSelectedValue("Yes");
-    } else if (currentValue === "false") {
+    } else if (preorderValue === "false") {
       setSelectedValue("No");
     } else {
       setSelectedValue("All");

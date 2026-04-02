@@ -26,6 +26,7 @@ export const eventFormSchema = z.object({
   startDateTime: z.date(),
   endDateTime: z.date(),
   hasPreorder: z.enum(["Yes", "No"]),
+  hasPostEventPreorder: z.boolean().optional().default(false),
   extraTag: z.array(z.string()).optional(),
   // isFree: z.boolean(),
   url: z.string().optional(),

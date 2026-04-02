@@ -208,6 +208,7 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
         startDateTime: new Date(event.startDateTime),
         endDateTime: new Date(event.endDateTime),
         hasPreorder: event.hasPreorder === "Yes" ? "Yes" : event.hasPreorder === "No" ? "No" : undefined,
+        hasPostEventPreorder: (event as any).hasPostEventPreorder || false,
         festival: festivalIds,
         // Handle conversion for artists array
         artists: Array.isArray(event.artists)
@@ -877,6 +878,36 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             )}
           />
         </div>
+
+        {/* Post-festival preorder toggle - only show when preorder is Yes */}
+        {form.watch("hasPreorder") === "Yes" && (
+        <div className="flex flex-col gap-5 md:flex-row">
+          <FormField
+            control={form.control}
+            name="hasPostEventPreorder"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <div className="flex items-center gap-3">
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value || false}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-5 h-5 accent-primary-500"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-medium cursor-pointer" onClick={() => field.onChange(!field.value)}>
+                    {t('postEventPreorderToggle')}
+                  </FormLabel>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{t('postEventPreorderNote')}</p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        )}
+
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
               control={form.control}

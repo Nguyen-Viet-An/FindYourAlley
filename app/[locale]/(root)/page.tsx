@@ -56,6 +56,8 @@ export default async function Home({ searchParams }: SearchParamProps) {
       : params.hasPreorder === "true" ? "Yes" : "No"
     : undefined;
 
+  const hasPostEventPreorder = params?.hasPostEventPreorder === "true" ? true : undefined;
+
   // Detect "Ưu đãi" virtual item inside itemType filter
   const DEAL_VIRTUAL_NAME = "Ưu đãi / Freebie";
   const hasDeal = itemType.includes(DEAL_VIRTUAL_NAME);
@@ -84,6 +86,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
       excludeFandom,
       excludeItemType,
       hasPreorder,
+      hasPostEventPreorder,
       hasDeal: hasDeal || undefined,
       page,
       limit: 20,
@@ -188,7 +191,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
             </div>
             <div>
               <div className="font-semibold mb-1">{t('preorder')}</div>
-              <HasPreorderFilter />
+              <HasPreorderFilter festivalEndDate={selectedFestival?.endDate} />
             </div>
             <SortSelect />
           </div>

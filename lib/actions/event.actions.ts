@@ -160,6 +160,8 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       boothNumbers,
     } = event;
 
+    const hasPostEventPreorder = (event as any).hasPostEventPreorder || false;
+
     const formattedImages = await Promise.all(
       images.map(async (img) => {
         const categoryIds = Array.isArray(img.category) ? img.category :
@@ -190,6 +192,7 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       extraTag: normalizeTags(event.extraTag),
       url,
       hasPreorder: hasPreorder || "No",
+      hasPostEventPreorder,
       organizer: userId,
       attendDays: attendDays || [],
       boothNumbers: (boothNumbers || []).filter(bn => bn.boothNumber?.trim()).map(bn => ({
@@ -256,6 +259,7 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
       startDateTime: event.startDateTime,
       endDateTime: event.endDateTime,
       hasPreorder: event.hasPreorder || "No",
+      hasPostEventPreorder: (event as any).hasPostEventPreorder || false,
       extraTag: normalizeTags(event.extraTag), // normalize on update
       url: event.url,
       attendDays: event.attendDays || [],
@@ -397,7 +401,7 @@ export const getSearchSuggestions = unstable_cache(
 );
 
 // GET ALL EVENTS
-export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasDeal, festivalId, sortBy, festivalDay }: GetAllEventsParams) {
+export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasPostEventPreorder, hasDeal, festivalId, sortBy, festivalDay }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
@@ -423,6 +427,10 @@ export async function getAllEvents({ query, limit = 6, page, fandom, itemType, e
 
     if (hasPreorder) {
       baseQuery.hasPreorder = hasPreorder; // "Yes" | "No"
+    }
+
+    if (hasPostEventPreorder) {
+      baseQuery.hasPostEventPreorder = true;
     }
 
     // Deal filter: events with dealBadge OR freebie category
@@ -1266,6 +1274,72 @@ export async function getEventByBoothCode(boothCode: string) {
 
     if (!event) return null;
 
+    return JSON.parse(JSON.stringify(event));
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
+}
+
+// GET EVENTS ELIGIBLE FOR POST-EVENT PREORDER PROMPT
+// Returns events owned by user that have preorder=Yes but hasPostEventPreorder is not yet set,
+// AND belong to a festival that has ended.
+export async function getPostEventPreorderPromptEvents(userId: string) {
+  try {
+    await connectToDatabase();
+
+    // Find festivals that have ended
+    const now = new Date();
+    const endedFestivals = await Festival.find({
+      endDate: { $lt: now },
+      isActive: true,
+    }).select('_id name').lean();
+
+    if (!endedFestivals.length) return [];
+
+    const endedFestivalIds = endedFestivals.map((f: any) => f._id);
+    const festivalNameMap = Object.fromEntries(endedFestivals.map((f: any) => [f._id.toString(), f.name]));
+
+    // Find events by this user with preorder=Yes, in ended festivals, not yet post-event toggled
+    const events = await Event.find({
+      organizer: userId,
+      hasPreorder: 'Yes',
+      hasPostEventPreorder: { $ne: true },
+      festival: { $in: endedFestivalIds },
+    })
+      .select('title _id festival')
+      .lean();
+
+    // Attach festival name to each event
+    const eventsWithFestival = events.map((e: any) => {
+      const festId = (e.festival || []).find((fid: any) => festivalNameMap[fid.toString()]);
+      return {
+        ...e,
+        festivalName: festId ? festivalNameMap[festId.toString()] : '',
+      };
+    });
+
+    return JSON.parse(JSON.stringify(eventsWithFestival));
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+// TOGGLE POST-EVENT PREORDER FOR AN EVENT
+export async function togglePostEventPreorder(eventId: string, userId: string, value: boolean) {
+  try {
+    await connectToDatabase();
+
+    const event = await Event.findById(eventId);
+    if (!event || event.organizer.toHexString() !== userId) {
+      throw new Error('Unauthorized or event not found');
+    }
+
+    event.hasPostEventPreorder = value;
+    await event.save();
+
+    revalidatePath('/');
     return JSON.parse(JSON.stringify(event));
   } catch (error) {
     handleError(error);

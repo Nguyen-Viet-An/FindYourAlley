@@ -102,7 +102,8 @@
   },
   "filter": {
     "hasDeal": "Có ưu đãi",
-    "hasPreorder": "Có"
+    "hasPreorder": "Có",
+    "hasPostEventPreorder": "Preorder sau festival"
   },
   "pagination": {
     "previous": "Trước",
@@ -146,6 +147,8 @@
     "itemTypeHint": "Chọn loại mặt hàng cho ảnh này",
     "extraTags": "Thêm tag khác (không thuộc fandom hay mặt hàng, ví dụ: couple, nhân vật... - phân cách bằng dấu phẩy hoặc Enter)",
     "preorderQuestion": "Gian hàng của bạn có mở preorder không?",
+    "postEventPreorderToggle": "Mở preorder sau festival",
+    "postEventPreorderNote": "Nếu bật, link preorder và thời gian mở/đóng đơn hiện tại sẽ được sử dụng. Hãy cập nhật lại nếu có thay đổi.",
     "openOrder": "Mở đơn:",
     "closeOrder": "Đóng đơn:",
     "preorderLink": "Link preorder (nhiều link: Artist1: link1 | Artist2: link2)",
@@ -534,7 +537,7 @@
     "sampleName": "Tên sample",
     "buyer": "Người bookmark",
     "created": "Tạo",
-    "noOrders": "No orders found."
+    "noOrders": "Không tìm thấy bookmark nào."
   },
   "stamprally": {
     "title": "🎫 Stamp Rally",
@@ -545,5 +548,12 @@
   "langSwitch": {
     "switchToEn": "Switch to English",
     "switchToVi": "Chuyển sang tiếng Việt"
+  },
+  "postEventPreorder": {
+    "title": "Mở preorder sau festival?",
+    "description": "{festival} đã kết thúc! Bạn có muốn mở preorder để bán hàng còn lại không?",
+    "yes": "Có, mở preorder",
+    "no": "Không",
+    "note": "Link preorder và thời gian mở/đóng đơn hiện tại sẽ được sử dụng. Bạn có thể cập nhật bằng cách chỉnh sửa gian hàng."
   }
 }

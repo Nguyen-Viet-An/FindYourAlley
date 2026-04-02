@@ -203,12 +203,18 @@ export async function getAllBookmarksByUser(userId: string) {
   try {
     await connectToDatabase();
     const orders = await Order.find({ buyer: userId })
-      .sort({ createdAt: 'desc' })
       .populate({
         path: 'event',
         model: Event,
-        select: 'title artists hasPreorder',
+        select: 'title artists hasPreorder boothNumbers',
       });
+
+    // Sort by booth code (first boothNumber entry)
+    orders.sort((a: any, b: any) => {
+      const boothA = a.event?.boothNumbers?.[0]?.boothNumber || '';
+      const boothB = b.event?.boothNumbers?.[0]?.boothNumber || '';
+      return boothA.localeCompare(boothB, undefined, { numeric: true });
+    });
 
     return JSON.parse(JSON.stringify(orders.map((o: any) => ({
       title: o.event?.title || '',

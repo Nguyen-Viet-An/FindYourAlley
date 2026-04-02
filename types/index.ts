@@ -26,6 +26,7 @@ export type CreateUserParams = {
       startDateTime: Date;
       endDateTime: Date;
       hasPreorder: string;
+      hasPostEventPreorder?: boolean;
       extraTag?: string[];
       url?: string;
       festival?: string[]; // multi-festival support
@@ -49,6 +50,7 @@ export type CreateUserParams = {
       startDateTime: Date;
       endDateTime: Date;
       hasPreorder: string;
+      hasPostEventPreorder?: boolean;
       extraTag?: string[];
       url?: string;
       festival?: string[]; // multi-festival support
@@ -72,6 +74,7 @@ export type CreateUserParams = {
     excludeFandom?: string[]
     excludeItemType?: string[]
     hasPreorder?: "Yes" | "No";
+    hasPostEventPreorder?: boolean;
     hasDeal?: boolean;
     limit: number
     page: number

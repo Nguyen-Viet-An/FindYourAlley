@@ -102,7 +102,8 @@
   },
   "filter": {
     "hasDeal": "Has deal",
-    "hasPreorder": "Yes"
+    "hasPreorder": "Yes",
+    "hasPostEventPreorder": "Post-festival preorder"
   },
   "pagination": {
     "previous": "Previous",
@@ -146,6 +147,8 @@
     "itemTypeHint": "Select merch types for this image",
     "extraTags": "Additional tags (not fandom or merch type, e.g. couple, character... separated by comma or Enter)",
     "preorderQuestion": "Does your booth offer preorders?",
+    "postEventPreorderToggle": "Open post-festival preorder (sell remaining merch)",
+    "postEventPreorderNote": "If enabled, the current preorder link and order dates will be reused. Please update them if anything changes.",
     "openOrder": "Open orders:",
     "closeOrder": "Close orders:",
     "preorderLink": "Preorder link (multiple: Artist1: link1 | Artist2: link2)",
@@ -532,7 +535,7 @@
     "sampleName": "Sample name",
     "buyer": "Bookmarked by",
     "created": "Created",
-    "noOrders": "No orders found."
+    "noOrders": "No bookmarks found."
   },
   "stamprally": {
     "title": "🎫 Stamp Rally",
@@ -543,5 +546,12 @@
   "langSwitch": {
     "switchToEn": "Switch to English",
     "switchToVi": "Chuyển sang tiếng Việt"
+  },
+  "postEventPreorder": {
+    "title": "Open post-festival preorders?",
+    "description": "{festival} has ended! Would you like to open preorders to sell remaining merch?",
+    "yes": "Yes, open preorders",
+    "no": "No thanks",
+    "note": "Your current preorder link and order dates will be reused. You can update them by editing your booth sample page."
   }
 }
