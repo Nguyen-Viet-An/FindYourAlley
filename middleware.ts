@@ -23,6 +23,14 @@ const isPublicRoute = createRouteMatcher([
     '/:locale/sign-in(.*)', '/:locale/sign-up(.*)'])
 
 export default clerkMiddleware(async (auth, request) => {
+  // Skip intl middleware for API routes — they should not have a locale prefix
+  if (request.nextUrl.pathname.startsWith('/api')) {
+    if (!isPublicRoute(request)) {
+      await auth.protect()
+    }
+    return;
+  }
+
   // Run intl middleware for locale detection/redirect
   const response = intlMiddleware(request);
 
