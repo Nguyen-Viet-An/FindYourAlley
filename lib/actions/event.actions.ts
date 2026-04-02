@@ -1000,13 +1000,12 @@ export async function getFeaturedProducts(festivalIds?: string[]) {
     await connectToDatabase();
     const query: any = {
       'featuredProduct.imageUrl': { $exists: true, $ne: '' },
-      'featuredProduct.description': { $exists: true, $ne: '' },
     };
     if (festivalIds?.length) {
       query.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
     }
     const events = await populateEvent(
-      Event.find(query).sort({ createdAt: -1 }).limit(12)
+      Event.find(query).sort({ createdAt: -1 })
     );
     return JSON.parse(JSON.stringify(events));
   } catch (error) {

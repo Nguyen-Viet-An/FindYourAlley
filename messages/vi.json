@@ -515,7 +515,15 @@
     "rareFandom": "Fandom hiếm",
     "rareItem": "Mặt hàng hiếm",
     "boothCount": "Gian bán: {count}",
-    "count": "Số lượng"
+    "count": "Số lượng",
+    "totalBooths": "Tổng gian hàng trên web",
+    "totalFandoms": "Fandom",
+    "preorderBooths": "Có preorder",
+    "dealBooths": "Có ưu đãi",
+    "boothsPerDay": "Gian hàng theo ngày",
+    "mostBookmarked": "Gian hàng được bookmark nhiều nhất",
+    "showMore": "Xem thêm ({count})",
+    "showLess": "Thu gọn"
   },
   "tags": {
     "allTags": "Tất cả Tags"
