@@ -67,7 +67,7 @@ export default async function FestivalsPage() {
                 </div>
 
                 <div className="text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-                  {f.floorMapFile && <span>🗺️ {f.floorMapFile}</span>}
+                  {f.floorMapFile && <span>{f.floorMapFile}</span>}
                   {f.boothFile && <span>📋 {f.boothFile}</span>}
                   {f.stampRallyFile && <span>🎯 {f.stampRallyFile}</span>}
                 </div>

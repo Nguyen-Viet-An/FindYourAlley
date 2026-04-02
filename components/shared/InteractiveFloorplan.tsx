@@ -579,7 +579,7 @@ export default function InteractiveFloorplan({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-           📍 {t('boothMode')}
+           {t('boothMode')}
         </button>
         <button
           onClick={() => setViewMode('rally')}
@@ -589,7 +589,7 @@ export default function InteractiveFloorplan({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          🗳 {t('rallyMode')}
+          {t('rallyMode')}
         </button>
       </div>
 
