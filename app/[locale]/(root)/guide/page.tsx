@@ -84,7 +84,7 @@ export default async function GuidePage() {
       {/* Section: Chỉnh sửa / xoá gian hàng */}
       <Section icon={<Pencil className="h-5 w-5 text-orange-500" />} title={t('editDeleteTitle')}>
         <div className="space-y-3 text-sm">
-          <p>{t('editDeleteIntro')}</p>
+          <p>{t.rich('editDeleteIntro', { bold: (chunks) => <strong>{chunks}</strong> })}</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>{t('editIconDesc')}</li>
             <li>{t('deleteIconDesc')}</li>

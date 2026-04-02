@@ -20,7 +20,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox"
 import { Switch } from "../ui/switch"
 import { TagInput } from "./TagInput"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
 import { IEvent } from "@/lib/database/models/event.model"
 import { Plus, Trash2, PlusCircle, XCircle, Star, Tag, CalendarDays} from "lucide-react"
@@ -753,7 +753,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
           {imagesWithCategories.map((imageWithCat: ImageWithCategories, index: number) => (
             <div key={index} className="mb-8 p-4 border rounded-md">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-medium">Ảnh {index + 1}</h4>
+                <h4 className="font-medium">{t('imageLabel', { index: index + 1 })}</h4>
                 {imagesWithCategories.length > 1 && (
                   <Button
                     type="button"

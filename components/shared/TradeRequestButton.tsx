@@ -14,7 +14,7 @@ import {
 import { createTradeRequest, getDefaultContact } from "@/lib/actions/tradeRequest.actions";
 import { getOcCardsByUser } from "@/lib/actions/ocCard.actions";
 import { Heart, Check } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from 'next-intl';
 
 type Props = {

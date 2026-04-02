@@ -167,7 +167,8 @@
     "uploadWait": "Please wait for images to finish uploading or try re-uploading.",
     "postSample": "Post sample",
     "updateSample": "Update sample",
-    "sampleImages": "Sample images"
+    "sampleImages": "Sample images",
+    "imageLabel": "Image {index}"
   },
   "bookmark": {
     "save": "Save",
@@ -379,7 +380,7 @@
     "titleAvoidHint2": "Using generic titles like \"my booth\" — hard to find",
     "titleSeparateHint": "You don't need to include the booth code in the title anymore since the system has separate fields for them.",
     "editDeleteTitle": "Edit / Delete booth",
-    "editDeleteIntro": "If you're the booth owner, you'll see 2 icons at the top-right corner of your booth card:",
+    "editDeleteIntro": "Go to your <bold>Profile</bold> page, under 'Posted samples'. If you're the booth owner, you'll see 2 icons at the top-right corner of your booth card:",
     "editIconDesc": "\u270f\ufe0f Pencil icon: click to go to the edit page.",
     "deleteIconDesc": "\ud83d\uddd1\ufe0f Trash icon: click to delete the booth (with confirmation).",
     "editDeleteWarning": "\u26a0\ufe0f These icons only appear when you're signed in with the account that posted the booth.",
@@ -417,7 +418,7 @@
     "profileSavedLabel": "Saved samples:",
     "profileSavedDesc": "All booths you've bookmarked.",
     "profilePostedLabel": "Posted samples:",
-    "profilePostedDesc": "List of booths you've posted.",
+    "profilePostedDesc": "List of booths you've posted. You can edit/delete your booths from here.",
     "profileOcLabel": "OC Cards:",
     "profileOcDesc": "Your OC cards, editable/deletable from here.",
     "profileTradeLabel": "Trade requests:",
@@ -451,7 +452,7 @@
     "tagsDesc3": "Popular tags also appear on the Stats page.",
     "faqTitle": "Frequently Asked Questions",
     "faq1q": "I can't find the edit/delete icons?",
-    "faq1a": "Edit/delete icons only appear for booth owners. Make sure you're signed in with the same account used to post.",
+    "faq1a": "Edit/delete icons only appear on the Profile page, under 'Posted samples'. Make sure you're signed in with the same account used to post.",
     "faq2q": "Image upload failed?",
     "faq2a": "Check the image size (≤ 3MB). If it's too large, reduce the size before uploading.",
     "faq3q": "Booth in 2 festivals, how to enter booth codes?",

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { festivalFormSchema } from "@/lib/validator"
 import * as z from 'zod'
 import { Checkbox } from "@/components/ui/checkbox"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/navigation"
 import { createFestival, updateFestival } from "@/lib/actions/festival.actions"
 import { useRef, useState } from "react"
 

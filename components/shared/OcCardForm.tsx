@@ -18,7 +18,7 @@ import * as z from "zod";
 import { ocCardDefaultValues } from "@/constants";
 import { FileUploader } from "./FileUploader";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { createOcCard, updateOcCard } from "@/lib/actions/ocCard.actions";
 import { Plus, Trash2 } from "lucide-react";
 import FestivalMultiSelect from "./FestivalMultiSelect";

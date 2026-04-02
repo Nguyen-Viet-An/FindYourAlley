@@ -167,7 +167,8 @@
     "uploadWait": "Vui lòng chờ ảnh được upload thành công trước khi đăng hoặc thử đăng lại ảnh.",
     "postSample": "Đăng sample",
     "updateSample": "Cập nhật sample",
-    "sampleImages": "Ảnh sample"
+    "sampleImages": "Ảnh sample",
+    "imageLabel": "Ảnh {index}"
   },
   "bookmark": {
     "save": "Lưu",
@@ -379,7 +380,7 @@
     "titleAvoidHint2": "Đặt tiêu đề chung chung như \"gian hàng của mình\" - khó tìm",
     "titleSeparateHint": "Bạn không cần ghi mã gian vào tiêu đề nữa vì hệ thống đã tách riêng hai trường này.",
     "editDeleteTitle": "Chỉnh sửa / Xoá gian hàng",
-    "editDeleteIntro": "Nếu bạn là chủ gian hàng, sẽ có 2 icon ở góc phải phía trên card gian hàng:",
+    "editDeleteIntro": "Vào trang <bold>Profile</bold>, mục 'Sample đã đăng'. Nếu bạn là chủ gian hàng, sẽ có 2 icon ở góc phải phía trên card gian hàng:",
     "editIconDesc": "✏️ Icon bút chì: nhấn để vào trang chỉnh sửa thông tin gian hàng.",
     "deleteIconDesc": "🗑️ Icon thùng rác: nhấn để xoá gian hàng (có xác nhận trước khi xoá).",
     "editDeleteWarning": "⚠️ Hai icon này chỉ hiện khi bạn đăng nhập đúng tài khoản đã đăng gian hàng đó.",
@@ -422,7 +423,7 @@
     "profileSavedLabel": "Sample đã lưu:",
     "profileSavedDesc": "Tất cả gian hàng bạn đã bookmark.",
     "profilePostedLabel": "Sample đã đăng:",
-    "profilePostedDesc": "Danh sách các gian hàng bạn đã đăng.",
+    "profilePostedDesc": "Danh sách các gian hàng bạn đã đăng. Bạn có thể sửa/xoá gian hàng từ đây.",
     "profileOcLabel": "OC Cards:",
     "profileOcDesc": "Các OC card của bạn, có thể sửa/xoá từ đây.",
     "profileTradeLabel": "Yêu cầu trade:",
@@ -453,7 +454,7 @@
     "tagsDesc3": "Tags phổ biến cũng xuất hiện trong trang Thống kê.",
     "faqTitle": "Câu hỏi thường gặp",
     "faq1q": "Tôi không thấy icon sửa/xoá gian hàng?",
-    "faq1a": "Icon sửa/xoá chỉ hiện cho chủ gian hàng. Hãy chắc chắn bạn đã đăng nhập đúng tài khoản đã dùng để đăng bài.",
+    "faq1a": "Icon sửa/xoá chỉ hiện ở trang Profile, trong mục 'Sample đã đăng'. Hãy chắc chắn bạn đã đăng nhập đúng tài khoản đã dùng để đăng bài.",
     "faq2q": "Ảnh upload bị lỗi?",
     "faq2a": "Hãy kiểm tra dung lượng ảnh (≤ 3MB). Nếu ảnh quá lớn, hãy giảm kích thước trước khi upload.",
     "faq3q": "Gian hàng tham gia 2 festival, nhập mã gian sao?",
