@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { cn } from "@/lib/utils";
 
 interface DayFilterProps {
@@ -19,6 +20,7 @@ function getDayCount(startDate: string, endDate: string): number {
 }
 
 export default function DayFilter({ startDate, endDate }: DayFilterProps) {
+  const tc = useTranslations('common');
   const searchParams = useSearchParams();
   const router = useRouter();
   const dayCount = getDayCount(startDate, endDate);
@@ -45,7 +47,7 @@ export default function DayFilter({ startDate, endDate }: DayFilterProps) {
     d.setDate(d.getDate() + (dayNum - 1));
     const dd = d.getDate();
     const mm = d.getMonth() + 1;
-    return `Ngày ${dayNum} (${dd}/${mm})`;
+    return tc('dayLabel', { day: dayNum, date: `${dd}/${mm}` });
   };
 
   return (
@@ -59,7 +61,7 @@ export default function DayFilter({ startDate, endDate }: DayFilterProps) {
             : "bg-grey-50 dark:bg-muted text-grey-500 dark:text-muted-foreground hover:bg-grey-100 dark:hover:bg-muted/80"
         )}
       >
-        Tất cả
+        {tc('allDays')}
       </button>
       {Array.from({ length: dayCount }, (_, i) => i + 1).map((day) => (
         <button

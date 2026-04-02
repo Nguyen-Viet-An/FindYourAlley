@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { formUrlQuery, removeKeysFromQuery } from "@/lib/utils";
@@ -9,12 +10,13 @@ import { formUrlQuery, removeKeysFromQuery } from "@/lib/utils";
 type Suggestion = { type: "booth" | "artist" | "tag"; value: string };
 
 export default function SearchAutocomplete({
-  placeholder = "Tìm theo tên gian/artist/couple...",
+  placeholder,
   suggestions = [],
 }: {
   placeholder?: string;
   suggestions?: Suggestion[];
 }) {
+  const tc = useTranslations('card');
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -66,7 +68,7 @@ export default function SearchAutocomplete({
   if (!isClient) return null;
 
   const typeLabel = (t: string) =>
-    t === "booth" ? "Gian" : t === "artist" ? "Artist" : "Tag";
+    t === "booth" ? "Booth" : t === "artist" ? "Artist" : "Tag";
 
   return (
     <div ref={wrapperRef} className="relative w-full">
@@ -74,7 +76,7 @@ export default function SearchAutocomplete({
         <Image src="/assets/icons/search.svg" alt="search" width={24} height={24} className="dark:invert" />
         <Input
           type="text"
-          placeholder={placeholder}
+          placeholder={placeholder || tc('searchPlaceholder')}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);

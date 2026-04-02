@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,18 +12,21 @@ import {
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
-const sortOptions = [
-  { value: "random", label: "Ngẫu nhiên" },
-  { value: "newest", label: "Mới nhất" },
-  { value: "oldest", label: "Cũ nhất" },
-  { value: "alphabetical", label: "A → Z" },
-];
+const sortKeys = [
+  { value: "random", key: "random" },
+  { value: "newest", key: "newest" },
+  { value: "oldest", key: "oldest" },
+  { value: "alphabetical", key: "aToZ" },
+] as const;
 
 export default function OcCardSortSelect() {
+  const ts = useTranslations('sort');
   const router = useRouter();
   const searchParams = useSearchParams();
   const current = searchParams.get("sortBy") || "random";
   const [open, setOpen] = useState(false);
+
+  const sortOptions = sortKeys.map(o => ({ value: o.value, label: ts(o.key) }));
 
   const onChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -32,7 +36,7 @@ export default function OcCardSortSelect() {
     setOpen(false);
   };
 
-  const currentLabel = sortOptions.find((o) => o.value === current)?.label || "Ngẫu nhiên";
+  const currentLabel = sortOptions.find((o) => o.value === current)?.label || ts('random');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -41,7 +45,7 @@ export default function OcCardSortSelect() {
           variant="ghost"
           size="icon"
           className="h-10 w-10 shrink-0"
-          title={`Sắp xếp: ${currentLabel}`}
+          title={ts('sortLabel', { label: currentLabel })}
         >
           <ArrowUpDown className="h-5 w-5" />
         </Button>

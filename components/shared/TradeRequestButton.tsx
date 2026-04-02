@@ -15,6 +15,7 @@ import { createTradeRequest, getDefaultContact } from "@/lib/actions/tradeReques
 import { getOcCardsByUser } from "@/lib/actions/ocCard.actions";
 import { Heart, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 
 type Props = {
   cardId: string;
@@ -32,6 +33,7 @@ export default function TradeRequestButton({
   available,
 }: Props) {
   const router = useRouter();
+  const t = useTranslations('trade');
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [contactMethod, setContactMethod] = useState("");
@@ -99,7 +101,7 @@ export default function TradeRequestButton({
   if (submitted) {
     return (
       <Button disabled className="w-full" variant="outline">
-        <Check className="w-4 h-4 mr-2" /> Đã gửi yêu cầu đổi
+        <Check className="w-4 h-4 mr-2" /> {t('sent')}
       </Button>
     );
   }
@@ -107,7 +109,7 @@ export default function TradeRequestButton({
   if (!available) {
     return (
       <Button disabled className="w-full" variant="secondary">
-        Hết card
+        {t('unavailable')}
       </Button>
     );
   }
@@ -118,7 +120,7 @@ export default function TradeRequestButton({
         className="w-full bg-pink-500 hover:bg-pink-600 text-white"
         onClick={() => router.push("/sign-in")}
       >
-        <Heart className="w-4 h-4 mr-2" /> Muốn đổi
+        <Heart className="w-4 h-4 mr-2" /> {t('wantTrade')}
       </Button>
     );
   }
@@ -127,19 +129,19 @@ export default function TradeRequestButton({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full bg-pink-500 hover:bg-pink-600 text-white">
-          <Heart className="w-4 h-4 mr-2" /> Muốn đổi
+          <Heart className="w-4 h-4 mr-2" /> {t('wantTrade')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Gửi yêu cầu đổi card</DialogTitle>
+          <DialogTitle>{t('dialogTitle')}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           {/* Card picker */}
           {myCardItems.length > 0 && (
             <div>
               <label className="text-sm font-medium mb-2 block">
-                Chọn card của bạn để đổi
+                {t('selectCard')}
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto p-1">
                 {myCardItems.map((item) => {
@@ -182,25 +184,25 @@ export default function TradeRequestButton({
           {/* Contact method - required */}
           <div>
             <label className="text-sm font-medium mb-1 block">
-              Phương thức liên lạc
+              {t('contactLabel')}
             </label>
             <input
               type="text"
-              placeholder="VD: FB: facebook.com/ten, IG: @ten, Discord: ten#1234..."
+              placeholder={t('contactPlaceholder')}
               value={contactMethod}
               onChange={(e) => setContactMethod(e.target.value)}
               maxLength={300}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">Để chủ card có thể liên hệ bạn khi chấp nhận đổi</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('contactHint')}</p>
           </div>
 
           <div>
             <label className="text-sm font-medium mb-1 block">
-              Lời nhắn
+              {t('messageLabel')}
             </label>
             <Textarea
-              placeholder="VD: Mình muốn đổi card này, mình có card X..."
+              placeholder={t('messagePlaceholder')}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={500}
@@ -217,7 +219,7 @@ export default function TradeRequestButton({
             disabled={loading}
             className="bg-pink-500 hover:bg-pink-600 text-white"
           >
-            {loading ? "Đang gửi..." : "Gửi yêu cầu"}
+            {loading ? t('sending') : t('sendRequest')}
           </Button>
         </div>
       </DialogContent>

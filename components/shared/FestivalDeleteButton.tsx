@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -25,23 +26,25 @@ export default function FestivalDeleteButton({
 }) {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const t = useTranslations('deleteConfirm')
+  const tc = useTranslations('common')
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button size="sm" variant="destructive">Xóa</Button>
+        <Button size="sm" variant="destructive">{tc('delete')}</Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent className="bg-white dark:bg-card">
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa festival &quot;{festivalName}&quot;?</AlertDialogTitle>
+          <AlertDialogTitle>{t('festivalTitle', { name: festivalName })}</AlertDialogTitle>
           <AlertDialogDescription className="text-grey-600 dark:text-muted-foreground">
-            Hành động này không thể hoàn tác. Festival sẽ bị xóa vĩnh viễn.
+            {t('festivalMessage')}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Quay lại</AlertDialogCancel>
+          <AlertDialogCancel>{tc('back')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={() =>
               startTransition(async () => {
@@ -50,7 +53,7 @@ export default function FestivalDeleteButton({
               })
             }
           >
-            {isPending ? 'Đang xóa...' : 'Xóa'}
+            {isPending ? tc('deleting') : tc('delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

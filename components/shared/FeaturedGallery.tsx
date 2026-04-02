@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from 'next-intl';
 import { X } from "lucide-react";
 import Link from "next/link";
 import CardLightbox from "./CardLightbox";
@@ -15,6 +16,7 @@ type FeaturedItem = {
 };
 
 export default function FeaturedGallery({ items }: { items: FeaturedItem[] }) {
+  const t = useTranslations('featured');
   const [selected, setSelected] = useState<FeaturedItem | null>(null);
   const [loaded, setLoaded] = useState<Set<number>>(new Set());
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -36,7 +38,7 @@ export default function FeaturedGallery({ items }: { items: FeaturedItem[] }) {
   if (!items.length) {
     return (
       <div className="text-center py-20 text-muted-foreground">
-        Chưa có mặt hàng nổi bật nào. Các artist có thể thêm mặt hàng nổi bật khi đăng sample.
+        {t('emptyState')}
       </div>
     );
   }
@@ -114,7 +116,7 @@ export default function FeaturedGallery({ items }: { items: FeaturedItem[] }) {
 
               {selected.description && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Mô tả mặt hàng</p>
+                  <p className="text-sm font-semibold mb-1">{t('itemDesc')}</p>
                   <p className="text-foreground">{selected.description}</p>
                 </div>
               )}
@@ -129,7 +131,7 @@ export default function FeaturedGallery({ items }: { items: FeaturedItem[] }) {
                 href={`/events/${selected.eventId}`}
                 className="mt-auto inline-block text-center bg-primary-500 hover:bg-primary-400 text-white rounded-full px-6 py-2.5 text-sm font-semibold transition"
               >
-                Xem gian hàng →
+                {t('viewBooth')}
               </Link>
             </div>
           </div>

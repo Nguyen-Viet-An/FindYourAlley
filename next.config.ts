@@ -1,20 +1,24 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import createNextIntlPlugin from 'next-intl/plugin';
+import type { NextConfig } from 'next';
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
+const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
     remotePatterns: [
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'utfs.io',
         port: ''
       },
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'firebasestorage.googleapis.com',
         port: ''
       },
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'r2-worker.vietannguyen042002.workers.dev',
         port: ''
       }
@@ -22,8 +26,8 @@ const nextConfig = {
   },
   // Include data files (booth JSON, floor map XML, stamp rally) in serverless output
   outputFileTracingIncludes: {
-    '/map': ['./*.json', './*.xml'],
-    '/map/*': ['./*.json', './*.xml'],
+    '/[locale]/map': ['./*.json', './*.xml'],
+    '/[locale]/map/*': ['./*.json', './*.xml'],
   },
   headers: async () => [
     {
@@ -36,4 +40,4 @@ const nextConfig = {
   ],
 }
 
-module.exports = nextConfig
+export default withNextIntl(nextConfig)

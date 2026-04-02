@@ -5,11 +5,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+
+// Resolve a dotted translation key like "nav.home"
+function useT() {
+  const t = useTranslations();
+  return (key: string) => {
+    try { return t(key as any); } catch { return key; }
+  };
+}
 
 const NavItems = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const pathname = usePathname();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -38,7 +48,7 @@ const NavItems = ({ isAdmin = false }: { isAdmin?: boolean }) => {
                 onClick={() => setOpenDropdown(openDropdown === link.route ? null : link.route)}
                 className={`${isActive ? 'text-primary-500' : ''} flex items-center gap-1`}
               >
-                {link.label}
+                {t(link.label)}
                 <ChevronDown className="w-4 h-4" />
               </button>
               {openDropdown === link.route && (
@@ -52,7 +62,7 @@ const NavItems = ({ isAdmin = false }: { isAdmin?: boolean }) => {
                       }`}
                       onClick={() => setOpenDropdown(null)}
                     >
-                      {child.label}
+                      {t(child.label)}
                     </Link>
                   ))}
                 </div>
@@ -68,7 +78,7 @@ const NavItems = ({ isAdmin = false }: { isAdmin?: boolean }) => {
               isActive && 'text-primary-500'
             } flex-center p-medium-16 whitespace-nowrap`}
           >
-            <Link href={link.route}>{link.label}</Link>
+            <Link href={link.route}>{t(link.label)}</Link>
           </li>
         )
       })}

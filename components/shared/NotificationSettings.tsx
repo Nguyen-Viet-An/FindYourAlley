@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition, useRef, useMemo } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, BellOff, Loader2, X, Search } from "lucide-react";
@@ -19,6 +20,7 @@ function SearchableSelect({
   selected: string[];
   onChange: (v: string[]) => void;
 }) {
+  const tc = useTranslations('common');
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -68,7 +70,7 @@ function SearchableSelect({
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <input
           className="w-full h-9 rounded-md border bg-transparent pl-8 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-primary-500"
-          placeholder="Tìm và chọn..."
+          placeholder={tc('searchAndSelect')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
@@ -79,7 +81,7 @@ function SearchableSelect({
       {open && (
         <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
           {filtered.length === 0 && (
-            <div className="px-3 py-2 text-sm text-muted-foreground">Không tìm thấy</div>
+            <div className="px-3 py-2 text-sm text-muted-foreground">{tc('notFound')}</div>
           )}
           {filtered.map((cat) => {
             const isSelected = selected.includes(cat.name);
@@ -107,6 +109,8 @@ function SearchableSelect({
 }
 
 export default function NotificationSettings({ userId }: { userId: string }) {
+  const t = useTranslations('notification');
+  const tc = useTranslations('common');
   const [email, setEmail] = useState("");
   const [fandoms, setFandoms] = useState<string[]>([]);
   const [itemTypes, setItemTypes] = useState<string[]>([]);
@@ -138,11 +142,11 @@ export default function NotificationSettings({ userId }: { userId: string }) {
   }, [userId]);
 
   const handleSave = () => {
-    if (!email.trim()) { setMessage("Vui lòng nhập email."); return; }
+    if (!email.trim()) { setMessage(t('emailRequired')); return; }
     startTransition(async () => {
       await upsertNotificationSub({ userId, email, fandoms, itemTypes, active: true });
       setActive(true);
-      setMessage("Đã lưu! Bạn sẽ nhận email khi có sample mới.");
+      setMessage(t('savedSuccess'));
       setTimeout(() => setMessage(""), 3000);
     });
   };
@@ -153,25 +157,25 @@ export default function NotificationSettings({ userId }: { userId: string }) {
       setActive(false);
       setFandoms([]);
       setItemTypes([]);
-      setMessage("Đã tắt thông báo.");
+      setMessage(t('disabledSuccess'));
       setTimeout(() => setMessage(""), 3000);
     });
   };
 
-  if (!loaded) return <div className="p-4 text-muted-foreground">Đang tải...</div>;
+  if (!loaded) return <div className="p-4 text-muted-foreground">{tc('loading')}</div>;
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
       <div className="flex items-center gap-2">
         {active ? <Bell className="h-5 w-5 text-primary-500" /> : <BellOff className="h-5 w-5 text-muted-foreground" />}
-        <h3 className="text-lg font-bold">Thông báo email</h3>
+        <h3 className="text-lg font-bold">{t('title')}</h3>
       </div>
       <p className="text-sm text-muted-foreground">
-        Nhận email khi có sample mới thuộc fandom / loại mặt hàng bạn quan tâm.
+        {t('description')}
       </p>
 
       <div>
-        <label className="text-sm font-semibold">Email</label>
+        <label className="text-sm font-semibold">{t('emailLabel')}</label>
         <Input
           type="email"
           value={email}
@@ -183,13 +187,13 @@ export default function NotificationSettings({ userId }: { userId: string }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SearchableSelect
-          label="Fandom muốn theo dõi"
+          label={t('fandomLabel')}
           options={allFandoms}
           selected={fandoms}
           onChange={setFandoms}
         />
         <SearchableSelect
-          label="Loại mặt hàng muốn theo dõi"
+          label={t('itemTypeLabel')}
           options={allItemTypes}
           selected={itemTypes}
           onChange={setItemTypes}
@@ -199,11 +203,11 @@ export default function NotificationSettings({ userId }: { userId: string }) {
       <div className="flex gap-2">
         <Button onClick={handleSave} disabled={isPending} className="gap-2">
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {active ? "Cập nhật" : "Bật thông báo"}
+          {active ? tc('update') : t('enable')}
         </Button>
         {active && (
           <Button variant="outline" onClick={handleDisable} disabled={isPending}>
-            Tắt thông báo
+            {t('disable')}
           </Button>
         )}
       </div>

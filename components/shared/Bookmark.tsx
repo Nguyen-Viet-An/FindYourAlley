@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { IEvent } from '@/lib/database/models/event.model'
 import { Button } from '../ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
@@ -17,6 +18,8 @@ const Bookmark = ({
   hasOrdered?: boolean,
   imageIndex?: number
 }) => {
+  const t = useTranslations('bookmark');
+  const tc = useTranslations('common');
   const [isBookmarked, setIsBookmarked] = useState(hasOrdered);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState('');
@@ -86,18 +89,18 @@ const Bookmark = ({
       {/* Primary action button */}
       {!isBookmarked && (
         <Button onClick={openAddDialog} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150 text-white" disabled={loadingOrder}>
-          Lưu
+          {t('save')}
         </Button>
       )}
       {isBookmarked && (
         <Button onClick={handleDelete} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" variant="destructive" disabled={loadingOrder}>
-          Xóa
+          {tc('delete')}
         </Button>
       )}
 
       {/* Note icon (only if note exists) */}
       {isBookmarked && orderId && note.trim() && (
-        <Button type="button" variant="outline" size="icon" onClick={openEditDialog} title="Xem / sửa ghi chú">
+        <Button type="button" variant="outline" size="icon" onClick={openEditDialog} title={t('editNote')}>
           <StickyNote className="w-4 h-4" />
         </Button>
       )}
@@ -107,16 +110,16 @@ const Bookmark = ({
         {open && (
           <DialogContent className="bg-white dark:bg-card">
             <DialogHeader>
-              <DialogTitle>Ghi chú</DialogTitle>
+              <DialogTitle>{t('noteTitle')}</DialogTitle>
             </DialogHeader>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Thêm ghi chú cho sample này (bỏ trống nếu không cần)"
+              placeholder={t('notePlaceholder')}
             />
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => setOpen(false)}>Hủy</Button>
-              <Button type="button" onClick={handleSave}>Lưu</Button>
+              <Button variant="outline" type="button" onClick={() => setOpen(false)}>{tc('back')}</Button>
+              <Button type="button" onClick={handleSave}>{t('save')}</Button>
             </DialogFooter>
           </DialogContent>
         )}

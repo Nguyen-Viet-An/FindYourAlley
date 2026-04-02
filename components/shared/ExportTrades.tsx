@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 
@@ -118,7 +119,7 @@ export default function ExportTrades({
         const parts = [`${i + 1}. ${item.cardOcName} (chủ: ${item.cardOwner})`];
         parts.push(`   Đổi bằng: ${item.offeredOcName}`);
         const contact = item.contactMethod || item.requesterContact;
-        if (contact) parts.push(`   Phương thức liên hệ: ${contact}`);
+        if (contact) parts.push(`   Phương thức iên hệ: ${contact}`);
         if (item.appearance) parts.push(`   Nhận diện: ${item.appearance}`);
         return parts.join("\n");
       }),

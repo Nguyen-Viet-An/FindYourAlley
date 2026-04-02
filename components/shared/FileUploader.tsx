@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import type { FileWithPath } from 'react-dropzone'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ const sanitizeFilename = (filename: string): string => {
 }
 
 export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploaderProps) {
+  const t = useTranslations('fileUpload')
   const [isUploading, setIsUploading] = useState(false)
 
   const onDrop = useCallback(async (acceptedFiles: FileWithPath[]) => {
@@ -148,17 +150,17 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
           />
           {isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="text-white">Uploading...</div>
+              <div className="text-white">{t('uploading')}</div>
             </div>
           )}
         </div>
       ) : (
         <div className="flex-center flex-col py-3 text-grey-500 dark:text-muted-foreground">
           <img src="/assets/icons/upload.svg" width={48} height={48} alt="file upload" />
-          <h3 className="mb-1 mt-1 text-sm">Thả ảnh vào đây</h3>
+          <h3 className="mb-1 mt-1 text-sm">{t('dropHere')}</h3>
           <p className="text-xs mb-2">PNG, JPG</p>
           <Button type="button" size="sm" className="rounded-full" disabled={isUploading}>
-            {isUploading ? 'Đang upload..' : 'Chọn ảnh từ máy tính'}
+            {isUploading ? t('uploadingShort') : t('selectFromComputer')}
           </Button>
         </div>
       )}

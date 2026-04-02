@@ -23,6 +23,7 @@ import { createOcCard, updateOcCard } from "@/lib/actions/ocCard.actions";
 import { Plus, Trash2 } from "lucide-react";
 import FestivalMultiSelect from "./FestivalMultiSelect";
 import type { Option } from "@/components/ui/multiple-selector";
+import { useTranslations } from 'next-intl';
 
 type OcCardFormProps = {
   userId: string;
@@ -41,6 +42,8 @@ type CardImage = {
 };
 
 export default function OcCardForm({ userId, type, card, cardId, festivals = [] }: OcCardFormProps) {
+  const t = useTranslations('ocCard');
+  const tc = useTranslations('common');
   const [images, setImages] = useState<CardImage[]>([
     { file: null, ocName: "", artistName: "", imageUrl: "", description: "" },
   ]);
@@ -172,7 +175,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
   async function onSubmit(values: z.infer<typeof ocCardFormSchema>) {
     // Block submission if any image is still uploading (blob: preview URL)
     if (hasUploading) {
-      alert("Ảnh đang được tải lên, vui lòng chờ giây lát rồi thử lại.");
+      alert(t('uploadWait'));
       return;
     }
 
@@ -229,21 +232,21 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
         {/* Images - each card is an OC */}
         <div className="border rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-4">OC Cards *</h3>
+          <h3 className="text-lg font-medium mb-4">{t('ocCardsSection')}</h3>
           {images.map((img, index) => (
             <div key={index} className="mb-6 p-4 border rounded-md">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium">Card {index + 1}</h4>
+                <h4 className="font-medium">{t('cardNum', { num: index + 1 })}</h4>
                 {images.length > 1 && (
                   <Button type="button" variant="destructive" size="sm" onClick={() => removeImage(index)}>
-                    <Trash2 className="w-4 h-4 mr-1" /> Xóa
+                    <Trash2 className="w-4 h-4 mr-1" /> {t('remove')}
                   </Button>
                 )}
               </div>
               <div className="mb-3">
-                <label className="text-sm font-medium">Tên OC *</label>
+                <label className="text-sm font-medium">{t('ocName')}</label>
                 <Input
-                  placeholder="Tên OC"
+                  placeholder={t('ocNamePlaceholder')}
                   value={img.ocName}
                   onChange={(e) => handleOcNameChange(index, e.target.value)}
                   maxLength={100}
@@ -251,9 +254,9 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
                 />
               </div>
               <div className="mb-3">
-                <label className="text-sm font-medium">Artist vẽ card</label>
+                <label className="text-sm font-medium">{t('artistNameLabel')}</label>
                 <Input
-                  placeholder="Tên artist (nếu có)"
+                  placeholder={t('artistName')}
                   value={img.artistName}
                   onChange={(e) => handleArtistNameChange(index, e.target.value)}
                   maxLength={100}
@@ -269,10 +272,10 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
                   }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground -mt-2 mb-2">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
+              <p className="text-xs text-muted-foreground -mt-2 mb-2">{t('imageHint')}</p>
               <div className="relative">
                 <Input
-                  placeholder="Mô tả ngắn (không bắt buộc)"
+                  placeholder={t('shortDesc')}
                   value={img.description}
                   onChange={(e) => handleDescriptionChange(index, e.target.value)}
                   maxLength={200}
@@ -285,7 +288,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             </div>
           ))}
           <Button type="button" variant="outline" className="w-full" onClick={addImage}>
-            <Plus className="w-4 h-4 mr-2" /> Thêm OC card
+            <Plus className="w-4 h-4 mr-2" /> {t('addCard')}
           </Button>
         </div>
 
@@ -300,7 +303,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
               form.clearErrors("festival");
             }}
             festivals={festivals}
-            promptText="Festival sẽ đổi card"
+            promptText={t('festival')}
           />
           {form.formState.errors.festival && (
             <p className="text-sm font-medium text-destructive mt-1">{form.formState.errors.festival.message}</p>
@@ -309,15 +312,15 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
 
         {/* Owner Info Section */}
         <div className="border rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-4">Thông tin chủ card</h3>
+          <h3 className="text-lg font-medium mb-4">{t('ownerInfo')}</h3>
           <FormField
             control={form.control}
             name="ownerName"
             render={({ field }) => (
               <FormItem className="mb-3">
-                <FormLabel>Tên chủ OC *</FormLabel>
+                <FormLabel>{t('ownerName')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Tên của bạn / nickname" {...field} className="input-field" />
+                  <Input placeholder={t('ownerNamePlaceholder')} {...field} className="input-field" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -328,10 +331,10 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             name="contactMethod"
             render={({ field }) => (
               <FormItem className="mb-3">
-                <FormLabel>Phương thức liên lạc</FormLabel>
+                <FormLabel>{t('contactLabel')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Link FB, SĐT, Zalo, Discord..."
+                    placeholder={t('contactPlaceholder')}
                     {...field}
                     value={field.value || ""}
                     className="input-field"
@@ -351,10 +354,10 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             name="eventTime"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Thời gian</FormLabel>
+                <FormLabel>{t('time')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="VD: 3-5pm 11/3, Chiều CN, Cả ngày"
+                    placeholder={t('timeExample')}
                     {...field}
                     value={field.value || ""}
                     className="input-field"
@@ -370,10 +373,10 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Địa điểm</FormLabel>
+                <FormLabel>{t('location')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="VD: Sảnh A, gian Q22"
+                    placeholder={t('locationExample')}
                     {...field}
                     value={field.value || ""}
                     className="input-field"
@@ -388,19 +391,19 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
 
         {/* Appearance */}
         <div className="border rounded-lg p-4">
-          <h3 className="text-lg font-medium mb-2">Đặc điểm nhận diện</h3>
+          <h3 className="text-lg font-medium mb-2">{t('identifyTitle')}</h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Giúp người khác nhận ra bạn để đổi card.
+            {t('identifyHint')}
           </p>
           <FormField
             control={form.control}
             name="appearanceText"
             render={({ field }) => (
               <FormItem className="mb-3">
-                <FormLabel>Mô tả</FormLabel>
+                <FormLabel>{t('descLabel')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="VD: Mặc áo đen, đội mũ Pikachu"
+                    placeholder={t('descPlaceholder')}
                     {...field}
                     value={field.value || ""}
                     className="input-field"
@@ -412,7 +415,7 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             )}
           />
           <div>
-            <FormLabel>Ảnh/Minh họa (không bắt buộc)</FormLabel>
+            <FormLabel>{t('idImage')}</FormLabel>
             <div className="w-full h-48 mt-1">
               <FileUploader
                 onFieldChange={(url) => {
@@ -427,13 +430,13 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
                 }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('imageHint')}</p>
           </div>
         </div>
 
         <div className="pt-2">
           {hasUploading && (
-            <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">Ảnh đang được tải lên, vui lòng chờ...</p>
+            <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">{t('uploadProgress')}</p>
           )}
           <Button
             type="submit"
@@ -442,10 +445,10 @@ export default function OcCardForm({ userId, type, card, cardId, festivals = [] 
             className="button col-span-2 w-full"
           >
           {form.formState.isSubmitting
-            ? "Đang đăng..."
+            ? t('submitting')
             : type === "Create"
-            ? "Đăng OC card"
-            : "Cập nhật OC card"}
+            ? t('postCard')
+            : t('updateCard')}
         </Button>
         </div>
       </form>

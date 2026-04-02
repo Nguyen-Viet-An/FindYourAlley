@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 import { Button } from '../ui/button'
 import { formUrlQuery } from '@/lib/utils'
@@ -12,6 +13,7 @@ type PaginationProps = {
 }
 
 const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
+  const tp = useTranslations('pagination');
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentPage = Number(page)
@@ -57,7 +59,7 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
     return pages
   }
 
- return (
+  return (
     <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
       <Button
         size="sm"
@@ -66,7 +68,7 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
         onClick={() => onClick(currentPage - 1)}
         disabled={currentPage <= 1}
       >
-        Trước
+        {tp('previous')}
       </Button>
 
       {getPageNumbers().map((pageNum, idx) => (
@@ -89,7 +91,7 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
         onClick={() => onClick(currentPage + 1)}
         disabled={currentPage >= totalPages}
       >
-        Sau
+        {tp('next')}
       </Button>
     </div>
   )

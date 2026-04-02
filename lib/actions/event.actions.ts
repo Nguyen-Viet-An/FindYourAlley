@@ -745,6 +745,34 @@ export async function getPopularFandoms(limit = 5, festivalIds?: string[]) {
   return results.map((r: any) => ({ name: r._id, value: r.count }));
 }
 
+export async function getTotalFandomCount(festivalIds?: string[]) {
+  await connectToDatabase();
+
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
+    { $unwind: "$images" },
+    { $unwind: "$images.category" },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "images.category",
+        foreignField: "_id",
+        as: "categoryDoc"
+      }
+    },
+    { $unwind: "$categoryDoc" },
+    { $match: { "categoryDoc.type": "fandom" } },
+    { $group: { _id: "$categoryDoc.name" } },
+    { $count: "total" }
+  );
+
+  const results = await Event.aggregate(pipeline);
+  return results[0]?.total ?? 0;
+}
+
 export async function getPopularItemTypes(limit = 5, festivalIds?: string[]) {
   await connectToDatabase();
 
@@ -791,11 +819,15 @@ export async function getAllExtraTags(festivalIds?: string[]) {
   return normalized;
 }
 
-export async function getEventsByTag(tag: string) {
+export async function getEventsByTag(tag: string, festivalIds?: string[]) {
   await connectToDatabase();
   const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`^${escapeRegExp(tag)}$`, 'i');
-  const events = await Event.find({ extraTag: regex }).populate("organizer").lean();
+  const filter: any = { extraTag: regex };
+  if (festivalIds?.length) {
+    filter.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+  }
+  const events = await Event.find(filter).populate("organizer").lean();
   return JSON.parse(JSON.stringify(events));
 }
 
@@ -929,7 +961,40 @@ export async function getMostBookmarkedEvents(limit = 5, festivalIds?: string[])
   return results.map((e: any) => ({ id: e._id.toString(), title: e.title, count: e.bookmarkCount, imageUrl: e.images?.[0]?.imageUrl || '' }));
 }
 
-// GET FEATURED PRODUCTS (events that have a featuredProduct set)
+export async function getPreorderCount(festivalIds?: string[]) {
+  await connectToDatabase();
+  const filter: any = { hasPreorder: 'Yes' };
+  if (festivalIds?.length) {
+    filter.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+  }
+  return Event.countDocuments(filter);
+}
+
+export async function getDealCount(festivalIds?: string[]) {
+  await connectToDatabase();
+  const filter: any = { dealBadge: { $exists: true, $ne: '' } };
+  if (festivalIds?.length) {
+    filter.festival = { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) };
+  }
+  return Event.countDocuments(filter);
+}
+
+export async function getMultiDayStats(festivalIds?: string[]) {
+  await connectToDatabase();
+  const pipeline: any[] = [];
+  if (festivalIds?.length) {
+    pipeline.push({ $match: { festival: { $in: festivalIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+  }
+  pipeline.push(
+    { $match: { attendDays: { $exists: true, $not: { $size: 0 } } } },
+    { $unwind: '$attendDays' },
+    { $group: { _id: '$attendDays', count: { $sum: 1 } } },
+    { $sort: { _id: 1 } }
+  );
+  const results = await Event.aggregate(pipeline);
+  return results.map((r: any) => ({ name: `Day ${r._id}`, value: r.count }));
+}
+
 export async function getFeaturedProducts(festivalIds?: string[]) {
   try {
     await connectToDatabase();

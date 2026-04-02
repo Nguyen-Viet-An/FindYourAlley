@@ -1,26 +1,41 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import createMiddleware from 'next-intl/middleware';
+import { routing } from '@/i18n/routing';
+
+const intlMiddleware = createMiddleware(routing);
 
 const isPublicRoute = createRouteMatcher([
     '/',
-    '/stats',
-    '/tags',
-    '/map',
-    '/tags/:tag',
-    '/events/:id',
-    '/oc-cards',
-    '/oc-cards/:id',
-    '/artists(.*)',
-    '/gallery',
-    '/featured',
-    '/stamprally',
-    '/guide',
+    '/:locale',
+    '/:locale/stats',
+    '/:locale/tags',
+    '/:locale/map',
+    '/:locale/tags/:tag',
+    '/:locale/events/:id',
+    '/:locale/oc-cards',
+    '/:locale/oc-cards/:id',
+    '/:locale/artists(.*)',
+    '/:locale/gallery',
+    '/:locale/featured',
+    '/:locale/stamprally',
+    '/:locale/guide',
     '/api/webhooks(.*)',
-    '/sign-in(.*)', '/sign-up(.*)'])
+    '/:locale/sign-in(.*)', '/:locale/sign-up(.*)'])
 
 export default clerkMiddleware(async (auth, request) => {
+  // Run intl middleware for locale detection/redirect
+  const response = intlMiddleware(request);
+
+  // If intl middleware is redirecting (e.g. / → /vi), let it through
+  if (response.headers.get('location')) {
+    return response;
+  }
+
   if (!isPublicRoute(request)) {
     await auth.protect()
   }
+
+  return response;
 })
 
 export const config = {

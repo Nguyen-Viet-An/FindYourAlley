@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { updateTradeRequestStatus } from "@/lib/actions/tradeRequest.actions";
 import { Check, X } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 type Props = {
   requestId: string;
@@ -15,6 +16,7 @@ type Props = {
 export default function TradeRequestAction({ requestId, userId, status: initialStatus }: Props) {
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
+  const t = useTranslations('trade');
 
   const handleAction = async (newStatus: "accepted" | "declined") => {
     setLoading(true);
@@ -29,11 +31,11 @@ export default function TradeRequestAction({ requestId, userId, status: initialS
   };
 
   if (status === "accepted") {
-    return <Badge className="bg-green-500 text-white">Đã chấp nhận</Badge>;
+    return <Badge className="bg-green-500 text-white">{t('accepted')}</Badge>;
   }
 
   if (status === "declined") {
-    return <Badge variant="secondary">Đã từ chối</Badge>;
+    return <Badge variant="secondary">{t('rejected')}</Badge>;
   }
 
   return (

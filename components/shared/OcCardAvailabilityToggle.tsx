@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toggleOcCardAvailability } from "@/lib/actions/ocCard.actions";
+import { useTranslations } from 'next-intl';
 
 type Props = {
   cardId: string;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export default function OcCardAvailabilityToggle({ cardId, userId, initialAvailable }: Props) {
+  const t = useTranslations('ocCard');
   const [available, setAvailable] = useState(initialAvailable);
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +36,7 @@ export default function OcCardAvailabilityToggle({ cardId, userId, initialAvaila
       disabled={loading}
       className="text-xs"
     >
-      {available ? "Đánh dấu hết card" : "Đánh dấu còn card"}
+      {available ? t('markUnavailable') : t('markAvailable')}
     </Button>
   );
 }

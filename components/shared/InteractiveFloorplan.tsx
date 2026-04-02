@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { BoothEventMap } from '@/types';
 import { BoothPosition } from '@/lib/utils/floormap';
 import { getFestivalLayout, FestivalLayout, DEFAULT_SECTION_COLOR } from '@/lib/utils/boothLayout';
@@ -44,6 +45,7 @@ export default function InteractiveFloorplan({
   stampRallies,
   festivalCode
 }: InteractiveFloorplanProps) {
+  const t = useTranslations('map');
   const [layout, setLayout] = useState<FestivalLayout | null>(null);
   const [booths, setBooths] = useState<BoothPosition[]>([]);
   const [hoveredBooth, setHoveredBooth] = useState<HoverData | null>(null);
@@ -560,7 +562,7 @@ export default function InteractiveFloorplan({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-lg">Loading floor map...</div>
+        <div className="text-lg">{t('loading')}</div>
       </div>
     );
   }
@@ -577,7 +579,7 @@ export default function InteractiveFloorplan({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-           📍 Gian hàng
+           📍 {t('boothMode')}
         </button>
         <button
           onClick={() => setViewMode('rally')}
@@ -587,34 +589,36 @@ export default function InteractiveFloorplan({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          🗳 Stamp Rally
+          🗳 {t('rallyMode')}
         </button>
       </div>
 
-      {/* Zoom controls */}
+      {/* Zoom controls - hidden on mobile (use pinch to zoom instead) */}
+      {!isMobile && (
       <div className="flex justify-center gap-1.5 mb-2">
         <button
           onClick={() => handleZoom(0.7)}
           className="px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-muted dark:hover:bg-muted/80 text-xs font-medium"
-          title="Phóng to"
+          title={t('zoomIn')}
         >
           🔍+
         </button>
         <button
           onClick={() => handleZoom(1.4)}
           className="px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-muted dark:hover:bg-muted/80 text-xs font-medium"
-          title="Thu nhỏ"
+          title={t('zoomOut')}
         >
           🔍−
         </button>
         <button
           onClick={handleResetZoom}
           className="px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-muted dark:hover:bg-muted/80 text-xs font-medium"
-          title="Đặt lại"
+          title={t('reset')}
         >
           ↺ Reset
         </button>
       </div>
+      )}
 
       {/* SVG Floorplan */}
       <svg
@@ -895,7 +899,7 @@ export default function InteractiveFloorplan({
                 )}
               </h4>
               <p className="text-xs text-gray-600 mt-1">
-                Vị trí gian: {hoveredBooth.boothLabel}
+                {t('boothPosition')}: {hoveredBooth.boothLabel}
               </p>
             </div>
 
@@ -950,13 +954,13 @@ export default function InteractiveFloorplan({
 
               <div className="space-y-3">
                 <div>
-                  <span className="font-medium text-gray-700">Vị trí gian:</span>
+                  <span className="font-medium text-gray-700">{t('boothPosition')}:</span>
                   <span className="ml-2 text-gray-900">{focusedBooth.boothLabel}</span>
                 </div>
 
                 {focusedBooth.boothName && (
                   <div>
-                    <span className="font-medium text-gray-700">Tên gian:</span>
+                    <span className="font-medium text-gray-700">{t('boothName')}:</span>
                     {focusedBooth.boothName.includes('\n') ? (
                       <div className="mt-1 space-y-1">
                         {focusedBooth.boothName.split('\n').map((line, i) => (
@@ -971,19 +975,19 @@ export default function InteractiveFloorplan({
 
                 {focusedBooth.allEvents && focusedBooth.allEvents.length > 1 && (
                   <div className="mt-4">
-                    <span className="font-medium text-gray-700 block mb-2">Tất cả sample:</span>
+                    <span className="font-medium text-gray-700 block mb-2">{t('allSamples')}</span>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {focusedBooth.allEvents.map((event, index) => (
                         <div key={event.eventId} className="border border-gray-200 rounded p-2 text-sm">
                           <h4 className="font-medium text-gray-900 line-clamp-1">{event.title}</h4>
                           {event.attendDays && event.attendDays.length > 0 && (
-                            <span className="text-xs text-gray-500">Ngày {event.attendDays.join(', ')}</span>
+                            <span className="text-xs text-gray-500">{t('day', { day: event.attendDays.join(', ') })}</span>
                           )}
                           <a
                             href={`/events/${event.eventId}`}
                             className="text-xs text-blue-600 hover:text-blue-800 underline ml-1"
                           >
-                            Chi tiết
+                            {t('details')}
                           </a>
                         </div>
                       ))}
@@ -998,7 +1002,7 @@ export default function InteractiveFloorplan({
                     href={`/events/${focusedBooth.eventId}`}
                     className="flex-1 bg-primary-500 text-white text-center py-3 px-4 rounded-lg hover:bg-primary-600 transition-colors font-medium"
                   >
-                    Thông tin chi tiết
+                    {t('fullDetails')}
                   </a>
                 </div>
               )}
@@ -1035,7 +1039,7 @@ export default function InteractiveFloorplan({
 
             <div className="p-4">
               <div className="mb-4">
-                <h4 className="font-semibold text-gray-800 mb-2">🎯 Quy tắc tham gia:</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">{t('rallyRules')}</h4>
                 <div className="bg-gray-50 rounded-lg p-3">
                   <div className="text-sm text-gray-700 whitespace-pre-line">
                     {focusedStampRally.rules}
@@ -1048,7 +1052,7 @@ export default function InteractiveFloorplan({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 underline"
                       >
-                        🔗 Xem bài đăng chính thức
+                        {t('rallyOfficialLink')}
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
@@ -1060,7 +1064,7 @@ export default function InteractiveFloorplan({
 
               <div className="mb-4">
                 <h4 className="font-semibold text-gray-800 mb-2">
-                  🏪 Các gian tham gia ({focusedStampRally.booths.length} trạm):
+                  🏪 {t('rallyBooths', { count: focusedStampRally.booths.length })}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {expandBoothCodes(focusedStampRally.booths).map((boothCode, index) => {
@@ -1109,9 +1113,9 @@ export default function InteractiveFloorplan({
       {/* Booth count summary */}
       <div className="mt-4 text-sm text-gray-600 text-center">
         {viewMode === 'booth' ? (
-          <>Tổng cộng: {booths.length} gian </>
+          <>{t('totalBooths', { count: booths.length })} </>
         ) : (
-          <>Số lượng Stamp Rally: {stampRallies.length} | Tổng hợp bởi: Vu Huyen Anh (Fb)</>
+          <>{t('rallyCount', { count: stampRallies.length })} | {t('rallyCredit')}</>
         )}
       </div>
 
@@ -1123,7 +1127,7 @@ export default function InteractiveFloorplan({
             {/* Stamp Rally Selector - Only shown in rally mode */}
       {viewMode === 'rally' && (
         <div className="mb-4 bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Chọn Stamp Rally (có thể chọn nhiều):</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('selectRally')}</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {stampRallies.map((rally, index) => {
               const isSelected = selectedRallies.some(r => r.name === rally.name);
@@ -1162,7 +1166,7 @@ export default function InteractiveFloorplan({
                       <span className="font-medium text-gray-900 text-sm">{rally.name}</span>
                     </div>
                     <p className="text-xs text-gray-600 mt-1">
-                      {expandBoothCodes(rally.booths).length} trạm
+                      {t('rallyBooths', { count: expandBoothCodes(rally.booths).length })}
                     </p>
                   </div>
                 </label>
@@ -1177,7 +1181,7 @@ export default function InteractiveFloorplan({
               }}
               className="mt-3 w-full text-sm text-gray-600 hover:text-gray-800 underline"
             >
-              Xóa tất cả lựa chọn ({selectedRallies.length})
+              {t('clearSelection', { count: selectedRallies.length })}
             </button>
           )}
         </div>

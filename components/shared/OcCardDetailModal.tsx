@@ -16,6 +16,7 @@ import OcCardAvailabilityToggle from "./OcCardAvailabilityToggle";
 import DeleteOcCard from "./DeleteOcCard";
 import { getTradeRequestsForCard } from "@/lib/actions/tradeRequest.actions";
 import type { OcCard } from "@/types";
+import { useTranslations } from 'next-intl';
 
 type Props = {
   card: OcCard;
@@ -41,6 +42,7 @@ export default function OcCardDetailModal({
   onClose,
 }: Props) {
   const image = card.images?.[imageIndex] || card.images?.[0];
+  const t = useTranslations('ocCard');
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -59,7 +61,7 @@ export default function OcCardDetailModal({
                 <Link href={`/oc-cards/${card._id}`} className="text-xl font-bold hover:text-primary-500 transition-colors">
                   {image?.ocName || 'OC Card'}
                 </Link>
-                <p className="text-muted-foreground text-sm">OC thuộc về {card.ownerName}</p>
+                <p className="text-muted-foreground text-sm">{t('belongsTo', { name: card.ownerName })}</p>
                 {/* {image?.artistName && (
                   <p className="text-xs text-muted-foreground">Artist: {image.artistName}</p>
                 )} */}
@@ -86,23 +88,23 @@ export default function OcCardDetailModal({
                   ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
                   : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
               }`}>
-                {card.available ? "Còn đổi" : "Hết card"}
+                {card.available ? t('available') : t('unavailable')}
               </span>
               {card.festival?.map((f: any) => (
                 <Badge key={f._id} variant="outline" className="text-xs">
                   {f.code || f.name}
                 </Badge>
               ))}
-              <span className="text-xs text-muted-foreground">{tradeCount.total} người muốn đổi</span>
+              <span className="text-xs text-muted-foreground">{t('wantTradeCount', { count: tradeCount.total })}</span>
               {/* Requester's request status */}
               {!isOwner && alreadyRequested && requestStatus === "accepted" && (
-                <Badge className="bg-green-500 text-white text-xs">Đã chấp nhận</Badge>
+                <Badge className="bg-green-500 text-white text-xs">{t('accepted')}</Badge>
               )}
               {!isOwner && alreadyRequested && requestStatus === "declined" && (
-                <Badge variant="secondary" className="text-xs">Đã từ chối</Badge>
+                <Badge variant="secondary" className="text-xs">{t('rejected')}</Badge>
               )}
               {!isOwner && alreadyRequested && requestStatus === "pending" && (
-                <Badge variant="outline" className="text-xs">Đang chờ</Badge>
+                <Badge variant="outline" className="text-xs">{t('pending')}</Badge>
               )}
               {isOwner && (
                 <OcCardAvailabilityToggle cardId={card._id} userId={userId!} initialAvailable={card.available} />
@@ -125,14 +127,14 @@ export default function OcCardDetailModal({
             {(card.appearance?.text || card.appearance?.imageUrl) && (
               <div className="border rounded-lg p-3">
                 <h4 className="font-semibold text-sm mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5" /> Đặc điểm nhận diện
+                  <User className="w-3.5 h-3.5" /> {t('identifyTitle')}
                 </h4>
                 {card.appearance?.text && <p className="text-sm mb-1.5">{card.appearance.text}</p>}
                 {card.appearance?.imageUrl && (
-                  <CardLightbox imageUrl={card.appearance.imageUrl} alt="Ảnh nhận diện" renderImage={false}>
+                  <CardLightbox imageUrl={card.appearance.imageUrl} alt={t('idImage')} renderImage={false}>
                     <Image
                       src={card.appearance.imageUrl}
-                      alt="Ảnh nhận diện"
+                      alt={t('idImage')}
                       width={150}
                       height={150}
                       className="rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
@@ -146,7 +148,7 @@ export default function OcCardDetailModal({
             {/* Contact */}
             {card.contactMethod && (
               <div className="text-sm">
-                <p className="font-semibold mb-1">Phương thức liên lạc</p>
+                <p className="font-semibold mb-1">{t('contactMethod')}</p>
                 <p className="break-all text-muted-foreground">{card.contactMethod}</p>
               </div>
             )}
@@ -176,6 +178,7 @@ export default function OcCardDetailModal({
 }
 
 function OwnerTradeRequests({ cardId, userId, open, imageIndex }: { cardId: string; userId: string; open: boolean; imageIndex: number }) {
+  const t = useTranslations('ocCard');
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -190,20 +193,20 @@ function OwnerTradeRequests({ cardId, userId, open, imageIndex }: { cardId: stri
   }, [open, cardId, imageIndex]);
 
   if (loading) {
-    return <p className="text-xs text-muted-foreground">Đang tải...</p>;
+    return <p className="text-xs text-muted-foreground">{t('loading')}</p>;
   }
 
   if (!requests.length) {
     return (
       <div className="border rounded-lg p-3 text-xs text-muted-foreground">
-        Chưa có ai muốn đổi card này.
+        {t('noTradeRequests')}
       </div>
     );
   }
 
   return (
     <div className="border rounded-lg p-3">
-      <h4 className="font-semibold text-sm mb-2">Danh sách muốn đổi ({requests.length})</h4>
+      <h4 className="font-semibold text-sm mb-2">{t('tradeListTitle', { count: requests.length })}</h4>
       <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
         {requests.map((req: any) => {
           const name = req.requester
@@ -219,7 +222,7 @@ function OwnerTradeRequests({ cardId, userId, open, imageIndex }: { cardId: stri
                 <p className="text-xs text-muted-foreground">{req.message}</p>
               )}
               {req.contactMethod && (
-                <p className="text-xs text-muted-foreground">Phương thức liên lạc: <span className="font-medium text-foreground">{req.contactMethod}</span></p>
+                <p className="text-xs text-muted-foreground"> {t('contactMethod')}: <span className="font-medium text-foreground">{req.contactMethod}</span></p>
               )}
               {req.linkedCard && (
                 <Link
@@ -240,7 +243,7 @@ function OwnerTradeRequests({ cardId, userId, open, imageIndex }: { cardId: stri
                     <p className="text-xs font-medium truncate">
                       {req.linkedCard.images?.[0]?.ocName || req.linkedCard.ownerName}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">Card đề xuất đổi</p>
+                    <p className="text-[10px] text-muted-foreground">{t('proposedCard')}</p>
                   </div>
                 </Link>
               )}

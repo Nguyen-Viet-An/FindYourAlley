@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from 'next-intl';
 import { Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ShareButton({ title }: { title?: string }) {
+  const t = useTranslations('share');
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -28,7 +30,7 @@ export default function ShareButton({ title }: { title?: string }) {
   return (
     <Button variant="outline" size="sm" onClick={handleShare} className="gap-2">
       {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-      {copied ? "Đã copy link!" : "Chia sẻ"}
+      {copied ? t('copied') : t('share')}
     </Button>
   );
 }

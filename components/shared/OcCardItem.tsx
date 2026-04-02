@@ -8,6 +8,7 @@ import type { OcCard } from "@/types";
 import OcCardDetailModal from "./OcCardDetailModal";
 import DeleteOcCard from "./DeleteOcCard";
 import { Pencil } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 type OcCardItemProps = {
   card: OcCard;
@@ -30,6 +31,7 @@ export default function OcCardItem({
 }: OcCardItemProps) {
   const [imgError, setImgError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const t = useTranslations('ocCard');
 
   if (!card) return null;
 
@@ -86,7 +88,7 @@ export default function OcCardItem({
                   ? 'bg-green-500/80 text-white'
                   : 'bg-red-500/80 text-white'
               }`}>
-                {card.available ? "Còn đổi" : "Hết card"}
+                {card.available ? t('available') : t('unavailable')}
               </span>
               {alreadyRequested && requestStatus && (
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
@@ -96,7 +98,7 @@ export default function OcCardItem({
                       ? 'bg-gray-400/80 text-white'
                       : 'bg-yellow-400/80 text-white'
                 }`}>
-                  {requestStatus === 'accepted' ? 'Đã chấp nhận' : requestStatus === 'declined' ? 'Đã từ chối' : 'Đang chờ'}
+                  {requestStatus === 'accepted' ? t('accepted') : requestStatus === 'declined' ? t('rejected') : t('pending')}
                 </span>
               )}
             </div>
@@ -105,7 +107,7 @@ export default function OcCardItem({
               <p className="text-white/60 text-xs truncate">🎨 {image.artistName}</p>
             )}
             <p className="text-white/70 text-xs mt-1">
-              {tradeCount.total} người muốn đổi
+              {t('wantTrade', { count: tradeCount.total })}
             </p>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,16 @@ import {
 } from "@/components/ui/popover";
 
 const HasDealFilter = () => {
+  const tc = useTranslations('common');
+  const tf = useTranslations('filter');
   const [selectedValue, setSelectedValue] = useState<string>("All");
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const options = [
-    { value: "All", label: "Bất kì" },
-    { value: "Yes", label: "Có ưu đãi" },
+    { value: "All", label: tc('any') },
+    { value: "Yes", label: tf('hasDeal') },
   ];
 
   const onSelectValue = (value: string) => {
@@ -42,7 +45,7 @@ const HasDealFilter = () => {
     setSelectedValue(currentValue === "true" ? "Yes" : "All");
   }, [searchParams]);
 
-  const displayValue = options.find(option => option.value === selectedValue)?.label || "Bất kì";
+  const displayValue = options.find(option => option.value === selectedValue)?.label || tc('any');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

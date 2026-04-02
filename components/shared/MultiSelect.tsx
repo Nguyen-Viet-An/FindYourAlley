@@ -1,4 +1,5 @@
 "use client"
+import { useTranslations } from 'next-intl'
 import { ICategory } from "@/lib/database/models/category.model"
 import { startTransition, useEffect, useState } from "react"
 import { Loader2 } from "lucide-react";
@@ -25,6 +26,8 @@ type MultiSelectProps = {
 };
 
 const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectProps) => {
+    const tm = useTranslations('multiSelect');
+    const tc = useTranslations('common');
     const [categories, setCategories] = useState<ICategory[]>([]); // State for categories
     const [isLoaded, setIsLoaded] = useState(false); // Track whether data is loaded
     const [newCategory, setNewCategory] = useState(''); // State for new category input
@@ -63,9 +66,9 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
 
   // Localized title
   const getDialogTitle = () => {
-    if (categoryType === 'fandom') return 'Fandom mới';
-    if (categoryType === 'itemType') return 'Loại mặt hàng mới';
-    return `Tag ${categoryType} mới`;
+    if (categoryType === 'fandom') return tm('newFandom');
+    if (categoryType === 'itemType') return tm('newItemType');
+    return tm('newTag', { type: categoryType });
   };
 
   return (
@@ -79,20 +82,20 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
           className="bg-grey-50 dark:bg-muted rounded-full"
           emptyIndicator={
             <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-              Không tìm thấy tag.
+              {tm('noTagFound')}
             </p>
           }
         />
       ) : (
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-base">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Đang tải tag...</span>
+          <span>{tm('loadingTags')}</span>
         </div>
       )}
 
       <AlertDialog>
         <AlertDialogTrigger className="p-medium-14 flex w-full rounded-sm py-3 pl-8 text-primary-500 hover:bg-primary-50 focus:text-primary-500">
-          Không có tag bạn đang tìm? Nhấn vào đây để thêm.
+          {tm('noTagHint')}
         </AlertDialogTrigger>
         <AlertDialogContent className="bg-white dark:bg-card">
           <AlertDialogHeader>
@@ -100,7 +103,7 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
             <AlertDialogDescription>
               <Input
                 type="text"
-                placeholder="Tên tag"
+                placeholder={tm('tagName')}
                 className="input-field mt-3"
                   value={newCategory} // Bind input value
                   onChange={(e) => setNewCategory(e.target.value)} // Handle input change
@@ -108,9 +111,9 @@ const MultiSelect = ({ value, onChange, promptText, categoryType }: MultiSelectP
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Quay lại</AlertDialogCancel>
+            <AlertDialogCancel>{tc('back')}</AlertDialogCancel>
             <AlertDialogAction onClick={() => startTransition(handleAddCategory)}>
-              Thêm
+              {tc('add')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

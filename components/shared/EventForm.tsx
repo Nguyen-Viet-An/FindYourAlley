@@ -12,6 +12,7 @@ import MultiSelect from "./MultiSelect"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUploader } from "./FileUploader"
 import { useState, useEffect} from "react"
+import { useTranslations } from 'next-intl'
 import Image from "next/image"
 import DatePicker from "react-datepicker";
 
@@ -57,6 +58,8 @@ const mapOptionsToCategories = (options: { value: string; label: string }[]) =>
   options.map(option => option.value);
 
 const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormProps) => {
+  const t = useTranslations('eventForm');
+  const tc = useTranslations('common');
   // State for images with categories
   const [imagesWithCategories, setImagesWithCategories] = useState<ImageWithCategories[]>([]);
   const [featuredFile, setFeaturedFile] = useState<File | null>(null);
@@ -90,7 +93,7 @@ const EventForm = ({ userId, type, event, eventId, festivals = [] }: EventFormPr
     const totalDays = Math.round((e.getTime() - s.getTime()) / (1000*60*60*24)) + 1;
     for (let i = 0; i < totalDays; i++) {
       const d = new Date(s); d.setDate(d.getDate() + i);
-      festivalDays.push({ dayNum: i + 1, date: d, label: `Ngày ${i + 1} (${d.getDate()}/${d.getMonth() + 1})` });
+      festivalDays.push({ dayNum: i + 1, date: d, label: tc('dayLabel', { day: i + 1, date: `${d.getDate()}/${d.getMonth() + 1}` }) });
     }
   }
 
@@ -577,7 +580,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <Input placeholder="Tên gian hàng (ví dụ: Gà Rán)" {...field} className="input-field" />
+                  <Input placeholder={t('boothName')} {...field} className="input-field" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -596,7 +599,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 form.clearErrors("festival");
               }}
               festivals={festivals}
-              promptText="Festival gian hàng tham gia"
+              promptText={t('festivalLabel')}
             />
             {form.formState.errors.festival && (
               <p className="text-sm font-medium text-destructive mt-1">{form.formState.errors.festival.message}</p>
@@ -609,7 +612,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
           <div className="border rounded-lg p-4">
             <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-blue-500" />
-              Gian hàng tham gia ngày nào? <span className="text-xs text-muted-foreground font-normal">({multiDayFestival.code || multiDayFestival.name})</span>
+              {t('dayQuestion')} <span className="text-xs text-muted-foreground font-normal">({multiDayFestival.code || multiDayFestival.name})</span>
             </h3>
             <div className="flex gap-2 flex-wrap">
               {festivalDays.map(fd => (
@@ -628,7 +631,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
               ))}
             </div>
             {selectedDays.length === 0 && (
-              <p className="text-xs text-red-500 mt-2">Vui lòng chọn ít nhất 1 ngày</p>
+              <p className="text-xs text-red-500 mt-2">{t('dayRequired')}</p>
             )}
           </div>
         )}
@@ -636,7 +639,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         {/* Booth number per festival */}
         {festivalIds.length > 0 && (
           <div className="flex flex-col gap-3">
-            <FormLabel>Số hiệu gian</FormLabel>
+            <FormLabel>{t('boothNumber')}</FormLabel>
             {festivalIds.map((fid) => {
               const fest = festivals.find((f: any) => f._id === fid);
               const label = fest ? (fest.code || fest.name) : fid;
@@ -647,7 +650,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 <div key={fid} className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
                   <span className="text-sm text-grey-600 dark:text-muted-foreground whitespace-nowrap mr-3 font-medium">{label}:</span>
                   <Input
-                    placeholder={`VD: B12, B13 hoặc Q22-Q24`}
+                    placeholder={t('boothNumberHint')}
                     value={currentValue}
                     onChange={(e) => {
                       const updated = [...(form.getValues('boothNumbers') || [])];
@@ -675,7 +678,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl className="h-72">
-                  <Textarea placeholder="Mô tả/giới thiệu về gian hàng" {...field} className="textarea rounded-2xl" />
+                  <Textarea placeholder={t('description')} {...field} className="textarea rounded-2xl" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -706,7 +709,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         <FormItem className="w-full">
                           <FormControl>
                             <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
-                              <Input placeholder="Tên artist" {...field} className="input-field" />
+                              <Input placeholder={t('artistName')} {...field} className="input-field" />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -721,7 +724,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         <FormItem className="w-full">
                           <FormControl>
                             <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
-                              <Input placeholder="Link tới trang cá nhân/blog của artist" {...field} value={field.value || ""} className="input-field" />
+                              <Input placeholder={t('artistLink')} {...field} value={field.value || ""} className="input-field" />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -738,12 +741,12 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                   onClick={addArtist}
                 >
                   <PlusCircle className="h-4 w-4" />
-                  Thêm artist
+                  {tc('addArtist')}
                 </Button>
               </div>
         {/* Multiple Images Section */}
         <div className="border rounded-lg p-4 mt-4">
-          <h3 className="text-lg font-medium mb-4">Ảnh sample</h3>
+          <h3 className="text-lg font-medium mb-4">{t('sampleImages')}</h3>
 
           {imagesWithCategories.map((imageWithCat: ImageWithCategories, index: number) => (
             <div key={index} className="mb-8 p-4 border rounded-md">
@@ -757,7 +760,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                     onClick={() => removeImageEntry(index)}
                     className="flex items-center"
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Xóa
+                    <Trash2 className="w-4 h-4 mr-1" /> {tc('delete')}
                   </Button>
                 )}
               </div>
@@ -775,26 +778,26 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                   }}
                 />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('imageSizeHint')}</p>
               </div>
 
               {/* Categories for this image */}
               <div className="flex flex-col gap-4">
                 <div className="w-full">
-                  <FormLabel>Các fandom xuất hiện trong ảnh sample</FormLabel>
+                  <FormLabel>{t('fandomLabel')}</FormLabel>
                   <MultiSelect
                     onChange={(value) => handleFandomCategoriesChange(index, value)}
                     value={imageWithCat.fandomCategories}
-                    promptText="Chọn fandom cho ảnh này"
+                    promptText={t('fandomHint')}
                     categoryType="fandom"
                   />
                 </div>
                 <div className="w-full">
-                  <FormLabel>Các loại mặt hàng xuất hiện trong ảnh sample</FormLabel>
+                  <FormLabel>{t('itemTypeLabel')}</FormLabel>
                   <MultiSelect
                     onChange={(value) => handleItemTypeCategoriesChange(index, value)}
                     value={imageWithCat.itemTypeCategories}
-                    promptText="Chọn loại mặt hàng cho ảnh này"
+                    promptText={t('itemTypeHint')}
                     categoryType="itemType"
                   />
                 </div>
@@ -808,7 +811,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             className="w-full flex items-center justify-center"
             onClick={addImageEntry}
           >
-            <Plus className="w-4 h-4 mr-2" /> Thêm ảnh
+            <Plus className="w-4 h-4 mr-2" /> {tc('addImage')}
           </Button>
         </div>
 
@@ -823,7 +826,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                     <TagInput
                       value={field.value || []}
                       onChange={field.onChange}
-                      placeholder="Thêm tag khác (không thuộc fandom hay mặt hàng, ví dụ: couple, nhân vật... - phân cách bằng dấu phẩy hoặc Enter)"
+                      placeholder={t('extraTags')}
                       className="flex-1 bg-transparent p-0 border-0 outline-none"
                     />
                   </div>
@@ -840,7 +843,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             name="hasPreorder"
             render={({ field }) => (
               <FormItem className="w-full">
-                <h3 className="text-lg font-medium mb-4">Gian hàng của bạn có mở preorder không?</h3>
+                <h3 className="text-lg font-medium mb-4">{t('preorderQuestion')}</h3>
                 <FormControl>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
@@ -852,7 +855,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         className="peer hidden"
                       />
                       <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "Yes" ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-muted"}`}>
-                        Có
+                        {tc('yes')}
                       </div>
                     </label>
                     <label className="flex items-center gap-2">
@@ -864,7 +867,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         className="peer hidden"
                       />
                       <div className={`cursor-pointer border px-4 py-2 rounded-md ${field.value === "No" ? "bg-primary-500 text-white" : "bg-gray-200 dark:bg-muted"}`}>
-                        Không
+                        {tc('no')}
                       </div>
                     </label>
                   </div>
@@ -889,7 +892,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         height={18}
                         className="filter-grey"
                       />
-                      <p className="ml-2 whitespace-nowrap text-grey-600 dark:text-muted-foreground text-sm">Mở đơn:</p>
+                      <p className="ml-2 whitespace-nowrap text-grey-600 dark:text-muted-foreground text-sm">{t('openOrder')}</p>
                       <DatePicker
                         selected={field.value}
                         onChange={(date: Date | null) => field.onChange(date)}
@@ -920,7 +923,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                         height={18}
                         className="filter-grey"
                       />
-                      <p className="ml-2 whitespace-nowrap text-grey-600 dark:text-muted-foreground text-sm">Đóng đơn:</p>
+                      <p className="ml-2 whitespace-nowrap text-grey-600 dark:text-muted-foreground text-sm">{t('closeOrder')}</p>
                       <DatePicker
                         selected={field.value}
                         onChange={(date: Date | null) => field.onChange(date)}
@@ -946,7 +949,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 <FormItem className="w-full">
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
-                      <Input placeholder="Link preorder (nhiều link: Artist1: link1 | Artist2: link2)" {...field} value={field.value || ""} className="input-field" />
+                      <Input placeholder={t('preorderLink')} {...field} value={field.value || ""} className="input-field" />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -958,12 +961,12 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         <div className="border rounded-lg p-4 mt-4">
           <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
             <Star className="h-5 w-5 text-yellow-500" />
-            Mặt hàng nổi bật <span className="text-xs text-muted-foreground font-normal">(không bắt buộc)</span>
+            {t('featuredItem')} <span className="text-xs text-muted-foreground font-normal">{t('featuredOptional')}</span>
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">Chọn 1 mặt hàng tâm đắc nhất để giới thiệu riêng.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t('featuredHint')}</p>
 
           <div className="mb-4">
-            <FormLabel>Ảnh mặt hàng</FormLabel>
+            <FormLabel>{t('featuredImageLabel')}</FormLabel>
             <div className="w-full h-48">
               <FileUploader
                 onFieldChange={(url) => {
@@ -979,7 +982,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
                 }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Ảnh nên ≤ 3MB để đảm bảo tải lên thành công</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('imageSizeHint')}</p>
           </div>
 
           <FormField
@@ -987,7 +990,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             name="featuredProductDescription"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Mô tả ngắn mặt hàng nổi bật</FormLabel>
+                <FormLabel>{t('featuredDesc')}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input placeholder="VD: Acrylic standee Arlecchino 15cm - limited edition" {...field} value={field.value || ''} className="input-field" maxLength={200} />
@@ -1006,19 +1009,19 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
         <div className="border rounded-lg p-4 mt-4">
           <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
             <Tag className="h-5 w-5 text-green-500" />
-            Ưu đãi / Khuyến mãi <span className="text-xs text-muted-foreground font-normal">(không bắt buộc)</span>
+            {t('promoSection')} <span className="text-xs text-muted-foreground font-normal">{t('promoOptional')}</span>
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">Thêm badge ưu đãi ngắn gọn (hiện trên card) và mô tả chi tiết.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t('promoHint')}</p>
 
           <FormField
             control={form.control}
             name="dealBadge"
             render={({ field }) => (
               <FormItem className="w-full mb-4">
-                <FormLabel>Badge ưu đãi (hiện trên card)</FormLabel>
+                <FormLabel>{t('promoBadge')}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input placeholder="VD: Mua 3 tặng 1 / Bundle 200k" {...field} value={field.value || ''} className="input-field" maxLength={30} />
+                    <Input placeholder={t('promoBadgePlaceholder')} {...field} value={field.value || ''} className="input-field" maxLength={30} />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                       {(field.value || '').length}/30
                     </span>
@@ -1034,10 +1037,10 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
             name="dealDescription"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Mô tả chi tiết ưu đãi</FormLabel>
+                <FormLabel>{t('promoDetails')}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Textarea placeholder="Mô tả chi tiết về combo, bundle, freebie, giảm giá... (hiện ở trang chi tiết)" {...field} value={field.value || ''} className="textarea rounded-2xl h-24" maxLength={500} />
+                    <Textarea placeholder={t('promoPlaceholder')} {...field} value={field.value || ''} className="textarea rounded-2xl h-24" maxLength={500} />
                     <span className="absolute right-3 bottom-3 text-xs text-muted-foreground">
                       {(field.value || '').length}/500
                     </span>
@@ -1051,7 +1054,7 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
 
         {hasInvalidImages && (
           <p className="text-red-500 text-sm mb-2">
-            Vui lòng chờ ảnh được upload thành công trước khi đăng hoặc thử đăng lại ảnh.
+            {t('uploadWait')}
           </p>
         )}
         <Button
@@ -1061,11 +1064,11 @@ const handleItemTypeCategoriesChange = (index: number, categories: { value: stri
           className="button col-span-2 w-full"
         >
           {form.formState.isSubmitting
-            ? "Đang đăng..."
+            ? tc('posting')
             : type === "Create"
-            ? "Đăng sample"
+            ? t('postSample')
             : type === "Update"
-            ? "Cập nhật sample"
+            ? t('updateSample')
             : `${type} Sample`}
         </Button>
       </form>

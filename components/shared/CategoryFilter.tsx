@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ const CategoryCache = {
     try {
       const cached = localStorage.getItem(`categories_${type}`);
       const cachedData = cached ? JSON.parse(cached) : null;
-      
+
       // Check if cache is still valid (within 24 hours)
       if (cachedData && cachedData.timestamp) {
         const hoursSinceCache = (Date.now() - cachedData.timestamp) / (1000 * 60 * 60);
@@ -40,7 +41,7 @@ const CategoryCache = {
       return null;
     }
   },
-  
+
   set: (type: string, categories: ICategory[]) => {
     try {
       const cacheEntry = {
@@ -59,12 +60,13 @@ const CategoryCache = {
 };
 
 const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
+  const tc = useTranslations('common');
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -73,7 +75,7 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
     const fetchCategories = async () => {
       // Try to get cached categories first
       const cachedCategories = CategoryCache.get(categoryFilterType);
-      
+
       if (cachedCategories) {
         setCategories(cachedCategories);
         setIsLoading(false);
@@ -84,10 +86,10 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
       try {
         setIsLoading(true);
         const categoryList = await getAllCategories(categoryFilterType);
-        
+
         // Ensure we have an array
         const validCategories = Array.isArray(categoryList) ? categoryList : [];
-        
+
         // Set categories and cache them
         setCategories(validCategories);
         CategoryCache.set(categoryFilterType, validCategories);
@@ -129,14 +131,14 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
   }, [searchParams, categoryFilterType, selectedCategory]);
 
   // Memoized filtered categories
-  const filteredCategories = useMemo(() => 
-    categories.filter(cat => 
+  const filteredCategories = useMemo(() =>
+    categories.filter(cat =>
       cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ), 
+    ),
     [categories, searchQuery]
   );
 
-  const displayValue = selectedCategory === "All" ? "Bất kì" : selectedCategory;
+  const displayValue = selectedCategory === "All" ? tc('any') : selectedCategory;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -155,19 +157,19 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-  
+
       {!isLoading && (
         <PopoverContent className="w-full p-0">
           <div className="w-full">
             <div className="flex w-full items-center border-b px-3">
               <input
                 className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Tìm kiếm tag..."
+                placeholder={tc('searchTags')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-  
+
             <div className="max-h-72 overflow-y-auto">
               <div
                 className={cn(
@@ -182,11 +184,11 @@ const CategoryFilter = ({ categoryFilterType }: CategoryFilterProps) => {
                     selectedCategory === "All" ? "opacity-100" : "opacity-0"
                   )}
                 />
-                <span className="block break-words whitespace-normal leading-snug max-w-full">Bất kì</span>
+                <span className="block break-words whitespace-normal leading-snug max-w-full">{tc('any')}</span>
               </div>
-  
+
               {filteredCategories.length === 0 ? (
-                <div className="py-6 text-center text-sm">Không tìm thấy tag.</div>
+                <div className="py-6 text-center text-sm">{tc('notFoundTag')}</div>
               ) : (
                 filteredCategories.map((category) => (
                   <div

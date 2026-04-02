@@ -1,22 +1,22 @@
 export const headerLinks = [
     {
-      label: 'Trang chủ',
+      label: 'nav.home',
       route: '/',
     },
     {
-      label: 'Đăng bài',
+      label: 'nav.create',
       route: '/events/create',
       children: [
-        { label: 'Đăng sample', route: '/events/create' },
-        { label: 'Đăng OC card', route: '/oc-cards/create' },
+        { label: 'nav.createSample', route: '/events/create' },
+        { label: 'nav.createOcCard', route: '/oc-cards/create' },
       ],
     },
     {
-      label: 'Profile',
+      label: 'nav.profile',
       route: '/profile',
     },
     {
-      label: 'Festivals',
+      label: 'nav.festivals',
       route: '/festivals',
       adminOnly: true,
     },

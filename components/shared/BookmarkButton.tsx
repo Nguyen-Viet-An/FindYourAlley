@@ -2,6 +2,7 @@
 
 import { IEvent } from '@/lib/database/models/event.model';
 import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import React from 'react';
 import { Button } from '../ui/button';
@@ -19,6 +20,7 @@ const BookmarkButton = ({
   imageIndex
 }: BookmarkButtonProps) => {
   const { user } = useUser();
+  const t = useTranslations('bookmark');
   const userId = user?.publicMetadata.userId as string;
   const hasEventFinished = new Date(event.endDateTime) < new Date();
 
@@ -28,7 +30,7 @@ const BookmarkButton = ({
         <SignedOut>
           <Button asChild className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" size="default">
             <Link href="/sign-in">
-              Lưu
+              {t('save')}
             </Link>
           </Button>
         </SignedOut>

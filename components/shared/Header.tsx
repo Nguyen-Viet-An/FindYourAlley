@@ -10,7 +10,9 @@ import {
 import NavItems from "./NavItems"
 import MobileNav from "./MobileNav"
 import ThemeToggle from "./ThemeToggle"
+import LanguageSwitcher from "./LanguageSwitcher"
 import { auth } from '@clerk/nextjs/server'
+import { getTranslations } from 'next-intl/server'
 
 const ADMIN_USER_ID = '67db65cdd14104a0c014576d';
 
@@ -18,6 +20,7 @@ const Header = async () => {
     const { sessionClaims } = await auth();
     const userId = sessionClaims?.userId as string;
     const isAdmin = userId === ADMIN_USER_ID;
+    const t = await getTranslations('nav');
 
     return (
       <header className="w-full border-b bg-background">
@@ -36,6 +39,7 @@ const Header = async () => {
           </SignedIn>
 
           <div className="flex w-32 justify-end gap-3 items-center">
+            <LanguageSwitcher />
             <ThemeToggle />
             <SignedIn>
               <UserButton />
@@ -44,7 +48,7 @@ const Header = async () => {
             <SignedOut>
               <Button asChild className="rounded-full" size="lg">
                 <Link href="/sign-in">
-                  Đăng nhập
+                  {t('signIn')}
                 </Link>
               </Button>
             </SignedOut>

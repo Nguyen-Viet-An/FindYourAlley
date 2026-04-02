@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { formUrlQuery, removeKeysFromQuery } from '@/lib/utils';
 
-const Search = ({ placeholder = 'Tìm theo tên gian/artist/couple...' }: { placeholder?: string }) => {
+const Search = ({ placeholder }: { placeholder?: string }) => {
+  const tc = useTranslations('card');
   const [query, setQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
@@ -49,9 +51,9 @@ const Search = ({ placeholder = 'Tìm theo tên gian/artist/couple...' }: { plac
   return (
     <div className="flex-center min-h-[54px] w-full overflow-hidden rounded-full bg-grey-50 dark:bg-muted px-4 py-2">
       <Image src="/assets/icons/search.svg" alt="search" width={24} height={24} className="dark:invert" />
-      <Input 
+      <Input
         type="text"
-        placeholder={placeholder}
+        placeholder={placeholder || tc('searchPlaceholder')}
         onChange={(e) => setQuery(e.target.value)}
         className="p-regular-16 border-0 bg-grey-50 dark:bg-muted outline-offset-0 placeholder:text-grey-500 dark:placeholder:text-muted-foreground focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
       />

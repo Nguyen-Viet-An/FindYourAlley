@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import {
 } from "@/components/ui/popover";
 
 const HasPreorderFilter = () => {
+  const tc = useTranslations('common');
+  const tf = useTranslations('filter');
   const [selectedValue, setSelectedValue] = useState<string>("All");
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -19,9 +22,9 @@ const HasPreorderFilter = () => {
 
   // Options for preorder filter
   const options = [
-    { value: "All", label: "Bất kì" },
-    { value: "Yes", label: "Có" },
-    { value: "No", label: "Không" }
+    { value: "All", label: tc('any') },
+    { value: "Yes", label: tf('hasPreorder') },
+    { value: "No", label: tc('no') }
   ];
 
   // Handle selection change
@@ -53,7 +56,7 @@ const HasPreorderFilter = () => {
   }, [searchParams]);
 
   // Get display value for the button
-  const displayValue = options.find(option => option.value === selectedValue)?.label || "Bất kì";
+  const displayValue = options.find(option => option.value === selectedValue)?.label || tc('any');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

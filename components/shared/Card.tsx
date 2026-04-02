@@ -2,6 +2,7 @@ import { IEvent } from '@/lib/database/models/event.model';
 import { getBuyerCountForEvent } from '@/lib/actions/order.actions';
 import { formatDateTime, isValidUrl } from '@/lib/utils';
 import { auth } from "@clerk/nextjs/server";
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 import { DeleteConfirmation } from './DeleteConfirmation';
@@ -33,6 +34,8 @@ export default async function Card({
 }: CardProps) {
   // Server-side auth check
   const { sessionClaims } = await auth();
+  const tc = await getTranslations('common');
+  const tb = await getTranslations('bookmark');
   const userId = sessionClaims?.userId as string;
   const isEventCreator = userId === event.organizer?._id?.toString();
 
@@ -178,7 +181,7 @@ export default async function Card({
               <>
                 {new Date(event.endDateTime) < new Date() ? (
                   <span className="text-gray-500 dark:text-muted-foreground font-semibold">
-                    Đã đóng
+                    {tc('closed')}
                   </span>
                 ) : (
                   event.url && isValidUrl(event.url) && (
@@ -191,7 +194,7 @@ export default async function Card({
             )}
           </div>
           {hasOrderLink && (
-            <p className="text-primary-500 text-xs md:text-sm min-h-[16px]">{buyerCount} người đã bookmark</p>
+            <p className="text-primary-500 text-xs md:text-sm min-h-[16px]">{tb('bookmarkCount', { count: buyerCount })}</p>
           )}
         </div>
       </div>

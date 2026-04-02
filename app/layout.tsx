@@ -1,20 +1,20 @@
 import type { Metadata } from 'next'
-import { Poppins } from 'next/font/google'
+import { Baloo_2 } from 'next/font/google'
 import {
   ClerkProvider,
 } from '@clerk/nextjs'
 
 import './globals.css'
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const baloo2 = Baloo_2({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-poppins',
 })
 
 export const metadata: Metadata = {
-  title: 'Find Your Alleys',
-  description: 'Find Your Alleys is a platform for event management.',
+  title: 'Find Your Alley',
+  description: 'Find Your Alley is a platform for event management.',
   icons: {
     icon: '/assets/images/squid.png'
   }
@@ -35,7 +35,7 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={`${poppins.variable} bg-background text-foreground`}>
+        <body className={`${baloo2.variable} bg-background text-foreground`}>
           {children}
         </body>
       </html>

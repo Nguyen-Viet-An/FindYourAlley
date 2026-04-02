@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 
 import {
@@ -20,6 +21,8 @@ import { deleteEvent } from '@/lib/actions/event.actions'
 
 export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
   const pathname = usePathname()
+  const t = useTranslations('deleteConfirm');
+  const tc = useTranslations('common');
   let [isPending, startTransition] = useTransition()
 
   return (
@@ -30,14 +33,14 @@ export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
 
       <AlertDialogContent className="bg-white dark:bg-card">
         <AlertDialogHeader>
-          <AlertDialogTitle>Bạn có chắc muốn xóa sample?</AlertDialogTitle>
+          <AlertDialogTitle>{t('sampleTitle')}</AlertDialogTitle>
           <AlertDialogDescription className="p-regular-16 text-grey-600 dark:text-muted-foreground">
-            Hành động này sẽ xóa sample vĩnh viễn
+            {t('sampleMessage')}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Quay lại</AlertDialogCancel>
+          <AlertDialogCancel>{tc('back')}</AlertDialogCancel>
 
           <AlertDialogAction
             onClick={() =>
@@ -45,7 +48,7 @@ export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
                 await deleteEvent({ eventId, path: pathname })
               })
             }>
-            {isPending ? 'Đang xóa...' : 'Xóa'}
+            {isPending ? tc('deleting') : tc('delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

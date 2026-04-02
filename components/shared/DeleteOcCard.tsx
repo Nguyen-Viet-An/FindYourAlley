@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -28,14 +29,16 @@ type DeleteOcCardProps = {
 export default function DeleteOcCard({ cardId, userId, iconOnly, imageIndex, totalImages }: DeleteOcCardProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const t = useTranslations('deleteConfirm');
+  const tc = useTranslations('common');
 
   const isMultiImage = totalImages != null && totalImages > 1 && imageIndex != null;
   const description = isMultiImage
-    ? "Hành động này sẽ xóa hình này khỏi OC card, bao gồm các yêu cầu đổi liên quan."
-    : "Hành động này sẽ xóa OC card vĩnh viễn, bao gồm các yêu cầu đổi.";
+    ? t('ocImageMessage')
+    : t('ocCardMessage');
   const title = isMultiImage
-    ? "Bạn có chắc muốn xóa hình này?"
-    : "Bạn có chắc muốn xóa OC card?";
+    ? t('ocImageTitle')
+    : t('ocCardTitle');
 
   return (
     <AlertDialog>
@@ -46,7 +49,7 @@ export default function DeleteOcCard({ cardId, userId, iconOnly, imageIndex, tot
           </button>
         ) : (
           <Button size="sm" variant="destructive">
-            <Trash2 className="w-4 h-4 mr-1" /> Xóa
+            <Trash2 className="w-4 h-4 mr-1" /> {tc('delete')}
           </Button>
         )}
       </AlertDialogTrigger>
@@ -56,7 +59,7 @@ export default function DeleteOcCard({ cardId, userId, iconOnly, imageIndex, tot
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Quay lại</AlertDialogCancel>
+          <AlertDialogCancel>{tc('back')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={() =>
               startTransition(async () => {
@@ -74,7 +77,7 @@ export default function DeleteOcCard({ cardId, userId, iconOnly, imageIndex, tot
               })
             }
           >
-            {isPending ? "Đang xóa..." : "Xóa"}
+            {isPending ? tc('deleting') : tc('delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

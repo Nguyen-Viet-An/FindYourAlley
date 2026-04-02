@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useTranslations } from 'next-intl'
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -19,6 +20,8 @@ type FestivalFormProps = {
 
 const FestivalForm = ({ type, festival }: FestivalFormProps) => {
   const router = useRouter()
+  const t = useTranslations('festivalForm');
+  const tc = useTranslations('common');
 
   const initialValues = type === "Update" && festival
     ? {
@@ -106,7 +109,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tên festival *</FormLabel>
+                <FormLabel>{t('name')}</FormLabel>
                 <FormControl>
                   <Input placeholder="VD: Color Fiesta 15" {...field} className="input-field" />
                 </FormControl>
@@ -120,7 +123,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="code"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mã ngắn</FormLabel>
+                <FormLabel>{t('shortCode')}</FormLabel>
                 <FormControl>
                   <Input placeholder="VD: COFI15" {...field} className="input-field" />
                 </FormControl>
@@ -136,7 +139,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ngày bắt đầu</FormLabel>
+                <FormLabel>{t('startDate')}</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} className="input-field" />
                 </FormControl>
@@ -150,7 +153,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="endDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ngày kết thúc</FormLabel>
+                <FormLabel>{t('endDate')}</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} className="input-field" />
                 </FormControl>
@@ -164,7 +167,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="expiresAt"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ẩn khỏi bộ lọc sau</FormLabel>
+                <FormLabel>{t('hideAfter')}</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} className="input-field" />
                 </FormControl>
@@ -175,9 +178,9 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
         </div>
 
         <div className="flex flex-col gap-5 p-4 rounded-lg border bg-grey-50 dark:bg-muted">
-          <h3 className="font-semibold">📁 Tệp dữ liệu sơ đồ</h3>
+          <h3 className="font-semibold">{t('mapData')}</h3>
           <p className="text-sm text-muted-foreground">
-            Upload tệp hoặc nhập đường dẫn thủ công.
+            {t('mapDataHint')}
           </p>
 
           <input
@@ -192,7 +195,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="floorMapFile"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>File sơ đồ (.xml)</FormLabel>
+                <FormLabel>{t('mapFile')}</FormLabel>
                 <div className="flex gap-2">
                   <FormControl>
                     <Input placeholder="VD: data/floormap.xml" {...field} className="input-field flex-1" />
@@ -217,7 +220,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
             name="boothFile"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>File tên gian (.json)</FormLabel>
+                <FormLabel>{t('boothFile')}</FormLabel>
                 <div className="flex gap-2">
                   <FormControl>
                     <Input placeholder="VD: data/booth-cofi16.json" {...field} className="input-field flex-1" />
@@ -274,7 +277,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel className="!mt-0">Đang hoạt động</FormLabel>
+              <FormLabel className="!mt-0">{t('active')}</FormLabel>
             </FormItem>
           )}
         />
@@ -285,7 +288,7 @@ const FestivalForm = ({ type, festival }: FestivalFormProps) => {
           disabled={form.formState.isSubmitting}
           className="button col-span-2 w-full"
         >
-          {form.formState.isSubmitting ? "Đang lưu..." : type === "Create" ? "Tạo Festival" : "Cập nhật Festival"}
+          {form.formState.isSubmitting ? tc('saving') : type === "Create" ? t('create') : t('updateFestival')}
         </Button>
       </form>
     </Form>

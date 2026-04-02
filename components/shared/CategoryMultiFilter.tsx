@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getAllCategories } from "@/lib/actions/category.actions";
+import { getAllCategories, getCategoriesByFestival } from "@/lib/actions/category.actions";
 import { ICategory } from "@/lib/database/models/category.model";
 
 type Props = {
@@ -19,25 +20,28 @@ type Props = {
   excludeParamKey?: string;
   /** Virtual items pinned at the top of the list (not from DB) */
   pinnedItems?: { id: string; name: string; emoji?: string }[];
+  /** When provided, only show categories used by events in these festivals */
+  festivalIds?: string[];
 };
 
 const CategoryCache = {
-  get: (type: string) => {
+  get: (key: string) => {
     try {
-      const cached = localStorage.getItem(`categories_${type}`);
+      const cached = localStorage.getItem(`categories_${key}`);
       const d = cached ? JSON.parse(cached) : null;
       if (d?.timestamp && (Date.now() - d.timestamp) / 36e5 < 24) return d.categories;
       return null;
     } catch { return null; }
   },
-  set: (type: string, categories: ICategory[]) => {
+  set: (key: string, categories: ICategory[]) => {
     try {
-      localStorage.setItem(`categories_${type}`, JSON.stringify({ categories, timestamp: Date.now() }));
+      localStorage.setItem(`categories_${key}`, JSON.stringify({ categories, timestamp: Date.now() }));
     } catch {}
   },
 };
 
-export default function CategoryMultiFilter({ categoryFilterType, excludeParamKey, pinnedItems = [] }: Props) {
+export default function CategoryMultiFilter({ categoryFilterType, excludeParamKey, pinnedItems = [], festivalIds }: Props) {
+  const tc = useTranslations('common');
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -59,20 +63,25 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
   }, [searchParams, excludeParamKey]);
 
   useEffect(() => {
+    const cacheKey = festivalIds?.length
+      ? `${categoryFilterType}_${festivalIds.join(',')}`
+      : categoryFilterType;
     const fetch = async () => {
-      const cached = CategoryCache.get(categoryFilterType);
+      const cached = CategoryCache.get(cacheKey);
       if (cached) { setCategories(cached); setIsLoading(false); return; }
       try {
         setIsLoading(true);
-        const list = await getAllCategories(categoryFilterType);
+        const list = festivalIds?.length
+          ? await getCategoriesByFestival(categoryFilterType, festivalIds)
+          : await getAllCategories(categoryFilterType);
         const valid = Array.isArray(list) ? list : [];
         setCategories(valid);
-        CategoryCache.set(categoryFilterType, valid);
+        CategoryCache.set(cacheKey, valid);
       } catch { setCategories([]); }
       finally { setIsLoading(false); }
     };
     fetch();
-  }, [categoryFilterType]);
+  }, [categoryFilterType, festivalIds]);
 
   const updateUrl = (include: string[], exclude: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -116,7 +125,7 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
 
   const displayText =
     selected.length === 0 && excluded.length === 0
-      ? "Bất kì"
+      ? tc('any')
       : [
           ...selected.map((n) => n),
           ...excluded.map((n) => `−${n}`),
@@ -145,7 +154,7 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
           <div className="flex w-full items-center border-b px-3">
             <input
               className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-              placeholder="Tìm kiếm..."
+              placeholder={tc('search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -156,7 +165,7 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
               <span className="text-xs text-muted-foreground">
                 {selected.length} chọn, {excluded.length} blacklist
               </span>
-              <button onClick={clearAll} className="text-xs text-primary-500 hover:underline">Xóa tất cả</button>
+              <button onClick={clearAll} className="text-xs text-primary-500 hover:underline">{tc('clearAll')}</button>
             </div>
           )}
 
@@ -185,7 +194,7 @@ export default function CategoryMultiFilter({ categoryFilterType, excludeParamKe
               );
             })}
             {filteredCategories.length === 0 && filteredPinned.length === 0 ? (
-              <div className="py-6 text-center text-sm">Không tìm thấy.</div>
+              <div className="py-6 text-center text-sm">{tc('notFoundGeneric')}</div>
             ) : (
               filteredCategories.map((cat) => {
                 const isIncluded = selected.includes(cat.name);

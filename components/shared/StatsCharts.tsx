@@ -1,13 +1,15 @@
 "use client";
 
+import { useTranslations } from 'next-intl';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 interface StatsChartsProps {
   data: { name: string; value: number }[];
-  color?: string; // single color for bars
+  color?: string;
 }
 
 export default function StatsCharts({ data, color = "#D87A6B" }: StatsChartsProps) {
+  const t = useTranslations('stats');
   // Compute bottom margin based on the longest label
   const longestLabelLength = Math.max(...data.map(d => d.name.length));
   const bottomMargin = Math.min(120, 30 + longestLabelLength * 6); // adjust multiplier as needed
@@ -31,8 +33,8 @@ export default function StatsCharts({ data, color = "#D87A6B" }: StatsChartsProp
             textAnchor="end"
             interval={0}         // show all labels
           />
-          <YAxis label={{ value: 'Số lượng', angle: -90, position: 'insideLeft', offset: 0 }} />
-          <Tooltip formatter={(value) => [value, 'Số lượng']} />
+          <YAxis label={{ value: t('count'), angle: -90, position: 'insideLeft', offset: 0 }} />
+          <Tooltip formatter={(value) => [value, t('count')]} />
           <Bar dataKey="value" fill={color} barSize={barSize} />
         </BarChart>
       </ResponsiveContainer>
