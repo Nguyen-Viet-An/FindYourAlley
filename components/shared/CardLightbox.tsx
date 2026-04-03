@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, CSSProperties } from 'react';
+import React, { useState, useRef, useEffect, useCallback, CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { getLowResUrl } from '@/lib/utils';
 import { X } from 'lucide-react';
@@ -9,7 +9,7 @@ type CardLightboxProps = {
   imageUrl: string;
   alt: string;
   onLoad?: () => void;
-  renderImage?: boolean; // New prop to control image rendering
+  renderImage?: boolean;
   children?: React.ReactNode;
 };
 
@@ -17,19 +17,24 @@ export default function CardLightbox({
   imageUrl,
   alt,
   onLoad,
-  renderImage = true, // Default to true for backward compatibility
+  renderImage = true,
   children
 }: CardLightboxProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const posStartRef = useRef({ x: 0, y: 0 });
   const didDragRef = useRef(false);
   const imageRef = useRef<HTMLImageElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  const zoomRef = useRef(zoomLevel);
+  const positionRef = useRef(position);
+  useEffect(() => { zoomRef.current = zoomLevel; }, [zoomLevel]);
+  useEffect(() => { positionRef.current = position; }, [position]);
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -39,31 +44,43 @@ export default function CardLightbox({
   };
 
   const closeLightbox = () => {
-    if (didDragRef.current) {
-      didDragRef.current = false;
-      return;
-    }
     setIsLightboxOpen(false);
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
   };
 
-  // Use refs for zoom state so the non-passive wheel handler always sees current values
-  const zoomRef = useRef(zoomLevel);
-  const positionRef = useRef(position);
-  useEffect(() => { zoomRef.current = zoomLevel; }, [zoomLevel]);
-  useEffect(() => { positionRef.current = position; }, [position]);
+  // Clamp position so the image cannot be dragged fully off-screen.
+  // Keeps at least 25% of the scaled image visible on each axis.
+  const clampPosition = useCallback((x: number, y: number, zoom: number) => {
+    const img = imageRef.current;
+    if (!img || zoom <= 1) return { x: 0, y: 0 };
 
-  // Attach wheel listener for zoom in CAPTURE phase on document.
-  // Must use capture phase so it fires BEFORE react-remove-scroll's handlers
-  // (which block wheel events on elements outside the Radix Dialog scope).
+    const rect = img.getBoundingClientRect();
+    // Natural size of the img element (before CSS transform scale)
+    const naturalW = rect.width / zoom;
+    const naturalH = rect.height / zoom;
+    const scaledW = naturalW * zoom;
+    const scaledH = naturalH * zoom;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Allow panning so that the edge of the image can reach the center of viewport
+    const maxX = (scaledW - naturalW) / 2;
+    const maxY = (scaledH - naturalH) / 2;
+
+    return {
+      x: Math.max(-maxX, Math.min(maxX, x)),
+      y: Math.max(-maxY, Math.min(maxY, y)),
+    };
+  }, []);
+
+  // Wheel zoom (capture phase to bypass react-remove-scroll inside Radix Dialog)
   useEffect(() => {
     if (!isLightboxOpen) return;
 
     const handleWheel = (e: WheelEvent) => {
-      // Only handle events targeting our lightbox overlay/children
       if (!overlayRef.current?.contains(e.target as Node)) return;
-
       e.preventDefault();
       e.stopPropagation();
 
@@ -72,18 +89,19 @@ export default function CardLightbox({
 
       if (newZoom === 1) {
         setPosition({ x: 0, y: 0 });
+      } else {
+        // Re-clamp position at new zoom level
+        const clamped = clampPosition(positionRef.current.x, positionRef.current.y, newZoom);
+        setPosition(clamped);
       }
-
       setZoomLevel(newZoom);
     };
 
     document.addEventListener('wheel', handleWheel, { capture: true, passive: false } as AddEventListenerOptions);
     return () => document.removeEventListener('wheel', handleWheel, { capture: true } as EventListenerOptions);
-  }, [isLightboxOpen]);
+  }, [isLightboxOpen, clampPosition]);
 
-  // Touch: pinch-to-zoom + one-finger pan (when zoomed)
-  // Uses document-level capture phase so events fire BEFORE react-remove-scroll
-  // can block them when CardLightbox is inside a Radix Dialog.
+  // Touch: pinch-to-zoom + one-finger pan (capture phase)
   const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
   const lastPinchDistRef = useRef<number | null>(null);
 
@@ -100,6 +118,8 @@ export default function CardLightbox({
         lastPinchDistRef.current = getDistance(e.touches[0], e.touches[1]);
       } else if (e.touches.length === 1 && zoomRef.current > 1) {
         if (closeBtnRef.current?.contains(e.target as Node)) return;
+        // Only start pan if touch is on the image
+        if (!imageRef.current?.contains(e.target as Node)) return;
         e.preventDefault();
         lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
@@ -112,7 +132,12 @@ export default function CardLightbox({
         const dist = getDistance(e.touches[0], e.touches[1]);
         const scale = dist / lastPinchDistRef.current;
         const newZoom = Math.max(1, Math.min(5, zoomRef.current * scale));
-        if (newZoom === 1) setPosition({ x: 0, y: 0 });
+        if (newZoom === 1) {
+          setPosition({ x: 0, y: 0 });
+        } else {
+          const clamped = clampPosition(positionRef.current.x, positionRef.current.y, newZoom);
+          setPosition(clamped);
+        }
         setZoomLevel(newZoom);
         lastPinchDistRef.current = dist;
       } else if (e.touches.length === 1 && zoomRef.current > 1 && lastTouchRef.current) {
@@ -120,7 +145,8 @@ export default function CardLightbox({
         e.preventDefault();
         const dx = e.touches[0].clientX - lastTouchRef.current.x;
         const dy = e.touches[0].clientY - lastTouchRef.current.y;
-        setPosition(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+        const newPos = clampPosition(positionRef.current.x + dx, positionRef.current.y + dy, zoomRef.current);
+        setPosition(newPos);
         lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     };
@@ -138,117 +164,89 @@ export default function CardLightbox({
       document.removeEventListener('touchmove', handleTouchMove, { capture: true } as EventListenerOptions);
       document.removeEventListener('touchend', handleTouchEnd, { capture: true });
     };
-  }, [isLightboxOpen]);
+  }, [isLightboxOpen, clampPosition]);
 
-  // Handle mouse down for dragging
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (zoomLevel <= 1) return;
-
-    // Prevent default browser behavior that might cause selection
-    e.preventDefault();
-
-    setIsDragging(true);
-    didDragRef.current = false;
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    });
-  };
-
-  // Handle mouse move for dragging
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging || zoomLevel <= 1) return;
-
-    // Prevent default browser behavior during drag
-    e.preventDefault();
-
-    // Calculate new position
-    const newX = e.clientX - dragStart.x;
-    const newY = e.clientY - dragStart.y;
-
-    // Apply the new position
-    setPosition({ x: newX, y: newY });
-  };
-
-  // Handle mouse up to end dragging
-  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDragging) {
-      didDragRef.current = true;
-      e.preventDefault();
-    }
-    setIsDragging(false);
-  };
-
-  // Add global mouse up event handler
+  // Mouse drag — only starts on the image, uses document-level move/up for smooth tracking
   useEffect(() => {
-    const handleGlobalMouseUp = () => {
+    if (!isLightboxOpen) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const newX = e.clientX - dragStartRef.current.x + posStartRef.current.x;
+      const newY = e.clientY - dragStartRef.current.y + posStartRef.current.y;
+      const clamped = clampPosition(newX, newY, zoomRef.current);
+      setPosition(clamped);
+    };
+
+    const handleMouseUp = () => {
       if (isDragging) {
         didDragRef.current = true;
         setIsDragging(false);
-      }
-    };
-
-    // Add CSS to prevent text selection during dragging
-    const addNoSelectCSS = () => {
-      if (isDragging) {
-        document.body.classList.add('no-select');
-      } else {
         document.body.classList.remove('no-select');
       }
     };
 
-    addNoSelectCSS(); // Apply immediately when isDragging changes
-
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
     return () => {
-      window.removeEventListener('mouseup', handleGlobalMouseUp);
-      document.body.classList.remove('no-select'); // Clean up on unmount
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, zoomLevel]);
+  }, [isLightboxOpen, isDragging, clampPosition]);
 
-  // Add global style for no selection
+  // Mouse down on the image to start dragging
+  const handleImageMouseDown = (e: React.MouseEvent) => {
+    if (zoomRef.current <= 1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    didDragRef.current = false;
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    posStartRef.current = { ...positionRef.current };
+    setIsDragging(true);
+    document.body.classList.add('no-select');
+  };
+
+  // Click on overlay background = close (works at any zoom level)
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if clicking the overlay itself, not the image or close button
+    if (e.target === overlayRef.current) {
+      closeLightbox();
+    }
+  };
+
+  // Click on image: if not a drag, do nothing (keep lightbox open)
+  const handleImageContainerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (didDragRef.current) {
+      didDragRef.current = false;
+    }
+  };
+
+  // Add global style for no selection / no drag
   useEffect(() => {
-    // Create a style element for the no-select class
     const style = document.createElement('style');
     style.innerHTML = `
       .no-select {
         user-select: none !important;
         -webkit-user-select: none !important;
-        -moz-user-select: none !important;
-        -ms-user-select: none !important;
       }
-
       .no-drag {
         -webkit-user-drag: none;
-        -khtml-user-drag: none;
-        -moz-user-drag: none;
-        -o-user-drag: none;
         user-drag: none;
       }
     `;
     document.head.appendChild(style);
-
-    return () => {
-      document.head.removeChild(style);
-    };
+    return () => { document.head.removeChild(style); };
   }, []);
 
-  // Determine aspect ratio of the container based on the aspect ratio of the image
-  const aspectRatioStyle = {
-    paddingBottom: '75%', // Default 4:3 aspect ratio
-  };
-
-  // Define image style with TypeScript-safe properties
   const imageStyle: CSSProperties = {
     transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
-    transition: zoomLevel === 1 ? 'transform 0.3s ease-out' : 'none',
+    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
     maxWidth: '90vw',
     maxHeight: '90vh',
     userSelect: 'none',
-    WebkitUserSelect: 'none',
-    MozUserSelect: 'none',
-    msUserSelect: 'none'
+    cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
   };
 
   return (
@@ -274,35 +272,30 @@ export default function CardLightbox({
           ref={overlayRef}
           data-lightbox-overlay
           className="fixed inset-0 bg-black bg-opacity-80 z-[9999] flex items-center justify-center"
-          onClick={closeLightbox}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          style={{ cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
+          onClick={handleOverlayClick}
+          style={{ cursor: 'default' }}
         >
           <button
             ref={closeBtnRef}
-            onClick={closeLightbox}
+            onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
             className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-2 rounded-full z-[10000] transition-colors"
             aria-label="Close lightbox"
           >
             <X className="h-6 w-6 text-white" />
           </button>
           <div
-            ref={containerRef}
-            className="relative p-4"
-            onClick={(e) => e.stopPropagation()}
+            className="relative"
+            onClick={handleImageContainerClick}
+            onMouseDown={handleImageMouseDown}
           >
-            <div className="flex items-center justify-center h-full">
-              <img
-                ref={imageRef}
-                src={imageUrl}
-                alt={alt}
-                className="no-drag"
-                style={imageStyle}
-                draggable="false"
-              />
-            </div>
+            <img
+              ref={imageRef}
+              src={imageUrl}
+              alt={alt}
+              className="no-drag"
+              style={imageStyle}
+              draggable="false"
+            />
           </div>
         </div>,
         document.body
