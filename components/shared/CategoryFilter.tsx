@@ -28,10 +28,10 @@ const CategoryCache = {
       const cached = localStorage.getItem(`categories_${type}`);
       const cachedData = cached ? JSON.parse(cached) : null;
 
-      // Check if cache is still valid (within 24 hours)
+      // Check if cache is still valid (within 6 hours)
       if (cachedData && cachedData.timestamp) {
         const hoursSinceCache = (Date.now() - cachedData.timestamp) / (1000 * 60 * 60);
-        if (hoursSinceCache < 24) {
+        if (hoursSinceCache < 6) {
           return cachedData.categories;
         }
       }

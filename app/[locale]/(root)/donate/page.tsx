@@ -41,9 +41,9 @@ export default async function DonatePage() {
             href="https://ko-fi.com/myosotisdiamandis"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#FF5E5B] px-6 py-3 text-base font-medium text-white hover:bg-[#e54e4b] transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-3 text-base font-medium text-white hover:bg-primary-400 transition-colors"
           >
-            ☕ {t('kofi')}
+            {t('kofi')}
           </a>
         </div>
       </div>

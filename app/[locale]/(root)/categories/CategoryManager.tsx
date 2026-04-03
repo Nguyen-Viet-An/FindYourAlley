@@ -50,9 +50,17 @@ export default function CategoryManager({ initialCategories, userId }: Props) {
     });
   }, [categories, search, typeFilter, statusFilter]);
 
+  const clearCategoryCache = () => {
+    try {
+      localStorage.removeItem('categories_fandom');
+      localStorage.removeItem('categories_itemType');
+    } catch {}
+  };
+
   const refresh = async () => {
     const fresh = await getAllCategoriesAdmin(userId);
     if (fresh) setCategories(fresh);
+    clearCategoryCache();
   };
 
   const handleApprove = async (id: string) => {

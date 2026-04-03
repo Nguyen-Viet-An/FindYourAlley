@@ -29,7 +29,7 @@ const CategoryCache = {
     try {
       const cached = localStorage.getItem(`categories_${key}`);
       const d = cached ? JSON.parse(cached) : null;
-      if (d?.timestamp && (Date.now() - d.timestamp) / 36e5 < 24) return d.categories;
+      if (d?.timestamp && (Date.now() - d.timestamp) / 36e5 < 6) return d.categories;
       return null;
     } catch { return null; }
   },

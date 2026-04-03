@@ -21,9 +21,9 @@ const Footer = async () => {
 
         <Link
           href="/donate"
-          className="inline-flex items-center gap-2 rounded-full bg-[#FF5E5B] px-5 py-2 text-sm font-medium text-white hover:bg-[#e54e4b] transition-colors"
+          className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-5 py-2 text-sm font-medium text-white hover:bg-primary-400 transition-colors"
         >
-          ☕ {t('donate')}
+          {t('donate')}
         </Link>
       </div>
     </footer>
