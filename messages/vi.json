@@ -60,7 +60,7 @@
   },
   "footer": {
     "copyright": "2026 FindYourAlley. Bản quyền thuộc về Myosotis Diamandis (Fb).",
-    "donate": "☕ Ủng hộ"
+    "donate": "🍵 Ủng hộ"
   },
   "common": {
     "search": "Tìm kiếm...",
@@ -372,15 +372,15 @@
     "postStep3": "Nếu có preorder, chọn Có và dán link.",
     "postStep4": "Nhấn \"Đăng sample\".",
     "titleGuideTitle": "Cách đặt tên gian hàng",
-    "titleGuideIntro": "Khi đăng sample, bạn sẽ nhập riêng 2 trường: Mã gian (booth code) và Tiêu đề (tên gian).",
-    "titleBoothCodeLabel": "📍 Mã gian (Booth Code)",
-    "titleBoothCodeDesc": "Nhập mã gian theo sơ đồ của festival. Mỗi festival sẽ có ô nhập mã gian riêng.",
+    "titleGuideIntro": "Khi đăng sample, bạn sẽ nhập riêng 2 trường: Số hiệu gian và Tiêu đề (tên gian).",
+    "titleBoothCodeLabel": "📍 Số hiệu gian",
+    "titleBoothCodeDesc": "Nhập số hiệu gian theo sơ đồ của festival. Mỗi festival sẽ có ô nhập số hiệu gian riêng.",
     "titleBoothNameLabel": "✏️ Tiêu đề (Tên gian)",
     "titleBoothNameDesc": "Nhập tên gian hàng của bạn. Không cần ghi mã gian vào đây nữa.",
     "titleAvoid": "❌ Nên tránh:",
-    "titleAvoidHint1": "Để trống mã gian - gian sẽ không hiện trên sơ đồ",
+    "titleAvoidHint1": "Để trống số hiệu gian - gian sẽ không hiện trên sơ đồ",
     "titleAvoidHint2": "Đặt tiêu đề chung chung như \"gian hàng của mình\" - khó tìm",
-    "titleSeparateHint": "Bạn không cần ghi mã gian vào tiêu đề nữa vì hệ thống đã tách riêng hai trường này.",
+    "titleSeparateHint": "Bạn không cần ghi số hiệu gian vào tiêu đề nữa vì form đã tách riêng hai trường dữ liệu này.",
     "editDeleteTitle": "Chỉnh sửa / Xoá gian hàng",
     "editDeleteIntro": "Vào trang <bold>Profile</bold>, mục 'Sample đã đăng'. Nếu bạn là chủ gian hàng, sẽ có 2 icon ở góc phải phía trên card gian hàng:",
     "editIconDesc": "✏️ Icon bút chì: nhấn để vào trang chỉnh sửa thông tin gian hàng.",
@@ -481,14 +481,14 @@
   "donate": {
     "pageTitle": "Ủng hộ dự án",
     "title": "Ủng hộ dự án",
-    "intro": "FindYourAlley được phát triển và duy trì hoàn toàn miễn phí. Nếu bạn thấy trang web hữu ích, bạn có thể ủng hộ mình một ly cà phê để duy trì server và phát triển thêm tính năng mới!",
+    "intro": "Find Your Alleys được phát triển và duy trì hoàn toàn miễn phí. Nếu bạn thấy trang web hữu ích, bạn có thể ủng hộ mình một ly matcha latte để duy trì server và phát triển thêm tính năng mới!",
     "bank": "Chuyển khoản ngân hàng (Việt Nam)",
     "bankName": "Ngân hàng: MB Bank",
     "bankAccount": "Số tài khoản: 0382590942002",
     "bankHolder": "Chủ tài khoản: NGUYEN VIET AN",
     "international": "Quốc tế",
-    "kofi": "☕ Ủng hộ qua Ko-fi",
-    "thanks": "Cảm ơn bạn rất nhiều! Mọi đóng góp đều giúp mình có thêm động lực phát triển trang web."
+    "kofi": "🍵 Ủng hộ qua Ko-fi",
+    "thanks": "Cảm ơn bạn rất nhiều! Mọi đóng góp đều giúp mình có thêm động lực duy trì và phát triển trang web."
   },
   "event": {
     "promoHeading": "🏷️ Ưu đãi",

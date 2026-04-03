@@ -316,7 +316,7 @@ function normalizeCode(code: string): string {
 
 export function expandBoothNumber(boothNumber: string): string[] {
   if (!boothNumber) return [];
-  const trimmed = boothNumber.trim().toUpperCase();
+  const trimmed = boothNumber.trim().toUpperCase().replace(/\s*-\s*/g, '-');
 
   // Single code: "A1", "F15", "P01" -> "P1"
   const singleMatch = trimmed.match(/^([A-Z]{1,2})(\d+)$/);

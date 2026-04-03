@@ -60,7 +60,7 @@
   },
   "footer": {
     "copyright": "2026 FindYourAlley. All rights reserved by Myosotis Diamandis (Fb).",
-    "donate": "☕ Donate"
+    "donate": "🍵 Donate"
   },
   "common": {
     "search": "Search...",
@@ -380,7 +380,7 @@
     "titleAvoid": "❌ Avoid:",
     "titleAvoidHint1": "Leaving booth code empty - your booth won't appear on the floor map",
     "titleAvoidHint2": "Using generic titles like \"my booth\" — hard to find",
-    "titleSeparateHint": "You don't need to include the booth code in the title anymore since the system has separate fields for them.",
+    "titleSeparateHint": "You don't need to include the booth code in the title anymore since the sample form has separate fields for them.",
     "editDeleteTitle": "Edit / Delete booth",
     "editDeleteIntro": "Go to your <bold>Profile</bold> page, under 'Posted samples'. If you're the booth owner, you'll see 2 icons at the top-right corner of your booth card:",
     "editIconDesc": "\u270f\ufe0f Pencil icon: click to go to the edit page.",
@@ -479,13 +479,13 @@
   "donate": {
     "pageTitle": "Donate",
     "title": "Support the project",
-    "intro": "FindYourAlley is developed and maintained completely for free. If you find the website useful, you can buy me a coffee to help keep the server running and develop new features!",
+    "intro": "Find Your Alleys is developed and maintained completely for free. If you find the website useful, you can buy me a matcha latte to help keep the server running and develop new features!",
     "bank": "Bank transfer (Vietnam)",
     "bankName": "Bank: MB Bank",
     "bankAccount": "Account: 0382590942002",
     "bankHolder": "Holder: NGUYEN VIET AN",
     "international": "International",
-    "kofi": "☕ Support on Ko-fi",
+    "kofi": "🍵 Support on Ko-fi",
     "thanks": "Thank you so much! Every contribution motivates me to keep improving the website."
   },
   "event": {
