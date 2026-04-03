@@ -35,13 +35,13 @@ export default async function DonatePage() {
         </div>
 
         {/* International Ko-fi */}
-        <div className="rounded-lg border p-5 space-y-3 flex flex-col items-center">
+        <div className="rounded-lg border p-5 space-y-3 flex flex-col items-center justify-center">
           <p className="font-semibold text-lg">{t('international')}</p>
           <a
             href="https://ko-fi.com/myosotisdiamandis"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-3 text-base font-medium text-white hover:bg-primary-400 transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-3 text-base font-medium text-white dark:text-white hover:bg-primary-400 transition-colors"
           >
             {t('kofi')}
           </a>
