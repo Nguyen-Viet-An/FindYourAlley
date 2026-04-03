@@ -93,7 +93,7 @@ const Bookmark = ({
         </Button>
       )}
       {isBookmarked && (
-        <Button onClick={handleDelete} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" variant="outline" disabled={loadingOrder}>
+        <Button onClick={handleDelete} size="default" className="sm:w-fit text-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-150" variant="destructive" disabled={loadingOrder}>
           {t('unsave')}
         </Button>
       )}
