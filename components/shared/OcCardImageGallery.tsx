@@ -20,17 +20,15 @@ export default function OcCardImageGallery({ image, ownerName }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <CardLightbox imageUrl={image.imageUrl} alt={image.ocName || ownerName} renderImage={false}>
-        <div className="relative w-full rounded-xl overflow-hidden border cursor-zoom-in">
-          <Image
-            src={image.imageUrl}
-            alt={image.ocName || ownerName}
-            width={600}
-            height={800}
-            className="w-full h-auto object-contain"
-            unoptimized
-          />
-        </div>
+      <CardLightbox imageUrl={image.imageUrl} alt={image.ocName || ownerName}>
+        <Image
+          src={image.imageUrl}
+          alt={image.ocName || ownerName}
+          width={600}
+          height={800}
+          className="w-full h-auto object-contain rounded-xl border"
+          unoptimized
+        />
       </CardLightbox>
       {image.ocName && (
         <h4 className="font-semibold">{image.ocName}</h4>

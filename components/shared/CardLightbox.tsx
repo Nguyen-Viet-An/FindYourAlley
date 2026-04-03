@@ -25,6 +25,7 @@ export default function CardLightbox({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const didDragRef = useRef(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -38,6 +39,10 @@ export default function CardLightbox({
   };
 
   const closeLightbox = () => {
+    if (didDragRef.current) {
+      didDragRef.current = false;
+      return;
+    }
     setIsLightboxOpen(false);
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
@@ -143,15 +148,11 @@ export default function CardLightbox({
     e.preventDefault();
 
     setIsDragging(true);
+    didDragRef.current = false;
     setDragStart({
       x: e.clientX - position.x,
       y: e.clientY - position.y
     });
-
-    // Change cursor style
-    if (containerRef.current) {
-      containerRef.current.style.cursor = 'grabbing';
-    }
   };
 
   // Handle mouse move for dragging
@@ -172,40 +173,18 @@ export default function CardLightbox({
   // Handle mouse up to end dragging
   const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging) {
-      e.preventDefault(); // Prevent any default behavior
-    }
-
-    setIsDragging(false);
-
-    // Reset cursor style
-    if (containerRef.current) {
-      containerRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
-    }
-  };
-
-  // Handle mouse leave to end dragging if mouse leaves the container
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDragging) {
+      didDragRef.current = true;
       e.preventDefault();
-      setIsDragging(false);
-
-      // Reset cursor style
-      if (containerRef.current) {
-        containerRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
-      }
     }
+    setIsDragging(false);
   };
 
   // Add global mouse up event handler
   useEffect(() => {
     const handleGlobalMouseUp = () => {
       if (isDragging) {
+        didDragRef.current = true;
         setIsDragging(false);
-
-        // Reset cursor style
-        if (containerRef.current) {
-          containerRef.current.style.cursor = zoomLevel > 1 ? 'grab' : 'zoom-in';
-        }
       }
     };
 
@@ -266,16 +245,6 @@ export default function CardLightbox({
     transition: zoomLevel === 1 ? 'transform 0.3s ease-out' : 'none',
     maxWidth: '90vw',
     maxHeight: '90vh',
-    pointerEvents: 'none',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    MozUserSelect: 'none',
-    msUserSelect: 'none'
-  };
-
-  // Define container style with TypeScript-safe properties
-  const containerStyle: CSSProperties = {
-    cursor: zoomLevel > 1 ? 'grab' : 'zoom-in',
     userSelect: 'none',
     WebkitUserSelect: 'none',
     MozUserSelect: 'none',
@@ -303,8 +272,13 @@ export default function CardLightbox({
       {isLightboxOpen && createPortal(
         <div
           ref={overlayRef}
+          data-lightbox-overlay
           className="fixed inset-0 bg-black bg-opacity-80 z-[9999] flex items-center justify-center"
           onClick={closeLightbox}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          style={{ cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
         >
           <button
             ref={closeBtnRef}
@@ -318,11 +292,6 @@ export default function CardLightbox({
             ref={containerRef}
             className="relative p-4"
             onClick={(e) => e.stopPropagation()}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-            style={containerStyle}
           >
             <div className="flex items-center justify-center h-full">
               <img

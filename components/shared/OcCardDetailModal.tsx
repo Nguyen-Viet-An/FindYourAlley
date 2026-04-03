@@ -46,7 +46,16 @@ export default function OcCardDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent
+        className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0"
+        onPointerDownOutside={(e) => {
+          // Prevent dialog from closing when clicking the CardLightbox overlay
+          const target = e.target as HTMLElement;
+          if (target?.closest('[data-lightbox-overlay]')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Left: Image */}
           <div className="p-4 bg-grey-50 dark:bg-gray-900">
