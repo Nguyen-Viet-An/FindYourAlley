@@ -1,7 +1,8 @@
 import { getAllOcCards } from "@/lib/actions/ocCard.actions";
-import { getTradeCountForCard, hasUserRequestedCard } from "@/lib/actions/tradeRequest.actions";
+import { batchGetTradeCounts, batchHasUserRequestedCards } from "@/lib/actions/tradeRequest.actions";
 import { getFestivals } from "@/lib/actions/festival.actions";
 import OcCardItem from "@/components/shared/OcCardItem";
+import Pagination from "@/components/shared/Pagination";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Search from "@/components/shared/Search";
@@ -19,6 +20,7 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
   const query = (params?.query as string) || "";
   const sortBy = (params?.sortBy as string) || "newest";
   const festivalCode = (params?.festival as string) || undefined;
+  const page = Number(params?.page) || 1;
 
   const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
@@ -27,7 +29,7 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
   const festival = festivalCode ? festivals?.find((f: any) => f.code === festivalCode) : undefined;
   const festivalId = festival?._id;
 
-  const cards = await getAllOcCards({ query, sortBy, festivalId });
+  const { cards, totalPages } = await getAllOcCards({ query, sortBy, festivalId, page });
   const t = await getTranslations('ocCardPage');
   const tc = await getTranslations('ocCard');
 
@@ -43,21 +45,23 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
     }
   });
 
-  // Fetch per-image trade counts and request status
-  const flatExtras = await Promise.all(
-    flatItems.map(async (item) => {
-      const [tradeCount, requested] = await Promise.all([
-        getTradeCountForCard(item.card._id, item.imageIndex),
-        userId ? hasUserRequestedCard(userId, item.card._id, item.imageIndex) : Promise.resolve(null),
-      ]);
-      return {
-        tradeCount,
-        isOwner: userId === item.card.owner?._id?.toString(),
-        alreadyRequested: !!requested,
-        requestStatus: requested?.status || null,
-      };
-    })
-  );
+  // Batch fetch trade counts and request status (2 queries instead of N*2)
+  const batchItems = flatItems.map((item) => ({
+    cardId: item.card._id.toString(),
+    imageIndex: item.imageIndex,
+  }));
+
+  const [tradeCounts, userRequests] = await Promise.all([
+    batchGetTradeCounts(batchItems),
+    userId ? batchHasUserRequestedCards(userId, batchItems) : Promise.resolve(batchItems.map(() => null)),
+  ]);
+
+  const flatExtras = flatItems.map((item, index) => ({
+    tradeCount: tradeCounts[index],
+    isOwner: userId === item.card.owner?._id?.toString(),
+    alreadyRequested: !!userRequests[index],
+    requestStatus: userRequests[index]?.status || null,
+  }));
 
   return (
     <>
@@ -108,6 +112,10 @@ export default async function OcCardsPage({ searchParams }: OcCardsPageProps) {
               </div>
             ))}
           </div>
+        )}
+
+        {totalPages > 1 && (
+          <Pagination page={page} totalPages={totalPages} />
         )}
       </section>
     </>

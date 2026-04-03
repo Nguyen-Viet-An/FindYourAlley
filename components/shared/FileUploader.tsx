@@ -52,7 +52,7 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
           maxSizeMB: 4,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
-          fileType: 'image/jpeg',
+          fileType: 'image/jpeg' as const,
           quality: 0.8,
         }
         file = await imageCompression(file, options)

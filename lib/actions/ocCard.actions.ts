@@ -210,10 +210,14 @@ export async function getAllOcCards({
   query,
   sortBy,
   festivalId,
+  page = 1,
+  limit = 20,
 }: {
   query?: string;
   sortBy?: string;
   festivalId?: string;
+  page?: number;
+  limit?: number;
 } = {}) {
   try {
     await connectToDatabase();
@@ -232,30 +236,32 @@ export async function getAllOcCards({
       filter.festival = new mongoose.Types.ObjectId(festivalId);
     }
 
+    const totalCards = await OcCard.countDocuments(filter);
+
     if (sortBy === "random") {
       const pipeline: any[] = [{ $match: filter }];
-      pipeline.push({ $sample: { size: 200 } });
+      pipeline.push({ $sample: { size: limit } });
       const randomDocs = await OcCard.aggregate(pipeline);
-      if (randomDocs.length === 0) return [];
+      if (randomDocs.length === 0) return { cards: [], totalPages: 0 };
       const ids = randomDocs.map((d: any) => d._id);
       const cards = await populateCard(OcCard.find({ _id: { $in: ids } }));
-      // Preserve random order from $sample
       const idOrder = new Map(ids.map((id: any, i: number) => [id.toString(), i]));
       cards.sort((a: any, b: any) => (idOrder.get(a._id.toString()) ?? 0) - (idOrder.get(b._id.toString()) ?? 0));
-      return JSON.parse(JSON.stringify(cards));
+      return { cards: JSON.parse(JSON.stringify(cards)), totalPages: Math.ceil(totalCards / limit) };
     }
 
     let sort: any = { createdAt: -1 };
     if (sortBy === "alphabetical") sort = { "images.0.ocName": 1 };
     else if (sortBy === "oldest") sort = { createdAt: 1 };
 
+    const skip = (page - 1) * limit;
     const cards = await populateCard(
-      OcCard.find(filter).sort(sort)
+      OcCard.find(filter).sort(sort).skip(skip).limit(limit)
     );
-    return JSON.parse(JSON.stringify(cards));
+    return { cards: JSON.parse(JSON.stringify(cards)), totalPages: Math.ceil(totalCards / limit) };
   } catch (error) {
     handleError(error);
-    return [];
+    return { cards: [], totalPages: 0 };
   }
 }
 

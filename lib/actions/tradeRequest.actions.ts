@@ -1,5 +1,6 @@
 "use server";
 
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/database";
 import TradeRequest from "@/lib/database/models/tradeRequest.model";
 import OcCard from "@/lib/database/models/ocCard.model";
@@ -150,6 +151,80 @@ export async function updateTradeRequestStatus({
     return JSON.parse(JSON.stringify(req));
   } catch (error) {
     handleError(error);
+  }
+}
+
+// BATCH: Get trade counts for multiple card+imageIndex pairs in 2 aggregation queries
+export async function batchGetTradeCounts(
+  items: { cardId: string; imageIndex: number }[]
+) {
+  try {
+    await connectToDatabase();
+    if (items.length === 0) return [];
+
+    const cardIds = [...new Set(items.map((i) => i.cardId))];
+    const cardObjectIds = cardIds.map((id) => new mongoose.Types.ObjectId(id));
+
+    // Total counts per card+imageIndex
+    const totalAgg = await TradeRequest.aggregate([
+      { $match: { card: { $in: cardObjectIds } } },
+      { $group: { _id: { card: "$card", imageIndex: "$imageIndex" }, total: { $sum: 1 } } },
+    ]);
+
+    // Accepted counts per card+imageIndex
+    const acceptedAgg = await TradeRequest.aggregate([
+      { $match: { card: { $in: cardObjectIds }, status: "accepted" } },
+      { $group: { _id: { card: "$card", imageIndex: "$imageIndex" }, accepted: { $sum: 1 } } },
+    ]);
+
+    const totalMap = new Map<string, number>();
+    for (const r of totalAgg) {
+      totalMap.set(`${r._id.card}-${r._id.imageIndex ?? 0}`, r.total);
+    }
+    const acceptedMap = new Map<string, number>();
+    for (const r of acceptedAgg) {
+      acceptedMap.set(`${r._id.card}-${r._id.imageIndex ?? 0}`, r.accepted);
+    }
+
+    return items.map((item) => {
+      const key = `${item.cardId}-${item.imageIndex}`;
+      return { total: totalMap.get(key) || 0, accepted: acceptedMap.get(key) || 0 };
+    });
+  } catch (error) {
+    handleError(error);
+    return items.map(() => ({ total: 0, accepted: 0 }));
+  }
+}
+
+// BATCH: Check if user has requested multiple cards in a single query
+export async function batchHasUserRequestedCards(
+  userId: string,
+  items: { cardId: string; imageIndex: number }[]
+) {
+  try {
+    await connectToDatabase();
+    if (!userId || items.length === 0) return items.map(() => null);
+
+    const cardIds = [...new Set(items.map((i) => i.cardId))];
+    const cardObjectIds = cardIds.map((id) => new mongoose.Types.ObjectId(id));
+
+    const requests = await TradeRequest.find({
+      card: { $in: cardObjectIds },
+      requester: userId,
+    }).lean();
+
+    const reqMap = new Map<string, any>();
+    for (const r of requests) {
+      reqMap.set(`${r.card}-${r.imageIndex ?? 0}`, r);
+    }
+
+    return items.map((item) => {
+      const found = reqMap.get(`${item.cardId}-${item.imageIndex}`);
+      return found ? JSON.parse(JSON.stringify(found)) : null;
+    });
+  } catch (error) {
+    handleError(error);
+    return items.map(() => null);
   }
 }
 
