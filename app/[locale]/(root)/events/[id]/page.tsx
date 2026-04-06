@@ -314,6 +314,21 @@ const EventDetails = async (props: {
                   ))}
                 </div>
               </div>
+
+              {/* Extra Tags */}
+              {event.extraTag && event.extraTag.length > 0 && (
+                <div className="flex flex-wrap gap-x-2 gap-y-1">
+                  {event.extraTag.map((tag: string) => (
+                    <Link
+                      key={tag}
+                      href={`/tags/${encodeURIComponent(tag)}`}
+                      className="text-sm text-primary-500 hover:underline"
+                    >
+                      #{tag}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>

@@ -580,9 +580,14 @@
   "postEventPreorder": {
     "title": "Open post-festival preorders?",
     "description": "{festival} has ended! Would you like to open preorders to sell remaining merch?",
-    "yes": "Yes, open preorders",
+    "yes": "Yes",
     "no": "No thanks",
-    "note": "Your current preorder link and order dates will be reused. You can update them by editing your booth sample page."
+    "confirm": "Confirm open preorder",
+    "hadPreorder": "Had preorder",
+    "linkPlaceholder": "Preorder link (e.g. https://forms.gle/...)",
+    "openDate": "Open date",
+    "closeDate": "Close date",
+    "note": "Click Yes to update preorder link and dates. Click No if you don't want to open."
   },
   "catManage": {
     "title": "🏷️ Manage Tags",

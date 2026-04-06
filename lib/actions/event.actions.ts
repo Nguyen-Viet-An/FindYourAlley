@@ -343,62 +343,72 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 }
 
 // GET SEARCH SUGGESTIONS (booth titles, artist names, extra tags)
-export const getSearchSuggestions = unstable_cache(
-  async () => {
-    try {
-      await connectToDatabase();
-      const events = await Event.find({}, 'title artists extraTag boothNumbers').lean();
-      const suggestions: { type: string; value: string }[] = [];
-      const seen = new Set<string>();
+export async function getSearchSuggestions(festivalIds?: string[]) {
+  const cacheKey = festivalIds?.length
+    ? `search-suggestions-${festivalIds.sort().join(',')}`
+    : 'search-suggestions-all';
 
-      for (const e of events) {
-        const titleKey = `booth:${e.title}`;
-        if (!seen.has(titleKey)) { seen.add(titleKey); suggestions.push({ type: 'booth', value: e.title }); }
+  return await unstable_cache(
+    async () => {
+      try {
+        await connectToDatabase();
+        const filter: any = {};
+        if (festivalIds?.length) {
+          filter.festival = { $in: festivalIds };
+        }
+        const events = await Event.find(filter, 'title artists extraTag boothNumbers').lean();
+        const suggestions: { type: string; value: string }[] = [];
+        const seen = new Set<string>();
 
-        // Add booth numbers as suggestions
-        if (Array.isArray((e as any).boothNumbers)) {
-          for (const bn of (e as any).boothNumbers) {
-            if (bn.boothNumber) {
-              // Strip booth code from title to avoid "F15 - PHYSOART - F15"
-              const code = bn.boothNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              let clean = e.title
-                .replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '')
-                .replace(new RegExp(`\\s*[-–—|_:]\\s*${code}\\s*$`, 'i'), '')
-                .trim() || e.title;
-              const val = `${bn.boothNumber} - ${clean}`;
-              const key = `boothnum:${val.toLowerCase()}`;
-              if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'booth', value: val }); }
+        for (const e of events) {
+          const titleKey = `booth:${e.title}`;
+          if (!seen.has(titleKey)) { seen.add(titleKey); suggestions.push({ type: 'booth', value: e.title }); }
+
+          // Add booth numbers as suggestions
+          if (Array.isArray((e as any).boothNumbers)) {
+            for (const bn of (e as any).boothNumbers) {
+              if (bn.boothNumber) {
+                // Strip booth code from title to avoid "F15 - PHYSOART - F15"
+                const code = bn.boothNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let clean = e.title
+                  .replace(new RegExp(`^\\[?\\(?${code}\\]?\\)?\\s*[-–—|_:]?\\s*`, 'i'), '')
+                  .replace(new RegExp(`\\s*[-–—|_:]\\s*${code}\\s*$`, 'i'), '')
+                  .trim() || e.title;
+                const val = `${bn.boothNumber} - ${clean}`;
+                const key = `boothnum:${val.toLowerCase()}`;
+                if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'booth', value: val }); }
+              }
+            }
+          }
+
+          if (Array.isArray(e.artists)) {
+            for (const a of e.artists) {
+              if (a.name) {
+                const key = `artist:${a.name.toLowerCase()}`;
+                if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'artist', value: a.name }); }
+              }
+            }
+          }
+
+          if (Array.isArray(e.extraTag)) {
+            for (const t of e.extraTag) {
+              if (t) {
+                const key = `tag:${t.toLowerCase()}`;
+                if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'tag', value: t }); }
+              }
             }
           }
         }
-
-        if (Array.isArray(e.artists)) {
-          for (const a of e.artists) {
-            if (a.name) {
-              const key = `artist:${a.name.toLowerCase()}`;
-              if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'artist', value: a.name }); }
-            }
-          }
-        }
-
-        if (Array.isArray(e.extraTag)) {
-          for (const t of e.extraTag) {
-            if (t) {
-              const key = `tag:${t.toLowerCase()}`;
-              if (!seen.has(key)) { seen.add(key); suggestions.push({ type: 'tag', value: t }); }
-            }
-          }
-        }
+        return suggestions;
+      } catch (error) {
+        handleError(error);
+        return [];
       }
-      return suggestions;
-    } catch (error) {
-      handleError(error);
-      return [];
-    }
-  },
-  ['search-suggestions'],
-  { revalidate: 120 }
-);
+    },
+    [cacheKey],
+    { revalidate: 120 }
+  )();
+}
 
 // GET ALL EVENTS
 export async function getAllEvents({ query, limit = 6, page, fandom, itemType, excludeFandom, excludeItemType, hasPreorder, hasPostEventPreorder, hasDeal, festivalId, sortBy, festivalDay }: GetAllEventsParams) {
@@ -1288,10 +1298,11 @@ export async function getPostEventPreorderPromptEvents(userId: string) {
   try {
     await connectToDatabase();
 
-    // Find festivals that have ended
+    // Find festivals that ended within the last 7 days
     const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const endedFestivals = await Festival.find({
-      endDate: { $lt: now },
+      endDate: { $lt: now, $gte: sevenDaysAgo },
       isActive: true,
     }).select('_id name').lean();
 
@@ -1300,14 +1311,13 @@ export async function getPostEventPreorderPromptEvents(userId: string) {
     const endedFestivalIds = endedFestivals.map((f: any) => f._id);
     const festivalNameMap = Object.fromEntries(endedFestivals.map((f: any) => [f._id.toString(), f.name]));
 
-    // Find events by this user with preorder=Yes, in ended festivals, not yet post-event toggled
+    // Find ALL events by this user in ended festivals, not yet post-event toggled
     const events = await Event.find({
       organizer: userId,
-      hasPreorder: 'Yes',
       hasPostEventPreorder: { $ne: true },
       festival: { $in: endedFestivalIds },
     })
-      .select('title _id festival')
+      .select('title _id festival url startDateTime endDateTime hasPreorder')
       .lean();
 
     // Attach festival name to each event
@@ -1327,7 +1337,12 @@ export async function getPostEventPreorderPromptEvents(userId: string) {
 }
 
 // TOGGLE POST-EVENT PREORDER FOR AN EVENT
-export async function togglePostEventPreorder(eventId: string, userId: string, value: boolean) {
+export async function togglePostEventPreorder(
+  eventId: string,
+  userId: string,
+  value: boolean,
+  preorderData?: { url?: string; startDateTime?: string; endDateTime?: string }
+) {
   try {
     await connectToDatabase();
 
@@ -1337,6 +1352,12 @@ export async function togglePostEventPreorder(eventId: string, userId: string, v
     }
 
     event.hasPostEventPreorder = value;
+    if (value && preorderData) {
+      event.hasPreorder = 'Yes';
+      if (preorderData.url) event.url = preorderData.url;
+      if (preorderData.startDateTime) event.startDateTime = new Date(preorderData.startDateTime);
+      if (preorderData.endDateTime) event.endDateTime = new Date(preorderData.endDateTime);
+    }
     await event.save();
 
     revalidatePath('/');

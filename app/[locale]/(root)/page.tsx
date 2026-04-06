@@ -94,7 +94,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
       sortBy: sortBy as any,
       festivalDay: festivalDayParam,
     }),
-    getSearchSuggestions(),
+    getSearchSuggestions(selectedFestivalIds),
     getUniqueEventTitleCount(selectedFestivalIds),
   ]);
 
