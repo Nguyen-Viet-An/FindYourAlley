@@ -231,6 +231,11 @@ body {
   }
 }
 
+/* Date picker icon dark mode fix */
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
 /* ========================================== CLERK STYLES */
 .cl-logoImage {
   height: 38px;
