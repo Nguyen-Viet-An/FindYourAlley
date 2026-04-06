@@ -25,6 +25,7 @@ export interface IEvent extends Document {
   url?: string;
   hasPreorder: "Yes" | "No" | undefined;
   hasPostEventPreorder?: boolean;
+  postEventPreorderDismissed?: boolean;
   featuredProduct?: { imageUrl: string; description: string };
   dealBadge?: string;
   dealDescription?: string;
@@ -55,6 +56,7 @@ const EventSchema = new Schema(
     url: { type: String },
     hasPreorder: { type: String, enum: ["Yes", "No"], default: "No" },
     hasPostEventPreorder: { type: Boolean, default: false },
+    postEventPreorderDismissed: { type: Boolean, default: false },
     featuredProduct: {
       imageUrl: { type: String },
       description: { type: String, maxlength: 200 },

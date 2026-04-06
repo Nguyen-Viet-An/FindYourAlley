@@ -1311,13 +1311,13 @@ export async function getPostEventPreorderPromptEvents(userId: string) {
     const endedFestivalIds = endedFestivals.map((f: any) => f._id);
     const festivalNameMap = Object.fromEntries(endedFestivals.map((f: any) => [f._id.toString(), f.name]));
 
-    // Find ALL events by this user in ended festivals, not yet post-event toggled
+    // Find ALL events by this user in ended festivals (not yet dismissed)
     const events = await Event.find({
       organizer: userId,
-      hasPostEventPreorder: { $ne: true },
+      postEventPreorderDismissed: { $ne: true },
       festival: { $in: endedFestivalIds },
     })
-      .select('title _id festival url startDateTime endDateTime hasPreorder')
+      .select('title _id festival url startDateTime endDateTime hasPreorder hasPostEventPreorder')
       .lean();
 
     // Attach festival name to each event
@@ -1352,6 +1352,7 @@ export async function togglePostEventPreorder(
     }
 
     event.hasPostEventPreorder = value;
+    event.postEventPreorderDismissed = true;
     if (value && preorderData) {
       event.hasPreorder = 'Yes';
       if (preorderData.url) event.url = preorderData.url;
@@ -1362,6 +1363,26 @@ export async function togglePostEventPreorder(
 
     revalidatePath('/');
     return JSON.parse(JSON.stringify(event));
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
+}
+
+// DISMISS POST-EVENT PREORDER POPUP FOR AN EVENT (no toggle change)
+export async function dismissPostEventPreorder(eventId: string, userId: string) {
+  try {
+    await connectToDatabase();
+
+    const event = await Event.findById(eventId);
+    if (!event || event.organizer.toHexString() !== userId) {
+      throw new Error('Unauthorized or event not found');
+    }
+
+    event.postEventPreorderDismissed = true;
+    await event.save();
+
+    return { success: true };
   } catch (error) {
     handleError(error);
     return null;

@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Package, ChevronDown, ChevronUp, Link as LinkIcon, Calendar } from "lucide-react";
-import { getPostEventPreorderPromptEvents, togglePostEventPreorder } from "@/lib/actions/event.actions";
+import { getPostEventPreorderPromptEvents, togglePostEventPreorder, dismissPostEventPreorder } from "@/lib/actions/event.actions";
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -71,15 +71,20 @@ export default function PostEventPreorderNotification({ userId }: Props) {
     })();
   }, [userId, checked]);
 
-  const handleToggle = async (eventId: string, value: boolean) => {
+  const handleToggle = async (eventId: string, value: boolean, skipOnly?: boolean) => {
     setProcessing(eventId);
     try {
-      const data = value ? formData[eventId] : undefined;
-      await togglePostEventPreorder(eventId, userId, value, data ? {
-        url: data.url || undefined,
-        startDateTime: data.startDateTime || undefined,
-        endDateTime: data.endDateTime || undefined,
-      } : undefined);
+      if (skipOnly) {
+        // Dismiss permanently without changing toggle state
+        await dismissPostEventPreorder(eventId, userId);
+      } else {
+        const data = value ? formData[eventId] : undefined;
+        await togglePostEventPreorder(eventId, userId, value, data ? {
+          url: data.url || undefined,
+          startDateTime: data.startDateTime || undefined,
+          endDateTime: data.endDateTime || undefined,
+        } : undefined);
+      }
       setEvents(prev => prev.filter(e => e._id !== eventId));
       setExpandedId(prev => prev === eventId ? null : prev);
     } catch (e) {
@@ -134,14 +139,17 @@ export default function PostEventPreorderNotification({ userId }: Props) {
                 {grouped[festName].map((event: any) => {
                   const isExpanded = expandedId === event._id;
                   const fd = formData[event._id] || { url: '', startDateTime: '', endDateTime: '' };
+                  const isAlreadyEnabled = event.hasPostEventPreorder === true;
                   return (
                     <div key={event._id} className="border rounded-lg overflow-hidden">
                       <div className="flex items-center justify-between p-3 gap-2">
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-medium truncate block">{event.title}</span>
-                          {event.hasPreorder === 'Yes' && (
+                          {isAlreadyEnabled ? (
+                            <span className="text-xs text-blue-600 dark:text-blue-400">{t('alreadyEnabled')}</span>
+                          ) : event.hasPreorder === 'Yes' ? (
                             <span className="text-xs text-green-600 dark:text-green-400">{t('hadPreorder')}</span>
-                          )}
+                          ) : null}
                         </div>
                         <div className="flex gap-2 shrink-0">
                           <Button
@@ -149,17 +157,17 @@ export default function PostEventPreorderNotification({ userId }: Props) {
                             onClick={() => setExpandedId(isExpanded ? null : event._id)}
                             className="bg-primary-500 hover:bg-primary-400 text-white text-xs"
                           >
-                            {t('yes')}
+                            {isAlreadyEnabled ? t('updateButton') : t('yes')}
                             {isExpanded ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleToggle(event._id, false)}
+                            onClick={() => isAlreadyEnabled ? handleToggle(event._id, true, true) : handleToggle(event._id, false)}
                             disabled={processing === event._id}
                             className="text-xs"
                           >
-                            {t('no')}
+                            {isAlreadyEnabled ? t('skipButton') : t('no')}
                           </Button>
                         </div>
                       </div>
@@ -204,7 +212,7 @@ export default function PostEventPreorderNotification({ userId }: Props) {
                             disabled={processing === event._id}
                             className="bg-primary-500 hover:bg-primary-400 text-white text-sm w-full mt-1"
                           >
-                            {processing === event._id ? '...' : t('confirm')}
+                            {processing === event._id ? '...' : isAlreadyEnabled ? t('confirmUpdate') : t('confirm')}
                           </Button>
                         </div>
                       )}

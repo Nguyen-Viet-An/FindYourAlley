@@ -105,7 +105,7 @@
   "filter": {
     "hasDeal": "Có ưu đãi",
     "hasPreorder": "Có",
-    "hasPostEventPreorder": "Preorder sau festival"
+    "hasPostEventPreorder": "Preorder hậu fes"
   },
   "pagination": {
     "previous": "Trước",
@@ -149,7 +149,7 @@
     "itemTypeHint": "Chọn loại mặt hàng cho ảnh này",
     "extraTags": "Thêm tag khác (không thuộc fandom hay mặt hàng, ví dụ: couple, nhân vật... - phân cách bằng dấu phẩy hoặc Enter)",
     "preorderQuestion": "Gian hàng của bạn có mở preorder không?",
-    "postEventPreorderToggle": "Mở preorder sau festival",
+    "postEventPreorderToggle": "Mở preorder hậu fes",
     "postEventPreorderNote": "Nếu bật, link preorder và thời gian mở/đóng đơn hiện tại sẽ được sử dụng. Hãy cập nhật lại nếu có thay đổi.",
     "openOrder": "Mở đơn:",
     "closeOrder": "Đóng đơn:",
@@ -580,16 +580,21 @@
     "switchToVi": "Chuyển sang tiếng Việt"
   },
   "postEventPreorder": {
-    "title": "Mở preorder sau festival?",
-    "description": "{festival} đã kết thúc! Bạn có muốn mở preorder để bán hàng còn lại không?",
+    "title": "Mở preorder hậu fes?",
+    "description": "{festival} đã kết thúc! Bạn có muốn mở preorder hậu fes để bán hàng còn lại không?",
     "yes": "Có",
     "no": "Không",
-    "confirm": "Xác nhận mở preorder",
+    "confirm": "Xác nhận mở preorder hậu fes",
+    "confirmUpdate": "Cập nhật preorder hậu fes",
     "hadPreorder": "Đã có preorder",
+    "alreadyEnabled": "Đã bật preorder hậu fes",
+    "updateDescription": "{festival} đã kết thúc! Bạn có muốn cập nhật link và thời gian preorder hậu fes không?",
+    "updateButton": "Cập nhật",
+    "skipButton": "Bỏ qua",
     "linkPlaceholder": "Link preorder (VD: https://forms.gle/...)",
     "openDate": "Mở đơn",
     "closeDate": "Đóng đơn",
-    "note": "Nhấn Có để cập nhật link và thời gian preorder. Nhấn Không nếu không muốn mở."
+    "note": "Nhấn Có để cập nhật link và thời gian preorder hậu fes. Nhấn Không nếu không muốn mở."
   },
   "catManage": {
     "title": "🏷️ Quản lý Tag",
